@@ -1,0 +1,13 @@
+*.img
+*.*.img
+*.log
+*.*.log
+*.swp
+*.tar
+*.*.tar
+artifacts
+uploads
+__pycache__
+*.pyc
+static/node_modules
+node_modules

@@ -1,0 +1,54 @@
+#!/usr/bin/python3
+__author__ = "Zakhar Volchak"
+__copyright__ = "Copyright 2017 Hewlett Packard Enterprise Development LP"
+__maintainer__ = "Zakhar Volchak"
+__email__ = "zakhar.volchak@hpe.com"
+
+import unittest
+import json
+from flask import url_for
+from pdb import set_trace
+from tm_dashboard import web_server as WS
+
+
+class DashboardTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.mainapp = WS.main({'dont_run' : True})
+        cls.app = cls.mainapp.app
+        cls.app.config['TESTING'] = True
+        cls.app.config['DEBUG'] = True
+
+
+    @classmethod
+    def tearDown(cls):
+        print(' ------- ')
+        pass
+
+
+    def test_api_index(self):
+        """ Test '/', '/api/' and '/api/help' routes. Should be the same."""
+        output = api_output = api_help_output = {}
+        print (' - Testing "/"')
+        with self.app.test_client() as app:
+            resp = app.get('/', headers=self.app.config['HTTP_HEADERS'])
+            output = json.loads(resp.get_data(as_text=True))
+            self.assertNotEqual(output, {}) #just make sure there is at least one route
+            self.assertEqual(200, resp.status_code)
+
+        print (' - Testing "/api/"')
+        with self.app.test_client() as app:
+            resp = app.get('/api/', headers=self.app.config['HTTP_HEADERS'])
+            api_output = json.loads(resp.get_data(as_text=True))
+            self.assertEqual(output, api_output) # output from / should be the same from /api/
+
+        print (' - Testing "/api/help"')
+        with self.app.test_client() as app:
+            resp = app.get('/api/help', headers=self.app.config['HTTP_HEADERS'])
+            api_help_output = json.loads(resp.get_data(as_text=True))
+            self.assertTrue(output == api_output == api_help_output)
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -1,0 +1,2 @@
+category_dir: /static/
+exclude: [static/node_modules/]

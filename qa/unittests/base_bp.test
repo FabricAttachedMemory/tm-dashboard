@@ -1,0 +1,58 @@
+#!/usr/bin/python3
+__author__ = "Zakhar Volchak"
+__copyright__ = "Copyright 2017 Hewlett Packard Enterprise Development LP"
+__maintainer__ = "Zakhar Volchak"
+__email__ = "zakhar.volchak@hpe.com"
+
+import unittest
+import json
+from flask import url_for
+from pdb import set_trace
+from tm_dashboard import web_server as WS
+
+
+class DashboardTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.mainapp = WS.main({'dont_run' : True})
+        cls.app = cls.mainapp.app
+        cls.app.config['TESTING'] = True
+        cls.app.config['DEBUG'] = True
+
+        cls.accept = ['application/json', 'charset=utf-8', 'version=1.0']
+
+
+    @classmethod
+    def tearDown(cls):
+        print(' ------- ')
+        pass
+
+
+    def test_request_validation(self):
+        """ Pass different variations of headers (including positions of accept
+        values) and check if it is validated correctly."""
+        header = {
+            "Accept" : ';'.join(self.accept)
+        }
+        print ('- Testing request validation...')
+        with self.app.test_client() as app:
+            resp = app.get('/api/', headers=header)
+            self.assertEqual(200, resp.status_code)
+        #Switch accept parameters around to see if "version" value extracted correctly
+        header = {
+            "Accept" : '%s;%s;%s;' % (self.accept[2], self.accept[0], self.accept[1])
+        }
+        with self.app.test_client() as app:
+            resp = app.get('/api/', headers=header)
+            self.assertEqual(200, resp.status_code)
+
+        # Missing version in accept - should fail
+        header = { "Accept" : "%s" % (self.accept[0]) }
+        with self.app.test_client() as app:
+            resp = app.get('/api/', headers=header)
+            self.assertEqual(418, resp.status_code)
+
+
+if __name__ == '__main__':
+    unittest.main()

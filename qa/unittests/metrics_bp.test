@@ -1,0 +1,51 @@
+#!/usr/bin/python3
+__author__ = "Zakhar Volchak"
+__copyright__ = "Copyright 2017 Hewlett Packard Enterprise Development LP"
+__maintainer__ = "Zakhar Volchak"
+__email__ = "zakhar.volchak@hpe.com"
+
+import unittest
+import json
+from flask import url_for
+from pdb import set_trace
+from tm_dashboard import web_server as WS
+
+
+class DashboardTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.mainapp = WS.main({'dont_run' : True})
+        cls.app = cls.mainapp.app
+        cls.app.config['TESTING'] = True
+        cls.app.config['DEBUG'] = True
+
+        cls.expected_keys = ['cpu', 'fabric', 'fam']
+
+
+    @classmethod
+    def tearDown(cls):
+        print(' ------- ')
+        pass
+
+
+    def test_metrics_all(self):
+        """ Pass different variations of headers (including positions of accept
+        values) and check if it is validated correctly."""
+        print ('- Testing metrics all...')
+
+        with self.app.test_client() as app:
+            resp = app.get('/api/metrics', headers=self.app.config['HTTP_HEADERS'])
+            if resp.status_code == 206:
+                self.assertEqual(206, resp.status_code)
+            else:
+                self.assertEqual(200, resp.status_code)
+            output = json.loads(resp.get_data(as_text=True))
+            output_keys = list(output.keys())
+            self.assertTrue(set(self.expected_keys).issubset(output_keys))
+
+        #TODO: test somehow non spoofed data.
+
+
+if __name__ == '__main__':
+    unittest.main()

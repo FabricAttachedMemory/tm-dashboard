@@ -1,0 +1,7 @@
+Clone the project and open dashboard.html with Chromium / Chrome.  Firefox
+is known not to work and other browsers have not been thoroughly tested.
+
+Note on the project structure:
+I dont particularly like this pile of junk config files and other "who cares"
+stuff in the root directory here.. eventually, I would like to move it and keep
+only "dashboard.html" file in the top\root directory of the project...

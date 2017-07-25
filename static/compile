@@ -1,0 +1,14 @@
+#!/bin/bash
+# This script just calls "npm run [type]" to compile\bundle all React code.
+# Run it when you have made ANY changes to the src/ scripts.
+# It all will be bundles to the compiled/ directory (refere to webpack.config.js
+# config file for the BUILD_DIR variable that tells it where to bundle it all to).
+#
+# The reason for this script to exist is for user "readability\usability" if he\she
+# doesn't know about "npm"... This, seeing script "compile" should be just self
+# explanatory.
+set -e
+
+npm run dev
+
+exit
