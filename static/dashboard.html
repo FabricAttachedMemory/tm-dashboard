@@ -5,8 +5,17 @@
     <meta content="utf-8" http-equiv="encoding">
 
     <link rel="stylesheet" type="text/css" href="plugins/bootstrap-3.3.7-dist/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="static/plugins/bootstrap-3.3.7-dist/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='plugins/bootstrap-3.3.7-dist/css/bootstrap.css')}}">
+
     <link rel="stylesheet" type="text/css" href="src/components/css/tabs.css">
+    <link rel="stylesheet" type="text/css" href="static/src/components/css/tabs.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='src/components/css/tabs.css')}}">
+
     <link rel="stylesheet" type="text/css" href="src/components/css/header.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='src/components/css/header.css')}}">
+    <link rel="stylesheet" type="text/css" href="static/src/components/css/header.css">
+
     <style>
 
         body {
@@ -15,6 +24,10 @@
             width: 100%;
             margin: 0 0 0 0;
             padding: 0 0 0 0;
+        }
+
+        .container-fluid{
+            padding-top: 0px;
         }
 
         .group-tick line {
@@ -32,12 +45,16 @@
   <body>
 
 <!-- Reference for Layout
-<div class="container" style="width: 100%; height: 500px; background: white;">
-<div class="row no-gutter">
+<div class="container-fluid" style="width: 100%; height: 500px; background: white;">
+<div class="row-fluid">
     <div class="col-md-2" style="background: green;">
-        <div "row no-gutter">
+        <div class="row">
             <div class="col-md-11 col-md-offset-1" style="background: yellow; height: 300px;"></div>
+        </div>
+        <div class="row">
             <div class="col-md-12" style="background: blue; height: 300px;"></div>
+        </div>
+        <div class="row">
             <div class="col-md-12" style="background: orange; height: 300px;"></div>
         </div>
     </div>
@@ -51,7 +68,7 @@
  </div>
 
     <div class="col-md-2" style="background: black;">
-        <div "row">
+        <div class="row-fluid">
             <div class="col-md-12" style="background: yellow; height: 300px;"></div>
             <div class="col-md-12" style="background: blue; height: 300px;"></div>
             <div class="col-md-12" style="background: orange; height: 300px;"></div>
@@ -61,7 +78,7 @@
 </div>
 -->
 
-      <div class="container" id="SystemLoadStats" style="background: ; width:100%;"/>
+      <div class="container-fluid" id="SystemLoadStats" style="background:; width:100%;"/>
       <!-- Direct load of the index into browser (no flask used) -->
       <script src="compiled/bundle.js" type="text/javascript"></script>
       <!-- when using index.html from root of the project -->

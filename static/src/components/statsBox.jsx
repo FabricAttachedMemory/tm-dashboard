@@ -23,7 +23,7 @@ class StatsBox extends React.Component {
         var cmpMargin = [this.props.mgTop, this.props.mgRight, this.props.mgBottom, this.props.mgLeft ];
 
         return (
-            <div className={["col-md-" + this.props.size, css.container].join(' ')}
+            <div className={["col-md-" + this.props.size, css.widgetContainer].join(' ')}
                 style={{margin : cmpMargin.join(' ') }}>
                 {this.props.children}
             </div>

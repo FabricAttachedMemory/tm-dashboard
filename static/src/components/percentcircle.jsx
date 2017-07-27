@@ -8,6 +8,7 @@
 */
 import React from 'react';
 import {render} from 'react-dom';
+import * as d3 from 'd3'
 
 //ommiting extension of the file. Webpack config will figure it out by looking for .css or .scss
 import css from './css/stats'
@@ -36,7 +37,6 @@ class PercentCircle extends React.Component {
             isSpoofed : false,
             forceRerender : false,
             containerId : id.join("_") + "_container",
-            radius : -1,
             fetched : null
         }
     }//constructor
@@ -93,11 +93,6 @@ class PercentCircle extends React.Component {
     componentDidMount(){
         this.updateDimensions();
         window.addEventListener("resize", this.updateDimensions.bind(this));
-
-        var attr = style.r.split("%")[0];
-        var radius = parseInt(attr);
-        var container = document.getElementById(this.state.containerId);
-        this.state.radius = (100 * radius) / container.offsetWidth;
     }//componentDidMount
 
 
@@ -150,52 +145,51 @@ class PercentCircle extends React.Component {
     }//readFetchedValues
 
 
-  render () {
-    this.readFetchedValues();
+    render () {
+        this.readFetchedValues();
 
-    //Radius of the circle that was set in css/stats.css.
-    var radius = (this.state.radius < 0 ) ? 120 : this.state.radius;
-    radius = 100;
-    //SVG's property strokeDasharray is calculated to render the "filling" of
-    //the circle.
-    var progress_fill = radius * 2 * Math.PI;
-    //How much filling to do of the circle based of desired precentage.
-    var circle_fill_offset = ((100 - this.state.percent) / 100) * progress_fill;
-    circle_fill_offset = (circle_fill_offset < 0 ) ? 0 : circle_fill_offset;
+        //Radius of the circle that was set in css/stats.css.
+        var radius = 100;
 
-    var valueText = (this.state.percent < 0) ? "No Data" : this.state.percent;
+        //SVG's property strokeDasharray is calculated to render the "filling" of
+        //the circle.
+        var progress_fill = radius * 2 * Math.PI;
+        //How much filling to do of the circle based of desired precentage.
+        var circle_fill_offset = ((100 - this.state.percent) / 100) * progress_fill;
+        circle_fill_offset = (circle_fill_offset < 0 ) ? 0 : circle_fill_offset;
 
-    this.state.fetched = null; //Resetting fetched for the next circle\interval.
+        var valueText = (this.state.percent < 0) ? "No Data" : this.state.percent;
+        var metricsSymbol = parseInt(valueText);
+        metricsSymbol = (isNaN(metricsSymbol)) ? "" : "%";
 
-    var cmpMargin = [0, 0, this.props.marginBottom, "5%"];
+        this.state.fetched = null; //Resetting fetched for the next circle\interval.
 
-    return (
-        <StatsBox size={11} mgBottom="2%" mgLeft="5%">
-            <div id={this.state.containerId} className="col-md-12" style={{margin: "0 0 0 0", height: "80%"}}>
-                <svg className={css.svgCircle}>
-                    <circle r={style.r} className={[css.progress, css.circle].join(' ')}/>
-                    <circle r={style.r} className={[css.progress_inactive, css.circle].join(' ')}
-                            strokeDasharray={progress_fill}
-                            strokeDashoffset={circle_fill_offset} />
+        return (
+            <StatsBox size={12} mgBottom="2%" mgLeft="0%" mgRight="0%">
 
-                    <text x="50%" y="50%" className={css.precent_text}>{valueText}</text>
-                    <text x="50%" y="62%" className={css.precent_text}>%</text>
-                </svg>
-            </div>
+                    <div id={this.state.containerId} style={{height : "70%" }}>
+                        <svg viewBox="0 0 250 120" className={css.svgCircle}>
+                            <circle r={radius} className={[css.progress, css.circle].join(' ')}/>
+                            <circle r={radius} className={[css.progress_inactive, css.circle].join(' ')}
+                                    strokeDasharray={progress_fill}
+                                    strokeDashoffset={circle_fill_offset} />
 
-            <div className="col-md-12" style={{}}>
-                <text className={css.dsc}>{this.props.name}</text>
-            </div>
-        </StatsBox>
-    );
-  }//render
+                            <text x="50%" y="50%" className={css.precent_text}>{valueText}</text>
+                            <text x="47.5%" y="75%" className={css.precent_symbol}>{metricsSymbol}</text>
+                        </svg>
+
+                    </div>
+
+                    <div className="col-md-12">
+                        <text className={css.dsc}>{this.props.name}</text>
+                    </div>
+
+            </StatsBox>
+        );
+    }//render
 
 
 }//class
-
-var style = {
-    r : "100"
-}
 
 
 // Those are the "default values" for the PrecentCircle component.
@@ -206,8 +200,7 @@ PercentCircle.defaultProps = {
     name : "",
     url : "",
     refreshRate : 5000,
-    spoofAfterFails : 0,
-    marginBottom : "0em"
+    spoofAfterFails : 0
 }
 
 //VOODOO, something to do with the way Imports works in React..

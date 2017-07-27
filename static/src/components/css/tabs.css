@@ -9,12 +9,26 @@
     margin-top: 5px;
     border: none;
     height: 1000px;
-    width: 100.4%; /* Bloody trash! idk why it have to be .4% wider, but bootstrap's tab doesnt withd 100% */
+    width: 100%; /* Bloody trash! idk why it have to be .4% wider, but bootstrap's tab doesnt withd 100% */
 }
+
+.navbar{
+    width: 100%;
+    padding: 0px;
+    margin: 0px;
+}
+
+
+.navbar-header{
+    padding: 0px;
+}
+
 
 .nav{
     border: none;
+    padding: 0px;
 }
+
 
 .nav-tabs > li > a{
     background: #425563;
@@ -22,6 +36,7 @@
     color: white;
     border: none;
 }
+
 
 .nav-tabs > li.active > a{
     background: #4C5E6C;
