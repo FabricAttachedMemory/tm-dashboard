@@ -7,7 +7,10 @@ var BUILD_DIR = path.resolve(__dirname, 'compiled/');
 var APP_DIR = path.resolve(__dirname, 'src/');
 
 var config = {
-  entry: APP_DIR + '/main.jsx',
+  entry: [
+        APP_DIR + '/main.jsx',
+        'webpack-dev-server/client?http://0.0.0.0:80'
+    ],
   resolve: {
     modulesDirectories: ['node_modules', 'src'],
     extensions: ['', '.js', '.jsx', '.json', '.scss', '.css', '.svg']

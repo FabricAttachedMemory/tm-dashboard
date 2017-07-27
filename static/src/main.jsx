@@ -25,38 +25,41 @@ class SystemLoadStats extends React.Component{
 // <----PROPS---->
     constructor(props) {
         super(props);
-        this.state = {
-            percent: -1,
-            fetched: ""
-        };
     }
 
     render() {
         var cpuUrl = "10.33.234.150";
+        var headerClasses = "col-md-12";
+        var sidesClasses = "col-md-2";
+        var middleClasses = "col-md-8";
 
         return (
-            <div className="row">
-                <div className="col-md-13">
-                    <Header/>
-                </div>
+            <div className="row" style={{marginTop: "0px"}}>
+                    <div className={headerClasses} style={{padding:"0px"}}>
+                        <Header/>
+                    </div>
 
-                  <div className="col-md-2" style={{ }}>
-                        <div className="row">
-                            <PercentCircle name="CPU" marginBottom="0.4em"/>
-                            <PercentCircle percentage={this.state.percent}
-                                            name="Fabric Attached Memory"/>
-                            <PercentCircle percentage={this.state.percent} name="Fabric"/>
-                        </div>
-                  </div>
 
-                  <div className="col-md-8" style={{ margin : "0 0% 0 0%"}}>
-                      <Middle />
-                  </div>
+                    <div className={sidesClasses} style={{}}>
 
-                 <div className="col-md-2" style={{}}>
-                      <InfoSquare number='14' desc="ACTIVE SHELVES"/>
-                      <InfoSquare number="1,792" desc="BOOKS"/>
-                 </div>
+                            <PercentCircle name="CPU"/>
+
+                            <PercentCircle name="Fabric Attached Memory"/>
+
+                            <PercentCircle name="Fabric"/>
+
+                    </div>
+
+
+                    <div className={middleClasses} style={{}}>
+                        <Middle />
+                    </div>
+
+
+                    <div className={sidesClasses} style={{}}>
+                        <InfoSquare number='14' desc="ACTIVE SHELVES"/>
+                        <InfoSquare number="1,792" desc="BOOKS"/>
+                    </div>
 
             </div>
         );

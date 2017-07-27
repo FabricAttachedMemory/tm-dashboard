@@ -2,8 +2,8 @@
 @font-face { font-family: MetricHPE-Semi; src: url("./fonts/MetricHPE-Semi.otf"); }
 
 
-.container{
-    height : 350px;
+.widgetContainer{
+    height : 220px;
     background-color: #4C5E6C;
     text-align: center;
 }
@@ -21,13 +21,10 @@
     text-align: center;
 }
 
-.logo {
-  height: 30px;
-  width: 200px;
-}
 
 .precent_text{
-    font-size: 1.2em;
+    font-size: 2.5em;
+    font-weight : bold;
     font-family: MetricHPE;
     fill: white;
     text-anchor: middle;
@@ -35,7 +32,7 @@
 
 
 .precent_symbol{
-    font-size: 1.8em;
+    font-size: 2.2em;
     font-family: MetricHPE-Semi;
     fill: #A5AEAC;
     text-align: center;
@@ -55,21 +52,16 @@
     stroke-width: 0.214em;
     cx:50%;
     cy:50%;
-/*
-    r:30%;
-*/
     fill: none; /* keep as "none" for transparent bg. Removing this will set to default value "black" */
 }
 
 
 .progress{
-/*
-    r:30%;
-    stroke-width: 0.286em;
-*/
     stroke-width: 0.3em;
     fill: none;
     stroke:#455561;
+    cx:50%;
+    cy:50%;
     -ms-transform: rotate(-90deg); /* IE 9 */
     -webkit-transform: rotate(-90deg); /* Chrome, Safari, Opera */
     -webkit-transform-origin: 50% 50%;
