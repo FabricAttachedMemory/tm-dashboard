@@ -3,9 +3,9 @@
 
 
 .widgetContainer{
-    height : 220px;
     background-color: #4C5E6C;
     text-align: center;
+    min-height: 295px;
 }
 
 
@@ -38,8 +38,21 @@
     text-align: center;
 }
 
-.dsc{
-    font-size: 1em;
+
+.dscContainer{
+    margin-top:1.5em;
+}
+
+
+@media screen and (max-height: 850px){
+    .dscContainer{
+        margin-top:0.5em;
+    }
+}/* max-height 850 */
+
+
+.dsc {
+    font-size: 1.3em;
     font-family: MetricHPE-Semi;
     color: #FFFFFF;
     stroke-width: 0.036em;

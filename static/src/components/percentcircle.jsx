@@ -90,15 +90,8 @@ class PercentCircle extends React.Component {
     }//GetData
 
 
-    componentDidMount(){
-        this.updateDimensions();
-        window.addEventListener("resize", this.updateDimensions.bind(this));
-    }//componentDidMount
-
-
     //One of the first functions in the React lifecicle to be called.
     componentWillMount(){
-        window.removeEventListener("resize", this.updateDimensions.bind(this));
         setInterval(() => {
             if(!this.state.fetched || this.state.fetched == null)
                 this.GetData();
@@ -126,11 +119,6 @@ class PercentCircle extends React.Component {
 
         return isReady;
     }//shouldComponentUpdate
-
-
-    updateDimensions() {
-        this.setState({forceRerender : true});
-    }//updateDimensions
 
 
     readFetchedValues(){
@@ -165,10 +153,10 @@ class PercentCircle extends React.Component {
         this.state.fetched = null; //Resetting fetched for the next circle\interval.
 
         return (
-            <StatsBox size={12} mgBottom="2%" mgLeft="0%" mgRight="0%">
+            <StatsBox size={12} height={this.props.height} mgBottom="5px" mgLeft="0%" mgRight="0%">
 
-                    <div id={this.state.containerId} style={{height : "70%" }}>
-                        <svg viewBox="0 0 250 120" className={css.svgCircle}>
+                    <div id={this.state.containerId} style={{height : "70%", marginTop: "2.5em" }}>
+                        <svg viewBox="0 0 150 220" className={css.svgCircle}>
                             <circle r={radius} className={[css.progress, css.circle].join(' ')}/>
                             <circle r={radius} className={[css.progress_inactive, css.circle].join(' ')}
                                     strokeDasharray={progress_fill}
@@ -177,10 +165,9 @@ class PercentCircle extends React.Component {
                             <text x="50%" y="50%" className={css.precent_text}>{valueText}</text>
                             <text x="47.5%" y="75%" className={css.precent_symbol}>{metricsSymbol}</text>
                         </svg>
-
                     </div>
 
-                    <div className="col-md-12">
+                    <div className={["col-md-12 ", css.dscContainer].join(' ')}>
                         <text className={css.dsc}>{this.props.name}</text>
                     </div>
 
@@ -197,6 +184,7 @@ class PercentCircle extends React.Component {
 // to <PercentCircle percentage="0" name="">
 PercentCircle.defaultProps = {
     percentage : 0,
+    height : "300px",
     name : "",
     url : "",
     refreshRate : 5000,

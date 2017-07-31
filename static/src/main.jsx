@@ -1,6 +1,6 @@
 'use strict'; //https://stackoverflow.com/questions/1335851/what-does-use-strict-do-in-javascript-and-what-is-the-reasoning-behind-it
-/* global fetch:true */
               //in a nutshell, this will make the compiler more "verbose" and Exception and Error trigger happy...
+/* global fetch:true */
 /*
  *  This is the Main script that connects all the piecies of the webpage together,
  * and writes it into the html element. In this case, Percentage Circle component
@@ -9,11 +9,11 @@
 */
 import React from 'react';
 import {render} from 'react-dom';
-import {Grid, Row, Col, Navbar, Nav, NavItem, MenuItem} from 'react-bootstrap';
-import PercentCircle from './components/percentcircle';
-import InfoSquare from './components/infoSquare';
-import Header from './components/header';
-import Middle from './components/middle';
+
+import PercentCircle    from    './components/percentcircle';
+import InfoSquare       from    './components/infoSquare';
+import Header           from    './components/header';
+import Middle           from    './components/middle';
 
 
 class SystemLoadStats extends React.Component{
@@ -25,13 +25,48 @@ class SystemLoadStats extends React.Component{
 // <----PROPS---->
     constructor(props) {
         super(props);
-    }
+        this.state = {
+            windowHeight : window.innerHeight
+        }
+    }//ctor
+
+
+    getHeight(offset, divider){
+        return (window.innerHeight - offset) / divider;
+    }//getHeight
+
+
+    componentWillMount(){
+        window.addEventListener("resize", this.updateDimensions.bind(this));
+    }//componentWillMount
+
+
+    componentDidMount(){
+        window.removeEventListener("resize", this.updateDimensions.bind(this));
+    }//componentDidMount
+
+
+    updateDimensions(){
+        this.setState({
+            windowHeight : window.innerHeight
+        });
+        console.log("Here");
+    }//updateDimensions
+
+
+    shouldComponentUpdate(nextProps, nextState){
+        var isHeightChanged = (this.state.windowHeight != window.innerHeight);
+        return isHeightChanged;
+    }//shouldComponentUpdate
+
 
     render() {
         var cpuUrl = "10.33.234.150";
         var headerClasses = "col-md-12";
         var sidesClasses = "col-md-2";
         var middleClasses = "col-md-8";
+        var leftBoxHeight = this.getHeight(65, 3) + "px";
+        var middleBoxHeight = this.getHeight(55, 1) + "px";
 
         return (
             <div className="row" style={{marginTop: "0px"}}>
@@ -40,23 +75,26 @@ class SystemLoadStats extends React.Component{
                     </div>
 
 
-                    <div className={sidesClasses} style={{}}>
+                    <div className={sidesClasses}>
 
-                            <PercentCircle name="CPU"/>
+                            <PercentCircle name="CPU" height={leftBoxHeight} />
 
-                            <PercentCircle name="Fabric Attached Memory"/>
+                            <PercentCircle name="Fabric Attached Memory" height={leftBoxHeight}/>
 
-                            <PercentCircle name="Fabric"/>
+                            <PercentCircle name="Fabric" height={leftBoxHeight}/>
 
                     </div>
 
 
-                    <div className={middleClasses} style={{}}>
-                        <Middle />
+                    <div className={middleClasses}
+                        style={{
+                            background: "#4C5E6C",
+                            height : middleBoxHeight }}>
+                        <Middle/>
                     </div>
 
 
-                    <div className={sidesClasses} style={{}}>
+                    <div className={sidesClasses}>
                         <InfoSquare number='14' desc="ACTIVE SHELVES"/>
                         <InfoSquare number="1,792" desc="BOOKS"/>
                     </div>
@@ -67,6 +105,7 @@ class SystemLoadStats extends React.Component{
     }//render
 
 }//class
+
 
 // Write\Render Precentage Circles into the HTML element when the page is loaded.
 render(<SystemLoadStats />, document.getElementById('SystemLoadStats'));

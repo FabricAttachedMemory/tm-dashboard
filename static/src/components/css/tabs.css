@@ -5,12 +5,11 @@
 
 
 .tab-content {
-    background: #4C5E6C;
     margin-top: 5px;
     border: none;
-    height: 1000px;
     width: 100%; /* Bloody trash! idk why it have to be .4% wider, but bootstrap's tab doesnt withd 100% */
 }
+
 
 .navbar{
     width: 100%;
