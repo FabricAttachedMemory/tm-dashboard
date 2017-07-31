@@ -16,7 +16,11 @@ class StatsBox extends React.Component {
 
     constructor(props){
         super(props)
+        this.state = {
+            height : "300px"
+        }
     }//constructor
+
 
 
     render() {
@@ -24,7 +28,8 @@ class StatsBox extends React.Component {
 
         return (
             <div className={["col-md-" + this.props.size, css.widgetContainer].join(' ')}
-                style={{margin : cmpMargin.join(' ') }}>
+                style={{margin : cmpMargin.join(' '),
+                        height: this.props.height }}>
                 {this.props.children}
             </div>
         );
@@ -36,6 +41,7 @@ class StatsBox extends React.Component {
 
 StatsBox.defaultProps = {
     size : 12,
+    height : "300px",
     mgTop : "0",
     mgRight : "0",
     mgBottom : "0",
