@@ -1,6 +1,42 @@
 @font-face { font-family: MetricHPE; src: url("./fonts/MetricHPE.otf"); }
 @font-face { font-family: MetricHPE-Semi; src: url("./fonts/MetricHPE-Semi.otf"); }
 
+.header{
+    background: #01a982;
+    display: block;
+    min-height: 40px;
+    width:100%;
+    padding:0px;
+    margin:0px;
+}
+
+.header-logo{
+    display: block;
+    padding-left: 50px;
+    height: 40px;
+    width: 140px;
+}
+
+
+.header-name{
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    font-family: MetricHPE;
+    color: white;
+    padding-top: 10px;
+}
+
+.header-right{
+    font-size: 1.1em;
+    vertical-align: middle;
+    text-align: right;
+    color: white;
+    padding-right: 40px;
+    padding-top: 10px;
+}
+
+/*
 .navbar, .navbar-default{
     min-height: 40px;
     margin-bottom: 0.4%;
@@ -38,3 +74,4 @@
     width: 100px;
     height: 20px;
 }
+*/

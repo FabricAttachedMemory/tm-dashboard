@@ -1,59 +1,6 @@
 @font-face { font-family: MetricHPE; src: url("./fonts/MetricHPE.otf"); }
 @font-face { font-family: MetricHPE-Semi; src: url("./fonts/MetricHPE-Semi.otf"); }
 
-/* This css is primary to be imported by .html file, not react component. */
-
-
-.tab-content {
-    margin-top: 5px;
-    border: none;
-    width: 100%; /* Bloody trash! idk why it have to be .4% wider, but bootstrap's tab doesnt withd 100% */
-}
-
-
 .navbar{
-    width: 100%;
-    padding: 0px;
-    margin: 0px;
-}
-
-
-.navbar-header{
-    padding: 0px;
-}
-
-
-.nav{
-    border: none;
-    padding: 0px;
-}
-
-
-.nav-tabs > li > a{
-    background: #425563;
-    font-family: MetricHPE;
-    color: white;
-    border: none;
-}
-
-
-.nav-tabs > li.active > a{
-    background: #4C5E6C;
-    color: white;
-    border: none;
-}
-
-
-.nav-tabs > li > a:hover{
-    background: #4C5E6C;
-    font-family: MetricHPE;
-    color: white;
-    border: none;
-}
-
-.nav-tabs > li.active > a:hover{
-    background: #4C5E6C;
-    color: white;
-    font-family: MetricHPE;
-    border: none;
+    border-radius: 0px;
 }
