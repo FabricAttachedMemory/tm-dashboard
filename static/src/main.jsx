@@ -15,7 +15,6 @@ import InfoSquare       from    './components/infoSquare';
 import Header           from    './components/header';
 import Middle           from    './components/middle';
 
-
 class SystemLoadStats extends React.Component{
 // This class is responsible for rendering the Left side of the Executive Dashboard
 // where three Precentage Circles are located. This class groups them all into
@@ -26,7 +25,8 @@ class SystemLoadStats extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
-            windowHeight : window.innerHeight
+            windowHeight : window.innerHeight,
+            windowWidth : window.innerWidth
         }
     }//ctor
 
@@ -34,6 +34,11 @@ class SystemLoadStats extends React.Component{
     getHeight(offset, divider){
         return (window.innerHeight - offset) / divider;
     }//getHeight
+
+
+    getWidth(offset, divider){
+        return (window.innerWidth - offset) / divider;
+    }
 
 
     componentWillMount(){
@@ -48,7 +53,8 @@ class SystemLoadStats extends React.Component{
 
     updateDimensions(){
         this.setState({
-            windowHeight : window.innerHeight
+            windowHeight : window.innerHeight,
+            windowWidth : window.innerWidth
         });
         console.log("Here");
     }//updateDimensions
@@ -56,7 +62,8 @@ class SystemLoadStats extends React.Component{
 
     shouldComponentUpdate(nextProps, nextState){
         var isHeightChanged = (this.state.windowHeight != window.innerHeight);
-        return isHeightChanged;
+        var isWidthChanged = (this.state.widnowWidth != window.innerWidth);
+        return isHeightChanged || isWidthChanged;
     }//shouldComponentUpdate
 
 
@@ -65,17 +72,19 @@ class SystemLoadStats extends React.Component{
         var headerClasses = "col-md-12";
         var sidesClasses = "col-md-2";
         var middleClasses = "col-md-8";
-        var leftBoxHeight = this.getHeight(65, 3) + "px";
-        var middleBoxHeight = this.getHeight(55, 1) + "px";
+        var leftBoxHeight = this.getHeight(60, 3) + "px";
+        var middleBoxHeight = this.getHeight(50, 1) + "px";
+        var sidesMaxWidth = "300px";
+        var middleWidth = this.getWidth(615, 1) + "px";
 
         return (
-            <div className="row" style={{marginTop: "0px"}}>
-                    <div className={headerClasses} style={{padding:"0px"}}>
+            <div className="row" style={{marginTop: "0px", marginBottom:"0px"}}>
+                    <div className={headerClasses} style={{padding:"0px", marginBottom: "0.5em"}}>
                         <Header/>
                     </div>
 
 
-                    <div className={sidesClasses}>
+                    <div className={sidesClasses} style={{maxWidth : sidesMaxWidth}}>
 
                             <PercentCircle name="CPU" height={leftBoxHeight} />
 
@@ -88,13 +97,14 @@ class SystemLoadStats extends React.Component{
 
                     <div className={middleClasses}
                         style={{
+                            width: middleWidth,
                             background: "#4C5E6C",
                             height : middleBoxHeight }}>
                         <Middle/>
                     </div>
 
 
-                    <div className={sidesClasses}>
+                    <div className={sidesClasses} style={{ width: sidesMaxWidth }}>
                         <InfoSquare number='14' desc="ACTIVE SHELVES"/>
                         <InfoSquare number="1,792" desc="BOOKS"/>
                     </div>

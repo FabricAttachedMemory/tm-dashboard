@@ -1,9 +1,8 @@
 'use strict';
 import React from 'react';
 import {render} from 'react-dom';
-import StatsBox from './statsBox'
+import StatsBox from './wrappers/statsBox'
 
-import css from './css/stats';
 
 class InfoSquare extends React.Component {
 
@@ -15,10 +14,10 @@ class InfoSquare extends React.Component {
 
         return (
             <StatsBox size={12} mgBottom="2%" mgLeft="0%">
-                <div className={css.main_number}>
+                <div className="data-display">
                     {this.props.number}
                 </div>
-                <div className={css.dsc} style={{padding: "0 0 0 0"}}>
+                <div className="data-container-name" style={{padding: "0 0 0 0"}}>
                     <text >{this.props.desc}</text>
                 </div>
             </StatsBox>
