@@ -15,6 +15,7 @@ import InfoSquare       from    './components/infoSquare';
 import Header           from    './components/header';
 import Middle           from    './components/middle';
 
+
 class SystemLoadStats extends React.Component{
 // This class is responsible for rendering the Left side of the Executive Dashboard
 // where three Precentage Circles are located. This class groups them all into
@@ -97,6 +98,7 @@ class SystemLoadStats extends React.Component{
 
                     <div className={middleClasses}
                         style={{
+                            padding: "0px",
                             width: middleWidth,
                             background: "#4C5E6C",
                             height : middleBoxHeight }}>
