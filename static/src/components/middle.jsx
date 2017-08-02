@@ -5,7 +5,6 @@ import {Tabs, Tab, Col} from 'react-bootstrap'; //Bloody garbage! Need to use pl
 
 import Flatgrids from '../visualization/grids'
 import Chords from '../visualization/chordWheel'
-import CSS from './css/tabs'
 
 
 class Middle extends React.Component {

@@ -1,7 +1,7 @@
 'use strict';
 import React from 'react';
 import {render} from 'react-dom';
-import StatsBox from './statsBox'
+import StatsBox from './wrappers/statsBox'
 
 
 class Header extends React.Component {
