@@ -9,6 +9,10 @@
 */
 import React from 'react';
 import {render} from 'react-dom';
+import {BrowserRouter, Redirect, Router, Route, HashRouter } from 'react-router-dom'
+
+import Skeleton from './skeleton'
+import Overview from './overview'
 
 import PercentCircle    from    './components/percentcircle';
 import InfoSquare       from    './components/infoSquare';
@@ -25,93 +29,18 @@ class SystemLoadStats extends React.Component{
 // <----PROPS---->
     constructor(props) {
         super(props);
-        this.state = {
-            windowHeight : window.innerHeight,
-            windowWidth : window.innerWidth
-        }
     }//ctor
 
 
-    getHeight(offset, divider){
-        return (window.innerHeight - offset) / divider;
-    }//getHeight
-
-
-    getWidth(offset, divider){
-        return (window.innerWidth - offset) / divider;
-    }
-
-
-    componentWillMount(){
-        window.addEventListener("resize", this.updateDimensions.bind(this));
-    }//componentWillMount
-
-
-    componentDidMount(){
-        window.removeEventListener("resize", this.updateDimensions.bind(this));
-    }//componentDidMount
-
-
-    updateDimensions(){
-        this.setState({
-            windowHeight : window.innerHeight,
-            windowWidth : window.innerWidth
-        });
-        console.log("Here");
-    }//updateDimensions
-
-
-    shouldComponentUpdate(nextProps, nextState){
-        var isHeightChanged = (this.state.windowHeight != window.innerHeight);
-        var isWidthChanged = (this.state.widnowWidth != window.innerWidth);
-        return isHeightChanged || isWidthChanged;
-    }//shouldComponentUpdate
-
-
     render() {
-        var cpuUrl = "10.33.234.150";
-        var headerClasses = "col-md-12";
-        var sidesClasses = "col-md-2";
-        var middleClasses = "col-md-8";
-        var leftBoxHeight = this.getHeight(60, 3) + "px";
-        var middleBoxHeight = this.getHeight(50, 1) + "px";
-        var sidesMaxWidth = "300px";
-        var middleWidth = this.getWidth(615, 1) + "px";
 
         return (
-            <div className="row" style={{marginTop: "0px", marginBottom:"0px"}}>
-                    <div className={headerClasses} style={{padding:"0px", marginBottom: "0.5em"}}>
-                        <Header/>
-                    </div>
-
-
-                    <div className={sidesClasses} style={{maxWidth : sidesMaxWidth}}>
-
-                            <PercentCircle name="CPU" height={leftBoxHeight} />
-
-                            <PercentCircle name="Fabric Attached Memory" height={leftBoxHeight}/>
-
-                            <PercentCircle name="Fabric" height={leftBoxHeight}/>
-
-                    </div>
-
-
-                    <div className={middleClasses}
-                        style={{
-                            padding: "0px",
-                            width: middleWidth,
-                            background: "#4C5E6C",
-                            height : middleBoxHeight }}>
-                        <Middle/>
-                    </div>
-
-
-                    <div className={sidesClasses} style={{ width: sidesMaxWidth }}>
-                        <InfoSquare number='14' desc="ACTIVE SHELVES"/>
-                        <InfoSquare number="1,792" desc="BOOKS"/>
-                    </div>
-
-            </div>
+            <HashRouter>
+                <div>
+                    <Redirect from="/" to="/overview" />
+                    <Route path="/overview" component={Overview} />
+                </div>
+            </HashRouter>
         );
 
     }//render
@@ -119,5 +48,5 @@ class SystemLoadStats extends React.Component{
 }//class
 
 
-// Write\Render Precentage Circles into the HTML element when the page is loaded.
+
 render(<SystemLoadStats />, document.getElementById('SystemLoadStats'));

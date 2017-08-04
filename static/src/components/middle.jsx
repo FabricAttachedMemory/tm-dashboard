@@ -1,7 +1,7 @@
 'use strict';
 import React from 'react';
 import {render} from 'react-dom';
-import {Tabs, Tab, Col} from 'react-bootstrap'; //Bloody garbage! Need to use plain css bootstrap.
+import {Navbar, Nav, NavItem, Tabs, Tab, Col} from 'react-bootstrap'; //Bloody garbage! Need to use plain css bootstrap.
 
 import Flatgrids from '../visualization/grids'
 import Chords from '../visualization/chordWheel'
@@ -37,17 +37,32 @@ class Middle extends React.Component {
   </div>
 </nav>
 
-
 */
 
-
         return (
-        <div/>
+        <div className="col-md-12">
+            <Navbar>
+                <Nav bsStyle="tabs" justified activeKey={this.props.activeKey}>
+                    <NavItem eventKey={1} href="/overview">Overview</NavItem>
+                    <NavItem eventKey={2} href="/mm">Memory Management</NavItem>
+                </Nav>
+            </Navbar>
 
+            <div className="middle-content" style={{height: this.props.height}}>
+                {this.props.children}
+            </div>
+
+        </div>
         );
     }//render
 
 }//class
+
+
+Middle.defaultProps = {
+    activeKey : 1,
+    height : "700px"
+}
 
 
 export default Middle;
