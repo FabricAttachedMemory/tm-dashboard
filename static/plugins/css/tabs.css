@@ -2,5 +2,54 @@
 @font-face { font-family: MetricHPE-Semi; src: url("./fonts/MetricHPE-Semi.otf"); }
 
 .navbar{
+    background: none;
     border-radius: 0px;
+    border: none;
+    padding: 0px;
+    margin: 0px;
+}
+
+.navbar .navbar-default{
+    background: none !important;
+}
+
+
+.middle-content{
+    background: #4C5E6C;
+}
+
+
+.nav-tabs .navbar-nav{
+    padding-left: 0px !important;
+}
+
+
+.navbar-nav > li > a{
+    background: #425563 !important;
+    font-family: MetricHPE;
+    color: white !important;
+    font-size: 1.4em !important;
+    border: none !important;
+}
+
+
+.navbar-nav > li.active > a{
+    background: #4C5E6C !important;
+    color: white;
+    border: none !important;
+}
+
+
+.nav-tabs > li > a:hover{
+    background: #4C5E6C;
+    font-family: MetricHPE;
+    color: white;
+    border: none;
+}
+
+.nav-tabs > li.active > a:hover{
+    background: #4C5E6C;
+    color: white;
+    font-family: MetricHPE;
+    border: none;
 }

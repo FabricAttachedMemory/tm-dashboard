@@ -6,12 +6,9 @@
     background-color: #4C5E6C;
     text-align: center;
     min-height: 295px;
+    padding:0px;
 }
 
-
-.fixedContainer{
-    height: 16em;
-}
 
 /* -- PROGRESS CIRCLE styles starts here -- */
 
