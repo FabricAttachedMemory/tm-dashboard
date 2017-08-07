@@ -12,21 +12,26 @@ class Skeleton extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
-            panelWidth : "220px",
+            panelMaxWidth : "300px",
+            panelMinWidth : "250px",
+            panelWidth : "300", //tracks current width of the side panels
+            headerHeight : "55", //current header's panel height
+            midWidth : "fill",
             windowHeight : window.innerHeight,
             windowWidth : window.innerWidth
         }
     }//ctor
 
 
-    getHeight(offset, divider){
-        return (window.innerHeight - offset) / divider;
-    }//getHeight
+    getHeight(offset, divider){ return (window.innerHeight - offset) / divider; }
+    getWidth(offset, divider){ return (window.innerWidth - offset) / divider; }
 
 
-    getWidth(offset, divider){
-        return (window.innerWidth - offset) / divider;
-    }
+    getElementDimensions(elementId){
+        var element = document.getElementById(elementId);
+        var dimensions = leftPanel.getBoundingClientRect();
+        return [dimensions.width, dimensions.height];
+    }//getElementDimensions
 
 
     componentWillMount(){
@@ -36,6 +41,10 @@ class Skeleton extends React.Component{
 
     componentDidMount(){
         window.removeEventListener("resize", this.updateDimensions.bind(this));
+        this.setState({
+            panelWidth : getElementDimensions("leftPanel")[0],
+            headerPanel : getElementDimensions("headerPanel")[1]
+        });
     }//componentDidMount
 
 
@@ -44,35 +53,35 @@ class Skeleton extends React.Component{
             windowHeight : window.innerHeight,
             windowWidth : window.innerWidth
         });
-        console.log("Here");
     }//updateDimensions
 
 
     shouldComponentUpdate(nextProps, nextState){
         var isHeightChanged = (this.state.windowHeight != window.innerHeight);
         var isWidthChanged = (this.state.widnowWidth != window.innerWidth);
-        return isHeightChanged || isWidthChanged;
+        return isHeightChanged || isWidthChanged || isPanelWidthChanged;
     }//shouldComponentUpdate
 
 
     render() {
         var headerClasses = "col-md-12";
         var sidesClasses = "col-md-2";
-        var panelHeight = this.getHeight(65, 3) + "px";
+        var panelHeight = this.getHeight(45, 3) + "px";
 
         return (
-            <div className="row" style={{marginTop: "0px", marginBottom:"0px"}}>
-                <div className={headerClasses} style={{padding:"0px", marginBottom: "0.5em"}}>
+            <div className="row">
+                <div id="headerPanel" className={headerClasses} style={{padding:"0px"}}>
                     <Header/>
                 </div>
 
-                <div className={sidesClasses}
-                        style={{marginLeft:"10px", maxWidth : this.state.panelWidth}}>
+                <div id="leftPanel" className={sidesClasses}
+                        style={{maxWidth : this.state.panelMaxWidth,
+                                minWidth : this.state.panelMinWidth}}>
                     <PercentCircle name="CPU" height={panelHeight}/>
                     <PercentCircle name="Fabric Attached Memory"  height={panelHeight}/>
                     <PercentCircle name="Fabric" height={panelHeight}/>
                 </div>
-`
+
                 {this.props.children}
 
             </div>

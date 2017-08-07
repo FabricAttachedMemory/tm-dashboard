@@ -1,10 +1,11 @@
 'use strict';
 import React from 'react';
 import {render} from 'react-dom';
+import ApiRequester from './base/apiRequester'
 import StatsBox from './wrappers/statsBox'
 
 
-class InfoSquare extends React.Component {
+class InfoSquare extends ApiRequester {
 
     constructor(props){
         super(props);
@@ -13,7 +14,7 @@ class InfoSquare extends React.Component {
     render() {
 
         return (
-            <StatsBox size={12} mgBottom="2%" mgLeft="0%">
+            <StatsBox size={12} height={this.props.height}>
                 <div className="data-display">
                     {this.props.number}
                 </div>

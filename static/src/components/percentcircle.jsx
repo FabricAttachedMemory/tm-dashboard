@@ -34,7 +34,7 @@ class PercentCircle extends ApiRequester {
 
         return (
 
-        <StatsBox size={12} height={this.props.height} mgBottom="5px" mgLeft="0%" mgRight="0%">
+        <StatsBox size={12} height={this.props.height}>
 
                 <div id={this.state.containerId} style={{ height : "50%", marginTop: "4.5em" }}>
                     <svg viewBox="0 0 150 260" className="svg-progress-circle">
