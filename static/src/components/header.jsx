@@ -14,7 +14,7 @@ class Header extends React.Component {
 
         //Based of: https://www.bootply.com/98314
         return (
-        <div className="row header">
+        <div>
             <div className="col-md-2">
                 <img className="header-logo" src={require('./hpe_logo.png')}/>
             </div>

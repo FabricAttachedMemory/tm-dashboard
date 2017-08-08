@@ -129,7 +129,7 @@ ApiRequester.defaultProps = {
     height : "300px",
     name : "",
     url : "",
-    refreshRate : 5000,
+    refreshRate : 2000,
     spoofAfterFails : 0,
 }
 

@@ -23,11 +23,11 @@ class StatsBox extends React.Component {
 
     render() {
         var cmpMargin = [this.props.mgTop, this.props.mgRight, this.props.mgBottom, this.props.mgLeft ];
-        var classNames = ["col-md-" + this.props.size, "statsbox"].join(' ');
+        var classNames = ["col-md-" + this.props.size, "statsbox", this.props.className].join(' ');
 
         return (
             <div className={classNames}
-                style={{margin : cmpMargin.join(' '),
+                style={{ margin : cmpMargin.join(' '),
                         height: this.props.height }}>
                 {this.props.children}
             </div>
@@ -39,12 +39,13 @@ class StatsBox extends React.Component {
 
 
 StatsBox.defaultProps = {
+    className : "",
     size : 12,
     height : "300px",
-    mgTop : "0",
-    mgRight : "0",
-    mgBottom : "0",
-    mgLeft : "0"
+    mgTop : "0px",
+    mgRight : "0px",
+    mgBottom : "5px",
+    mgLeft : "0px"
 }
 
 export default StatsBox;

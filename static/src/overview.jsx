@@ -21,18 +21,13 @@ class POverview extends Skeleton{
         var panelClass = "col-md-2";
         var pannelHeight = this.getHeight(65, 3) + "px";
 
-        var middleWidth = window.innerWidth - (this.state.panelWidth * 2);
+        //extract value from string of the form "8px".
+        var boxMarginVal = parseFloat(this.state.boxMargin.split("px")[0]);
+        var middleWidth = window.innerWidth - (this.state.panelWidth * 2) - boxMarginVal * 3;
         var middleHeight = this.getHeight(105, 1) + "px";
 
         return (
             <Skeleton>
-                <div className="col-md-8"
-                    style={{width: middleWidth}}>
-                    <Middle activeKey={1} height={middleHeight}>
-                        OVERVIEW TAB
-                    </Middle>
-                </div>
-
                 <div className={panelClass}
                         style={{
                                 minWidth: this.state.panelMinWidth,
@@ -44,8 +39,6 @@ class POverview extends Skeleton{
                                 desc="BOOKS"
                                 height={pannelHeight}/>
                 </div>
-
-
             </Skeleton>
         );
 

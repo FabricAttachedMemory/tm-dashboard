@@ -3,9 +3,14 @@
 
 
 .statsbox{
-    background-color: #4C5E6C;
     text-align: center;
     min-height: 295px;
+    padding: 0px;
+}
+
+
+.statsboxContent{
+    background-color: #4C5E6C;
 }
 
 
