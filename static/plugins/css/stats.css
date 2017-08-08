@@ -55,6 +55,7 @@
     -webkit-transform-origin: 50% 50%;
     transform: rotate(-90deg); /* Firefox */
     transform-origin: 50% 50%;
+    transition: all 1.5s ease;
 }
 
 /* progress circle styles ENDS here */
