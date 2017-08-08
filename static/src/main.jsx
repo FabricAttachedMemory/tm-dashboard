@@ -12,7 +12,8 @@ import {render} from 'react-dom';
 import {BrowserRouter, Redirect, Router, Route, HashRouter } from 'react-router-dom'
 
 import Skeleton from './skeleton'
-import Overview from './overview'
+import POverview from './overview'
+import PMemoryManagement from './memoryManagement'
 
 import PercentCircle    from    './components/percentcircle';
 import InfoSquare       from    './components/infoSquare';
@@ -38,7 +39,8 @@ class SystemLoadStats extends React.Component{
             <HashRouter>
                 <div>
                     <Redirect from="/" to="/overview" />
-                    <Route path="/overview" component={Overview} />
+                    <Route path="/overview" component={POverview} />
+                    <Route path="/mm" component={PMemoryManagement} />
                 </div>
             </HashRouter>
         );

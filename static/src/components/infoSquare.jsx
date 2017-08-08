@@ -14,7 +14,7 @@ class InfoSquare extends ApiRequester {
     render() {
 
         return (
-            <StatsBox size={12} height={this.props.height}>
+            <StatsBox className="statsboxContent" size={12} height={this.props.height}>
                 <div className="data-display">
                     {this.props.number}
                 </div>

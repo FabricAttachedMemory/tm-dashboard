@@ -10,7 +10,7 @@ import Chords from './visualization/chordWheel'
 
 
 //P for Page.. -> PageOverview
-class POverview extends Skeleton{
+class PMemoryManagement extends Skeleton{
 
     constructor(props) {
         super(props);
@@ -19,21 +19,17 @@ class POverview extends Skeleton{
 
     render() {
         var panelClass = "col-md-2";
-        var pannelHeight = this.getHeight(65, 3) + "px";
+        var pannelHeight = this.getHeight(65, 2) + "px";
 
-        //extract value from string of the form "8px".
-        var boxMarginVal = parseFloat(this.state.boxMargin.split("px")[0]);
-        var middleWidth = window.innerWidth - (this.state.panelWidth * 2) - boxMarginVal * 3;
+        var middleWidth = window.innerWidth - (this.state.panelWidth * 2);
         var middleHeight = this.getHeight(105, 1) + "px";
 
         return (
             <Skeleton>
                 <div className="col-md-8"
-                    style={{width: middleWidth, padding: "0px"}}>
-                    <Middle paddingL={this.state.boxMargin}
-                            paddingR={this.state.boxMargin}
-                            activeKey={1} height={middleHeight}>
-                        OVERVIEW TAB
+                    style={{width: middleWidth}}>
+                    <Middle activeKey={1} height={middleHeight}>
+                        Memory Management
                     </Middle>
                 </div>
 
@@ -41,11 +37,9 @@ class POverview extends Skeleton{
                         style={{
                                 minWidth: this.state.panelMinWidth,
                                 maxWidth: this.state.panelMaxWidth }}>
-                    <InfoSquare number='14'
-                                desc="ACTIVE SHELVES"
+                    <InfoSquare number='Box 1'
                                 height={pannelHeight}/>
-                    <InfoSquare number="1,792"
-                                desc="BOOKS"
+                    <InfoSquare number="Box 2"
                                 height={pannelHeight}/>
                 </div>
 
@@ -58,4 +52,4 @@ class POverview extends Skeleton{
 }//class
 
 
-export default POverview;
+export default PMemoryManagement;

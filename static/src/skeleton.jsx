@@ -17,6 +17,8 @@ class Skeleton extends React.Component{
             panelWidth : "300", //tracks current width of the side panels
             headerHeight : "55", //current header's panel height
             midWidth : "fill",
+            boxMargin : "8px",
+            panelPadding : ["5px", "5px", "5px", "5px"],
             windowHeight : window.innerHeight,
             windowWidth : window.innerWidth
         }
@@ -41,10 +43,8 @@ class Skeleton extends React.Component{
 
     componentDidMount(){
         window.removeEventListener("resize", this.updateDimensions.bind(this));
-        this.setState({
-            panelWidth : getElementDimensions("leftPanel")[0],
-            headerPanel : getElementDimensions("headerPanel")[1]
-        });
+        this.state.panelWidth = this.getElementDimensions("leftPanel")[0];
+        this.state.headerPanel = this.getElementDimensions("headerPanel")[1]
     }//componentDidMount
 
 
@@ -64,22 +64,28 @@ class Skeleton extends React.Component{
 
 
     render() {
-        var headerClasses = "col-md-12";
+        var headerClasses = "col-md-12 header";
         var sidesClasses = "col-md-2";
-        var panelHeight = this.getHeight(45, 3) + "px";
+        var panelHeight = this.getHeight(this.state.headerHeight, 3) + "px";
+                console.log(window.location.href.split("#/")[1]);
 
         return (
             <div className="row">
-                <div id="headerPanel" className={headerClasses} style={{padding:"0px"}}>
+                <div id="headerPanel" className={headerClasses}
+                    style={{marginBottom: this.state.boxMargin}}>
                     <Header/>
                 </div>
 
                 <div id="leftPanel" className={sidesClasses}
-                        style={{maxWidth : this.state.panelMaxWidth,
+                        style={{ paddingLeft : this.state.boxMargin,
+                                maxWidth : this.state.panelMaxWidth,
                                 minWidth : this.state.panelMinWidth}}>
-                    <PercentCircle name="CPU" height={panelHeight}/>
-                    <PercentCircle name="Fabric Attached Memory"  height={panelHeight}/>
-                    <PercentCircle name="Fabric" height={panelHeight}/>
+                    <PercentCircle name="CPU" height={panelHeight}
+                                   mbBottom={this.state.boxMargin}/>
+                    <PercentCircle name="Fabric Attached Memory"  height={panelHeight}
+                                    mbBottom={this.state.boxMargin}/>
+                    <PercentCircle name="Fabric" height={panelHeight}
+                                    mgBottom={"0px"}/>
                 </div>
 
                 {this.props.children}

@@ -31,12 +31,12 @@ class PercentCircle extends ApiRequester {
         metricsSymbol = (isNaN(metricsSymbol)) ? "" : "%";
 
         this.state.fetched = null; //Resetting fetched for the next circle\interval.
+        var containerHeight = parseFloat(this.props.height.split("px")[0]) / 2;
 
         return (
-
         <StatsBox size={12} height={this.props.height}>
-
-                <div id={this.state.containerId} style={{ height : "50%", marginTop: "4.5em" }}>
+            <div className="statsboxContent" style={{height: this.props.height}}>
+                <div id={this.state.containerId} style={{ height : containerHeight}}>
                     <svg viewBox="0 0 150 260" className="svg-progress-circle">
                         <circle r={radius} className="progress-inactive progress-circle"/>
                         <circle r={radius} className="progress-active progress-circle"
@@ -51,9 +51,8 @@ class PercentCircle extends ApiRequester {
                 <div className="col-md-12 data-display-container">
                     <text className="data-container-name">{this.props.name}</text>
                 </div>
-
+            </div>
         </StatsBox>
-
         );
     }
 }
