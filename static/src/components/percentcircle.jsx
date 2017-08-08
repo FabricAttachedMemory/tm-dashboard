@@ -2,7 +2,6 @@
 import React from 'react';
 import {render} from 'react-dom';
 import StatsBox from './wrappers/statsBox'
-
 import ApiRequester from './base/apiRequester'
 
 

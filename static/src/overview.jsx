@@ -28,15 +28,6 @@ class POverview extends Skeleton{
 
         return (
             <Skeleton>
-                <div className="col-md-8"
-                    style={{width: middleWidth, padding: "0px"}}>
-                    <Middle paddingL={this.state.boxMargin}
-                            paddingR={this.state.boxMargin}
-                            activeKey={1} height={middleHeight}>
-                        OVERVIEW TAB
-                    </Middle>
-                </div>
-
                 <div className={panelClass}
                         style={{
                                 minWidth: this.state.panelMinWidth,
@@ -48,8 +39,6 @@ class POverview extends Skeleton{
                                 desc="BOOKS"
                                 height={pannelHeight}/>
                 </div>
-
-
             </Skeleton>
         );
 

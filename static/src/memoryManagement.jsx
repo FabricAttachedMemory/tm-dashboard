@@ -26,13 +26,6 @@ class PMemoryManagement extends Skeleton{
 
         return (
             <Skeleton>
-                <div className="col-md-8"
-                    style={{width: middleWidth}}>
-                    <Middle activeKey={1} height={middleHeight}>
-                        Memory Management
-                    </Middle>
-                </div>
-
                 <div className={panelClass}
                         style={{
                                 minWidth: this.state.panelMinWidth,
@@ -42,8 +35,6 @@ class PMemoryManagement extends Skeleton{
                     <InfoSquare number="Box 2"
                                 height={pannelHeight}/>
                 </div>
-
-
             </Skeleton>
         );
 
