@@ -32,7 +32,7 @@ class ApiRequester extends React.Component {
         if (this.state.index > (number.length - 1)){
           this.state.index = 0;
         }else{
-          this.setState({percent : number[this.state.index]});
+          this.state.percent = number[this.state.index];
           this.state.index = this.state.index + 1;
         }
     }

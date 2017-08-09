@@ -26,4 +26,5 @@ class InfoSquare extends ApiRequester {
     }
 }
 
+
 export default InfoSquare;
