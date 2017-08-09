@@ -2,7 +2,6 @@
 import React from 'react';
 import {render} from 'react-dom';
 import {Grid, Col} from 'react-bootstrap';
-
 import CSS from './css/grids'
 
 
@@ -16,7 +15,7 @@ class Flatgrids extends React.Component{
             size : props.Size,
             isRerender : false,
             isZoomInPressed : false,
-            isZoomOutPressed : false
+            isZoomOutPressed : false,
         }
 
         //Have to register class methods to be reference with "this" during Runtime.
@@ -29,6 +28,7 @@ class Flatgrids extends React.Component{
         /* Listen for the keyboard inputs from the user. Set variable flags when
         interested keys are pressed. */
         if(event.key == "]")
+
             this.setState( { isZoomInPressed : true} );
         if(event.key == "[")
             this.setState( { isZoomOutPressed : true} );
@@ -85,15 +85,17 @@ class Flatgrids extends React.Component{
         var ColsToDraw = []
         var colGap = this.state.colGap;
         var rowGap = this.state.rowGap;
+        var colors = ["#2AD2C9","#FD9A69","#865CD6","#DC2878"];
 
-        var gridBoxOverride = {
-            "margin" : colGap + " " + rowGap + " " + colGap + " " + rowGap, // margin: up right down left
-            "width" : this.state.size,
-            "height" : this.state.size
-        }
 
         //Building boxes list to be rendered
         for(var col=0; col < numOfBricks; col++){
+            var gridBoxOverride = {
+                "margin" : colGap + " " + rowGap + " " + colGap + " " + rowGap, // margin: up right down left
+                "width" : this.state.size,
+                "height" : this.state.size,
+                "backgroundColor" : colors[Math.floor(Math.random()*colors.length)]
+            };
             ColsToDraw.push(<div key={col} className={CSS.gridBox} style={gridBoxOverride}></div>);
         }//for
 
