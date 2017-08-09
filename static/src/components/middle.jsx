@@ -37,7 +37,6 @@ class Middle extends React.Component {
         </div>
         );
     }//render
-
 }//class
 
 
