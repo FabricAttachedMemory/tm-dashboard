@@ -17,9 +17,30 @@ class POverview extends Skeleton{
     }//ctor
 
 
+    mmDsc(name){
+        var st = {
+            padding: "0px",
+            margin: "0px"
+        };
+        return(
+        <div className="col-md-5" style={{padding:"0px"}}>
+            <div className="col-md-2">
+                <div className="gridBox"></div>
+            </div>
+            <div className="col-md-10">
+                {name}
+            </div>
+        </div>
+        );
+    }
+
+
     render() {
         var panelClass = "col-md-2";
-        var pannelHeight = this.getHeight(65, 3) + "px";
+        var nodeDscHeight = (window.innerHeight * 0.3) + "px";
+        var panelHeight = (window.innerHeight * 0.3) + "px";
+        var percentCircleHeight = (window.innerHeight * 0.3) + "px";
+        panelHeight = this.getHeight(55, 3) + "px";
 
         //extract value from string of the form "8px".
         var boxMarginVal = parseFloat(this.state.boxMargin.split("px")[0]);
@@ -32,12 +53,30 @@ class POverview extends Skeleton{
                         style={{
                                 minWidth: this.state.panelMinWidth,
                                 maxWidth: this.state.panelMaxWidth }}>
+
+                    <InfoSquare override height={panelHeight}>
+                        <div className="data-display">
+                            14
+                        </div>
+                        <div className="data-container-name">
+                            TB
+                        </div>
+                        <div className="row" style={{margin:"0px", padding: "0px", height:"20px"}}>
+                            {this.mmDsc("Allocated")}
+                            {this.mmDsc("Available")}
+                        </div>
+                        <div className="row" style={{margin:"0px", padding: "0px", height:"20px"}}>
+                            {this.mmDsc("Not Ready")}
+                            {this.mmDsc("Offline")}
+                        </div>
+                    </InfoSquare>
+
                     <InfoSquare number='14'
                                 desc="ACTIVE SHELVES"
-                                height={pannelHeight}/>
+                                height={panelHeight}/>
                     <InfoSquare number="1,792"
                                 desc="BOOKS"
-                                height={pannelHeight}/>
+                                height={panelHeight}/>
                 </div>
             </Skeleton>
         );

@@ -2,7 +2,6 @@
 import React from 'react';
 import {render} from 'react-dom';
 import {Grid, Col} from 'react-bootstrap';
-import CSS from './css/grids'
 
 
 class Flatgrids extends React.Component{
@@ -96,11 +95,11 @@ class Flatgrids extends React.Component{
                 "height" : this.state.size,
                 "backgroundColor" : colors[Math.floor(Math.random()*colors.length)]
             };
-            ColsToDraw.push(<div key={col} className={CSS.gridBox} style={gridBoxOverride}></div>);
+            ColsToDraw.push(<div key={col} className="gridBox" style={gridBoxOverride}></div>);
         }//for
 
         return (
-        <div className={CSS.gridCanvas}  onKeyDown={this.onKeyPress}>
+        <div className="gridCanvas"  onKeyDown={this.onKeyPress}>
             {ColsToDraw}
         </div>
         );
