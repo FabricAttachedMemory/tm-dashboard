@@ -15,13 +15,35 @@ class Flatgrids extends React.Component{
             size : props.Size,
             isRerender : false,
             isZoomInPressed : false,
-            isZoomOutPressed : false,
+            isZoomOutPressed : false
         }
 
         //Have to register class methods to be reference with "this" during Runtime.
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onKeyUp = this.onKeyUp.bind(this);
     }//constructor
+
+
+    spoofData(list){
+        var offline = "#DC2878";
+        var allocated = "#2AD2C9";
+        var available = "#865CD6";
+        var notready = "#FD9A69";
+        var newColors = [];
+
+        for (var i=0; i < list.length; i++) {
+            if (list[i] == -1){
+              newColors.push(offline);
+            }else if (list[i] == 1){
+              newColors.push(allocated);
+            }else if (list[i] == 0){
+              newColors.push(available);
+            }else if (list[i] == 2){
+              newColors.push(notready);
+            }
+        }
+        return newColors;
+    }
 
 
     onKeyDown(event){
@@ -81,12 +103,13 @@ class Flatgrids extends React.Component{
 
 
     render() {
-        var numOfBricks = 1200;
+        var brickValues = [-1,1,0,2];
+        var numOfBricks = brickValues.length;
         var ColsToDraw = []
         var colGap = this.state.colGap;
         var rowGap = this.state.rowGap;
-        var colors = ["#2AD2C9","#FD9A69","#865CD6","#DC2878"];
-
+        var colors = this.spoofData(brickValues);
+        var index = 0
 
         //Building boxes list to be rendered
         for(var col=0; col < numOfBricks; col++){
@@ -94,9 +117,10 @@ class Flatgrids extends React.Component{
                 "margin" : colGap + " " + rowGap + " " + colGap + " " + rowGap, // margin: up right down left
                 "width" : this.state.size,
                 "height" : this.state.size,
-                "backgroundColor" : colors[Math.floor(Math.random()*colors.length)]
+                "backgroundColor" : colors[index]
             };
             ColsToDraw.push(<div key={col} className={CSS.gridBox} style={gridBoxOverride}></div>);
+            index = index + 1;
         }//for
 
         return (
