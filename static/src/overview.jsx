@@ -17,22 +17,43 @@ class POverview extends Skeleton{
     }//ctor
 
 
-    mmDsc(name){
-        var st = {
-            padding: "0px",
-            margin: "0px"
-        };
+    /* Return an element that displays description of the grids' boxes. */
+    mmDsc(name, colorClass){
+        var classNames = "gridBox " + colorClass;
+
         return(
-        <div className="col-md-5" style={{padding:"0px"}}>
-            <div className="col-md-2">
-                <div className="gridBox"></div>
+            <div className="col-md-6" style={{padding:"0px"}}>
+                <div className="col-md-2">
+                    <div className={classNames} style={{marginLeft: "1.5em", width:"20px"}}></div>
+                </div>
+                <div className="col-md-10" style={{color:"white", paddingLeft: "2.5em", whiteSpace: "nowrap"}}>
+                    {name}
+                </div>
             </div>
-            <div className="col-md-10">
-                {name}
-            </div>
-        </div>
         );
-    }
+    }//mmDsc
+
+
+    underline(){
+        /* Draw an underline/divider strip using <hr> tag and "underline" css
+        class, that can be found in the stats.css stylesheet. */
+        var hrStyle = {
+            marginTop:"5px",
+        };
+
+        return(
+            <div className="row" style={{padding:"0px",
+                                        margin:"1% 0% 1% 0%",
+                                        height:"15px"}}>
+                <div className="col-md-6">
+                    <hr className="underline" style={hrStyle}/>
+                </div>
+                <div className="col-md-6">
+                    <hr  className="underline" style={hrStyle}/>
+                </div>
+            </div>
+        );
+    }//underline
 
 
     render() {
@@ -55,19 +76,27 @@ class POverview extends Skeleton{
                                 maxWidth: this.state.panelMaxWidth }}>
 
                     <InfoSquare override height={panelHeight}>
-                        <div className="data-display">
+                        <div className="data-display" style={{paddingTop: "0.9em"}}>
                             14
                         </div>
                         <div className="data-container-name">
                             TB
                         </div>
-                        <div className="row" style={{margin:"0px", padding: "0px", height:"20px"}}>
-                            {this.mmDsc("Allocated")}
-                            {this.mmDsc("Available")}
+                        <div className="row" style={{margin:"0px",
+                                                    padding: "0px",
+                                                    height:"20px",
+                                                    marginTop: "40%"}}>
+                            {this.mmDsc("Allocated", "boxAllocated")}
+                            {this.mmDsc("Available", "boxAvailable")}
                         </div>
-                        <div className="row" style={{margin:"0px", padding: "0px", height:"20px"}}>
-                            {this.mmDsc("Not Ready")}
-                            {this.mmDsc("Offline")}
+
+                            {this.underline()}
+
+                        <div className="row" style={{margin:"0px",
+                                                    padding: "0px",
+                                                    height:"20px"}}>
+                            {this.mmDsc("Not Ready", "boxNotReady")}
+                            {this.mmDsc("Offline", "boxOffline")}
                         </div>
                     </InfoSquare>
 

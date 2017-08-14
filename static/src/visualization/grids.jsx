@@ -14,13 +14,41 @@ class Flatgrids extends React.Component{
             size : props.Size,
             isRerender : false,
             isZoomInPressed : false,
-            isZoomOutPressed : false,
+            booksMap : [],
+            numberOfBooks : 1200,
+            isZoomOutPressed : false
         }
 
         //Have to register class methods to be reference with "this" during Runtime.
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onKeyUp = this.onKeyUp.bind(this);
     }//constructor
+
+
+    spoofData(){
+        var newColors = [];
+        var list = []
+        for(var i=0; i < this.state.numberOfBooks; i++){
+            var min = Math.ceil(-1);
+            var max = Math.floor(4); //max is exclusive
+            var randState = Math.floor(Math.random() * (max - min) + min);
+            list.push(randState);
+        }
+
+        for (var i=0; i < list.length; i++) {
+            var bookState = list[i];
+            if (bookState == -1){
+              newColors.push("boxOffline");
+            }else if (bookState == 1){
+              newColors.push("boxAllocated");
+            }else if (bookState == 0){
+              newColors.push("boxAvailable");
+            }else if (bookState == 2){
+              newColors.push("boxNotReady");
+            }
+        }
+        return { dataSet : list, colorSet : newColors};
+    }
 
 
     onKeyDown(event){
@@ -80,22 +108,26 @@ class Flatgrids extends React.Component{
 
 
     render() {
-        var numOfBricks = 1200;
+        var spoofed = this.spoofData();
+        this.state.booksMap = spoofed.dataSet;
+        var colorClasses = spoofed.colorSet;
+        var numOfBricks = this.state.booksMap.length;
+
         var ColsToDraw = []
         var colGap = this.state.colGap;
         var rowGap = this.state.rowGap;
-        var colors = ["#2AD2C9","#FD9A69","#865CD6","#DC2878"];
-
+        var index = 0
 
         //Building boxes list to be rendered
-        for(var col=0; col < numOfBricks; col++){
+        for(var col=0; col < colorClasses.length; col++){
             var gridBoxOverride = {
-                "margin" : colGap + " " + rowGap + " " + colGap + " " + rowGap, // margin: up right down left
+                "margin" : colGap + "px " + rowGap + "px " + colGap + "px " + rowGap,
                 "width" : this.state.size,
                 "height" : this.state.size,
-                "backgroundColor" : colors[Math.floor(Math.random()*colors.length)]
             };
-            ColsToDraw.push(<div key={col} className="gridBox" style={gridBoxOverride}></div>);
+            var classNames = "gridBox " + colorClasses[index];
+            ColsToDraw.push(<div key={col} className={classNames} style={gridBoxOverride}></div>);
+            index = index + 1;
         }//for
 
         return (
