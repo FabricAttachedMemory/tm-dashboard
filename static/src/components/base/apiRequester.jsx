@@ -26,16 +26,18 @@ class ApiRequester extends React.Component {
         this.readFetchedValues = this.readFetchedValues.bind(this)
     }//constructor
 
+
     spoofData(){
       var number = [0,1,2,3,4,5,6,7,8,9,15,32,44,48,50,66,73,81,97,100];
         this.state.isSpoofed = true;
         if (this.state.index > (number.length - 1)){
           this.state.index = 0;
         }else{
-          this.setState({percent : number[this.state.index]});
+          this.state.percent = number[this.state.index];
           this.state.index = this.state.index + 1;
         }
-    }
+    }//spoofData
+
 
     GetData() {
         /* Make an ajax call to the API and save the return state into this.state.fetched.

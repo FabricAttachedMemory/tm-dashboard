@@ -1,0 +1,29 @@
+.gridCanvas {
+    padding: 5% 2% 5% 2%;
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.gridBox {
+    background-color: lightgreen;
+    margin: 2px 2px 2px 2px;
+    width:  10px;
+    height: 10px;
+}
+
+.boxOffline{
+    background-color: #DC2878 !important;
+}
+
+.boxAllocated{
+    background-color: #2AD2C9 !important;
+}
+
+.boxAvailable{
+    background-color: #865CD6 !important;
+}
+
+.boxNotReady{
+    background-color: #FD9A69 !important;
+}
