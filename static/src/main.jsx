@@ -11,9 +11,9 @@ import React from 'react';
 import {render} from 'react-dom';
 import {BrowserRouter, Redirect, Router, Route, HashRouter } from 'react-router-dom'
 
-import Skeleton from './skeleton'
-import POverview from './overview'
-import PMemoryManagement from './memoryManagement'
+import Skeleton             from './skeleton'
+import POverview            from './overview'
+import PMemoryManagement    from './memoryManagement'
 
 import PercentCircle    from    './components/percentcircle';
 import InfoSquare       from    './components/infoSquare';

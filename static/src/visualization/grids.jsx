@@ -1,31 +1,50 @@
 'use strict';
 import React from 'react';
 import {render} from 'react-dom';
-import {Grid, Col} from 'react-bootstrap';
 
+import ApiRequester from '../components/base/apiRequester'
 
-class Flatgrids extends React.Component{
+/* Render grids visualization of the Book states. This is a Memory Management
+tab. The main idea is to make an LMP call to get all known books data. It will
+have a value between -1 to 3 (or so) to represent each book's state. Knowing that,
+this class creates a small Box element (which is <div> with height and width) for
+each book and assignes a color to it based on status. Then, render all books
+to the screen.
+
+Stylesheet used: css/grids.css
+Inherited from: components/base/ApiRequester.jsx
+
+Note: since it inheritce ApiRequester, we can't use defaultProps here, or it will
+override parent's props. The workaround is to check if a prop was set when this
+component is instantiated. If not - assign some default value to a this.state
+and use that later in the code.
+*/
+class Flatgrids extends ApiRequester{
 
     constructor(props) {
         super(props);
-        this.state = {
-            rowGap : props.RowGap, // Keep props as "origin" and
-            colGap : props.ColGap, // Do not modify during runtime.
-            size : props.Size,
-            isRerender : false,
-            isZoomInPressed : false,
-            booksMap : [],
-            numberOfBooks : 1200,
-            isZoomOutPressed : false
-        }
+
+        /* !!! Do not set state using "this.state = {}", or this will override
+            parent's this.state. !!!*/
+        this.state.size     = (this.props.Size === undefined) ? 8 : props.Size;
+        this.state.rowGap   = (this.props.RowGap === undefined) ? 10 : props.RowGap;
+        this.state.colGap   = (this.props.ColGap === undefined) ? 10 : props.ColGap;
+
+        this.state.isRerender       = false;
+        this.state.isZoomInPressed  = false;
+        this.state.booksMap         = [];
+        this.state.numberOfBooks    = 1200;
+        this.state.isZoomOutPressed = false;
 
         //Have to register class methods to be reference with "this" during Runtime.
-        this.onKeyDown = this.onKeyDown.bind(this);
-        this.onKeyUp = this.onKeyUp.bind(this);
+        this.onKeyDown  = this.onKeyDown.bind(this);
+        this.onKeyUp    = this.onKeyUp.bind(this);
     }//constructor
 
 
     spoofData(){
+        super.spoofData();
+
         var newColors = [];
         var list = []
         for(var i=0; i < this.state.numberOfBooks; i++){
@@ -33,7 +52,7 @@ class Flatgrids extends React.Component{
             var max = Math.floor(4); //max is exclusive
             var randState = Math.floor(Math.random() * (max - min) + min);
             list.push(randState);
-        }
+        }//for
 
         for (var i=0; i < list.length; i++) {
             var bookState = list[i];
@@ -48,7 +67,7 @@ class Flatgrids extends React.Component{
             }
         }
         return { dataSet : list, colorSet : newColors};
-    }
+    }//spoofData
 
 
     onKeyDown(event){
@@ -102,12 +121,18 @@ class Flatgrids extends React.Component{
     }//componentDidMount
 
 
-    componentWillUpdate(prevState, nextState){
-        return this.state.isZoomInPressed || this.state.isZoomOutPressed || this.state.isRerender;
+    shouldComponentUpdate(nextProps, nextState){
+        var isParentFetched = super.shouldComponentUpdate(nextProps, nextState);
+        return this.state.isZoomInPressed ||
+                this.state.isZoomOutPressed ||
+                this.state.isRerender ||
+                isParentFetched;
     }//componentWillUpdate
 
 
     render() {
+        this.readFetchedValues(); //doesn't do anyhthing for this component yet.
+
         var spoofed = this.spoofData();
         this.state.booksMap = spoofed.dataSet;
         var colorClasses = spoofed.colorSet;
@@ -138,13 +163,5 @@ class Flatgrids extends React.Component{
     }//render
 
 }//class
-
-
-Flatgrids.defaultProps = {
-    Size    : 8,  //both width and height
-    RowGap  : 10,
-    ColGap  : 10,
-}//defaultProps
-
 
 export default Flatgrids;

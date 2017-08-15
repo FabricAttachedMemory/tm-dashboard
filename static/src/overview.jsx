@@ -6,7 +6,6 @@ import {render} from 'react-dom';
 import Skeleton         from    './skeleton';
 import Middle           from    './components/middle';
 import InfoSquare       from    './components/infoSquare';
-import Chords from './visualization/chordWheel'
 
 
 //P for Page.. -> PageOverview

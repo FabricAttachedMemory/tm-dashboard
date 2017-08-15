@@ -5,15 +5,33 @@ import StatsBox from './wrappers/statsBox'
 import ApiRequester from './base/apiRequester'
 
 
+/* Using <svg> and <circle> html elements, create a "load circle" (with the
+help of css/stats.css stylesheet) to show system load statuses, e.g cpu, fam...
+
+This class inherits ApiRequester class that helps to abstract components data
+fetching and box rendering (resizing, aligmnet...). With that, several default
+props and stats are inherited as well. Therefore, DO NOT use PercentCircle.defaultProps
+to set properties - or it will just override parent's props. As a work around,
+you can add new state properties in the constructor with default values. Refere
+to visualization/grids.jsx component for example. Usually, I try to avoid referring
+this.props anywhere in the code outside of constructor... so this.state should be
+fine.
+*/
 class PercentCircle extends ApiRequester {
 
     constructor(props){
         super(props);
+        var nameSplit       = this.props.name.split(" "); //Replacing Spaces with underscore.
+        var replacedSpaces  = nameSplit.join("_"); //This seems simpler than using Regex...
+
+        //ID will be assigned to the div that wrapps <sv> element. I don't
+        //remember what for...
+        this.state.containerId = replacedSpaces + "_container";
     }//constructor
 
 
     render() {
-        this.readFetchedValues();
+        this.readFetchedValues(); //this will set this.state.percent value (spoofed or real).
 
         //Radius of the circle that was set in css/stats.css.
         var radius = 100;
@@ -53,7 +71,7 @@ class PercentCircle extends ApiRequester {
             </div>
         </StatsBox>
         );
-    }
-}
+    }//render
+}//class
 
 export default PercentCircle;
