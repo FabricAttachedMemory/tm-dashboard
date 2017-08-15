@@ -17,8 +17,7 @@ Inherited from: components/base/ApiRequester.jsx
 Note: since it inheritce ApiRequester, we can't use defaultProps here, or it will
 override parent's props. The workaround is to check if a prop was set when this
 component is instantiated. If not - assign some default value to a this.state
-and use that later in the code.
-*/
+and use that later in the code. */
 class Flatgrids extends ApiRequester{
 
     constructor(props) {

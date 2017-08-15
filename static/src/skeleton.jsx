@@ -7,6 +7,7 @@ import Header           from    './components/header';
 import PercentCircle    from    './components/percentcircle';
 import Flatgrids        from    './visualization/grids'
 import Middle           from    './components/middle';
+import * as DataSpoofer from    './components/spoofer';
 
 
 class Skeleton extends React.Component{
@@ -22,7 +23,7 @@ class Skeleton extends React.Component{
             boxMargin : "8px",
             panelPadding : ["5px", "5px", "5px", "5px"],
             windowHeight : window.innerHeight,
-            windowWidth : window.innerWidth
+            windowWidth : window.innerWidth,
         }
     }//ctor
 
@@ -97,11 +98,14 @@ class Skeleton extends React.Component{
                                 maxWidth : this.state.panelMaxWidth,
                                 minWidth : this.state.panelMinWidth}}>
                     <PercentCircle name="CPU" height={panelHeight}
-                                   mbBottom={this.state.boxMargin}/>
+                                   mbBottom={this.state.boxMargin}
+                                    spoofedData={DataSpoofer.cpuData()}/>
                     <PercentCircle name="Fabric Attached Memory"  height={panelHeight}
-                                    mbBottom={this.state.boxMargin}/>
+                                    mbBottom={this.state.boxMargin}
+                                    spoofedData={DataSpoofer.famData()}/>
                     <PercentCircle name="Fabric" height={panelHeight}
-                                    mgBottom={"0px"}/>
+                                    mgBottom={"0px"}
+                                    spoofedData={DataSpoofer.fabData()}/>
                 </div>
 
 
