@@ -2,6 +2,12 @@
 @font-face { font-family: MetricHPE-Semi; src: url("./fonts/MetricHPE-Semi.otf"); }
 
 
+.hpeFont{
+    color: white;
+    font-family: MetricHPE-Semi;
+}
+
+
 .statsbox{
     text-align: center;
     min-height: 100px;
