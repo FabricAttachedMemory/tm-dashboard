@@ -28,9 +28,16 @@ class Skeleton extends React.Component{
     }//ctor
 
 
-    getHeight(offset, divider){ return (window.innerHeight - offset) / divider; }
-    getWidth(offset, divider){ return (window.innerWidth - offset) / divider; }
+    getHeight(offset, divider){
+        return ((window.innerHeight - offset) / divider) + "px";
+    }
+    getWidth(offset, divider){
+        return ((window.innerWidth - offset) / divider) + "px";
+    }
 
+    getHeightRatio(percent){
+        return (window.innerHeight * percent) + "px";
+    }
 
     getElementDimensions(elementId){
         var element = document.getElementById(elementId);
@@ -70,19 +77,19 @@ class Skeleton extends React.Component{
         var headerClasses   = "col-md-12 header";
         var sidesClasses    = "col-md-2";
 
-        var panelHeight = this.getHeight(this.state.headerHeight + 10, 3) + "px";
+        var panelHeight = this.getHeight(this.state.headerHeight + 10, 3);
 
         var boxMarginVal = parseFloat(this.state.boxMargin.split("px")[0]);
         var middleWidth  = window.innerWidth -
                                 (this.state.panelWidth * 2)+9 - boxMarginVal * 3;
-        var middleHeight = this.getHeight(this.state.headerHeight + 50, 1) + "px";
+        var middleHeight = this.getHeight(this.state.headerHeight + 50, 1);
 
         var openedTab       = window.location.href.split("#/")[1];
-        var elementToRender = "";
+        var tabContentToRender = "";
         if(openedTab == "overview"){
-            elementToRender = <Flatgrids />;
+            tabContentToRender = "Overview Tab";
         }else if(openedTab == "mm"){
-            elementToRender = "Memory Management Tab";
+            tabContentToRender = <Flatgrids />;
         }
 
 
@@ -116,7 +123,7 @@ class Skeleton extends React.Component{
                     <Middle paddingL={this.state.boxMargin}
                             paddingR={this.state.boxMargin}
                             activeKey={1} height={middleHeight}>
-                        {elementToRender}
+                        {tabContentToRender}
                     </Middle>
                 </div>
 

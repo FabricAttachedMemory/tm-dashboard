@@ -9,7 +9,8 @@
 import React from 'react';
 import {render} from 'react-dom';
 
-
+/* A wrapper component that defines a box with its background color, height and
+width used by the side panels do display data in it. */
 class StatsBox extends React.Component {
 
     constructor(props){
@@ -22,8 +23,10 @@ class StatsBox extends React.Component {
 
 
     render() {
-        var cmpMargin = [this.props.mgTop, this.props.mgRight, this.props.mgBottom, this.props.mgLeft ];
-        var classNames = ["col-md-" + this.props.size, "statsbox", this.props.className].join(' ');
+        var cmpMargin = [this.props.mgTop, this.props.mgRight,
+                            this.props.mgBottom, this.props.mgLeft ];
+        var classNames = ["col-md-" + this.props.size,
+                            "statsbox", this.props.className].join(' ');
 
         return (
             <div className={classNames}

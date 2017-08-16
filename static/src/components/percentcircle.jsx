@@ -36,8 +36,8 @@ class PercentCircle extends ApiRequester {
         //Radius of the circle that was set in css/stats.css.
         var radius = 100;
 
-        //SVG's property strokeDasharray is calculated to render the "filling" of
-        //the circle.
+        //SVG's property strokeDasharray is calculated to render the "filling"
+        //of a circle.
         var progress_fill = radius * 2 * Math.PI;
         //How much filling to do of the circle based of desired precentage.
         var percentVal = (this.state.percent < 0) ? 0 : this.state.percent;
