@@ -23,9 +23,13 @@ class POverview extends Skeleton{
         return(
             <div className="col-md-6" style={{padding:"0px"}}>
                 <div className="col-md-2">
-                    <div className={classNames} style={{marginLeft: "1.5em", width:"20px"}}></div>
+                    <div className={classNames}
+                        style={{marginLeft: "1.5em", width:"20px"}}>
+                    </div>
                 </div>
-                <div className="col-md-10" style={{color:"white", paddingLeft: "2.5em", whiteSpace: "nowrap"}}>
+                <div className="col-md-10" style={{color:"white",
+                                                paddingLeft: "2.5em",
+                                                whiteSpace: "nowrap"}}>
                     {name}
                 </div>
             </div>
@@ -60,7 +64,7 @@ class POverview extends Skeleton{
         var nodeDscHeight = (window.innerHeight * 0.3) + "px";
         var panelHeight = (window.innerHeight * 0.3) + "px";
         var percentCircleHeight = (window.innerHeight * 0.3) + "px";
-        panelHeight = this.getHeight(55, 3) + "px";
+        panelHeight = this.getHeight(65, 3) + "px";
 
         //extract value from string of the form "8px".
         var boxMarginVal = parseFloat(this.state.boxMargin.split("px")[0]);
@@ -84,7 +88,7 @@ class POverview extends Skeleton{
                         <div className="row" style={{margin:"0px",
                                                     padding: "0px",
                                                     height:"20px",
-                                                    marginTop: "40%"}}>
+                                                    marginTop: "20px"}}>
                             {this.mmDsc("Allocated", "boxAllocated")}
                             {this.mmDsc("Available", "boxAvailable")}
                         </div>

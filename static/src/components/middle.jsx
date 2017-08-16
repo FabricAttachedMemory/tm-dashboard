@@ -1,11 +1,11 @@
 'use strict';
-import React from 'react';
+import React    from 'react';
 import {render} from 'react-dom';
-import {Navbar, Nav, NavItem, Tabs, Tab, Col} from 'react-bootstrap'; //Bloody garbage! Need to use plain css bootstrap.
-import {LinkContainer} from "react-router-bootstrap";
+import {Navbar, Nav, NavItem} from 'react-bootstrap';
+import {LinkContainer}  from "react-router-bootstrap";
 
-import Flatgrids from '../visualization/grids'
-import Chords from '../visualization/chordWheel'
+import Flatgrids    from '../visualization/grids'
+import Chords       from '../visualization/chordWheel'
 
 
 class Middle extends React.Component {
@@ -22,7 +22,7 @@ class Middle extends React.Component {
             <Navbar>
                 <Nav bsStyle="tabs" justified activeKey={this.props.activeKey}>
                     <LinkContainer to="/overview">
-                        <NavItem eventKey={1} >Overview</NavItem>
+                        <NavItem eventKey={1}>Overview</NavItem>
                     </LinkContainer>
                     <LinkContainer to="/mm">
                         <NavItem eventKey={2} >Memory Management</NavItem>

@@ -67,15 +67,17 @@ class Skeleton extends React.Component{
 
 
     render() {
-        var headerClasses = "col-md-12 header";
-        var sidesClasses = "col-md-2";
-        var panelHeight = this.getHeight(this.state.headerHeight, 3) + "px";
+        var headerClasses   = "col-md-12 header";
+        var sidesClasses    = "col-md-2";
+
+        var panelHeight = this.getHeight(this.state.headerHeight + 10, 3) + "px";
 
         var boxMarginVal = parseFloat(this.state.boxMargin.split("px")[0]);
-        var middleWidth = window.innerWidth - (this.state.panelWidth * 2) - boxMarginVal * 3;
-        var middleHeight = this.getHeight(this.state.headerHeight + 40, 1) + "px";
+        var middleWidth  = window.innerWidth -
+                                (this.state.panelWidth * 2)+9 - boxMarginVal * 3;
+        var middleHeight = this.getHeight(this.state.headerHeight + 50, 1) + "px";
 
-        var openedTab = window.location.href.split("#/")[1];
+        var openedTab       = window.location.href.split("#/")[1];
         var elementToRender = "";
         if(openedTab == "overview"){
             elementToRender = <Flatgrids />;
