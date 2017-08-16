@@ -18,6 +18,10 @@
     background: #4C5E6C;
 }
 
+.nav-justified{
+    padding: 0px !important;
+}
+
 
 .nav-tabs .navbar-nav{
     padding-left: 0px !important;
@@ -30,6 +34,7 @@
     color: white !important;
     font-size: 1.4em !important;
     border: none !important;
+    border-radius: 0px !important;
 }
 
 
@@ -37,6 +42,7 @@
     background: #4C5E6C !important;
     color: white;
     border: none !important;
+    border-radius: 0px !important;
 }
 
 

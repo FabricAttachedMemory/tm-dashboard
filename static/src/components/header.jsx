@@ -22,7 +22,7 @@ class Header extends React.Component {
                 The Machine Executive Dashboard
             </div>
             <div className="col-md-2 header-right">
-                torms-li2
+                DEMO
             </div>
         </div>
 
