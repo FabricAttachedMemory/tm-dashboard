@@ -81,6 +81,8 @@
 
 
 .data-container-name {
+    padding: 0px;
+    margin: 0px;
     font-size: 1.3em;
     font-family: MetricHPE-Semi;
     color: #FFFFFF;

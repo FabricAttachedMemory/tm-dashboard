@@ -12,16 +12,42 @@ class BRackOverview extends ApiRequester {
     }
 
 
+    buildEnclosureCol(numOfCols){
+        var columns = [];
+        for(var i=0; i < numOfCols; i++){
+            columns.push(<td className="rackTbCell" key={i}>0{i+1}</td>);
+        }//for
+        return columns;
+    }//buildEnclosureCol
+
+
     render() {
         var boxStyle = {
             fontSize: "16px"
         };
+
+        var numOfNodes = 7;
         return (
-            <div className="hpeFont" style={boxStyle}>
-                Rack Overview
+            <div>
+                <table className="table rackTb">
+
+                    <thead>
+                        <tr>
+                            <th colSpan={numOfNodes} className="rackTbHead">
+                                {this.props.name}
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            {this.buildEnclosureCol(numOfNodes)}
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         );
-    }
+    }//render
 }//class
 
 
