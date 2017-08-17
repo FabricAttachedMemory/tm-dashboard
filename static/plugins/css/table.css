@@ -1,0 +1,26 @@
+.rackTb{
+    width: 90%;
+    margin-left: 15px;
+    border: 1px solid #657584;
+    font-weight: normal;
+    color: white;
+    font-size: 14px;
+    font-family: "Arial" ;
+}
+
+
+.rackTbHead{
+    background: #657584;
+    text-align: center;
+    font-weight: normal;
+    font-size: 15px;
+}
+
+.rackTbCell{
+    transition: background-color 0.2s ease;
+}
+
+.rackTbCell:hover{
+    background-color: #2AD2C9 !important;
+    color: black;
+}

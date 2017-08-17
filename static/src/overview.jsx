@@ -8,7 +8,8 @@ import Middle           from    './components/middle';
 import InfoSquare       from    './components/infoSquare';
 import BRackOverview    from    './components/rackOverviewBox';
 import BNodeOverview    from    './components/nodeOverviewBox';
-import Chords           from    './visualization/chordWheel'
+import BoxHeader        from    './components/infoBoxHeader';
+import Chords           from    './visualization/chordWheel';
 
 
 //P for Page.. -> PageOverview
@@ -34,8 +35,12 @@ class POverview extends Skeleton{
                                 minWidth: this.state.panelMinWidth,
                                 maxWidth: this.state.panelMaxWidth }}>
 
-                    <InfoSquare height={rackOverviewHeight}>
-                        <BRackOverview/>
+                    <InfoSquare id="RackOverviewBox" desc="Rack Overview">
+                        <BoxHeader text="Rack Overview"
+                                    textAlign="left"
+                                    paddingLeft="20px"/>
+                        <BRackOverview name="Enclosure 1"/>
+                        <BRackOverview name="Enclosure 2"/>
                     </InfoSquare>
 
                     <InfoSquare height={nodeInfoHeight}>

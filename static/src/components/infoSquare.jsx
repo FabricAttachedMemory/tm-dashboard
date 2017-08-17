@@ -9,6 +9,7 @@ class InfoSquare extends ApiRequester {
 
     constructor(props){
         super(props);
+        this.state.id = (this.props.id === undefined) ? "" : this.props.id;
     }
 
 
@@ -29,7 +30,9 @@ class InfoSquare extends ApiRequester {
 
     render() {
         return (
-            <StatsBox className="statsboxContent" size={12} height={this.props.height}>
+            <StatsBox id={this.props.id}
+                        className="statsboxContent"
+                            size={12} height={this.props.height}>
             { this.props.children === undefined ? this.defaultRender() : this.props.children }
             </StatsBox>
         );

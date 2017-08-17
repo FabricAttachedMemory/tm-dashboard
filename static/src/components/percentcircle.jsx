@@ -1,8 +1,10 @@
 'use strict';
-import React from 'react';
+import React    from 'react';
 import {render} from 'react-dom';
-import StatsBox from './wrappers/statsBox'
-import ApiRequester from './base/apiRequester'
+
+import StatsBox     from './wrappers/statsBox';
+import BoxHeader    from './infoBoxHeader';
+import ApiRequester from './base/apiRequester';
 
 
 /* Using <svg> and <circle> html elements, create a "load circle" (with the
@@ -49,12 +51,15 @@ class PercentCircle extends ApiRequester {
 
         this.state.fetched = null; //Resetting fetched for the next circle\interval.
         var containerHeight = parseFloat(this.props.height.split("px")[0]) / 2;
+//                <div className="col-md-12 data-display-container">
+//                    <text className="data-container-name">{this.props.name}</text>
+//                </div>
 
         return (
         <StatsBox size={12} height={this.props.height}>
             <div className="statsboxContent" style={{height: this.props.height}}>
                 <div id={this.state.containerId} style={{ height : containerHeight}}>
-                    <svg viewBox="0 0 150 210" className="svg-progress-circle">
+                    <svg viewBox="0 0 150 200" className="svg-progress-circle">
                         <circle r={radius} className="progress-inactive progress-circle"/>
                         <circle r={radius} className="progress-active progress-circle"
                                 strokeDasharray={progress_fill}
@@ -65,9 +70,8 @@ class PercentCircle extends ApiRequester {
                     </svg>
                 </div>
 
-                <div className="col-md-12 data-display-container">
-                    <text className="data-container-name">{this.props.name}</text>
-                </div>
+                <BoxHeader text={this.props.name} lineHeight="80px"/>
+
             </div>
         </StatsBox>
         );
