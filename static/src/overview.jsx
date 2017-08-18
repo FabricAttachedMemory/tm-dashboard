@@ -7,8 +7,8 @@ import Skeleton         from    './skeleton';
 import Middle           from    './components/middle';
 import InfoSquare       from    './components/infoSquare';
 import BRackOverview    from    './components/rackOverviewBox';
-import BNodeOverview    from    './components/nodeOverviewBox';
 import BoxHeader        from    './components/infoBoxHeader';
+import NodeStats        from    './components/nodeStats';
 import Chords           from    './visualization/chordWheel';
 
 
@@ -23,7 +23,10 @@ class POverview extends Skeleton{
     render() {
         var panelClass = "col-md-2";
         var rackOverviewHeight  = this.getHeightRatio(0.3);
-        var nodeInfoHeight      = this.getHeightRatio(0.64);
+        var nodeInfoHeight      = this.getHeightRatio(0.635);
+        //maxHeight = height so that paddingTop does not extend height further.
+        var nodeInfoMaxHeight   = nodeInfoHeight;
+        var nodeInfoPaddingTop  = (nodeInfoHeight.split("px")[0] / 5) + "px";
 
         var middleWidth     = window.innerWidth - (this.state.panelWidth * 2);
         var middleHeight    = this.getHeight(105, 1);
@@ -43,8 +46,11 @@ class POverview extends Skeleton{
                         <BRackOverview name="Enclosure 2"/>
                     </InfoSquare>
 
-                    <InfoSquare height={nodeInfoHeight}>
-                        <BNodeOverview/>
+                    <InfoSquare paddingTop={nodeInfoPaddingTop} height={nodeInfoHeight} maxHeight={nodeInfoMaxHeight}>
+                        <BoxHeader text="Node No. (Enclosure No.)"
+                                    textAlign="left"
+                                    paddingLeft="20px"/>
+                        <NodeStats/>
                     </InfoSquare>
                 </div>
             </Skeleton>
