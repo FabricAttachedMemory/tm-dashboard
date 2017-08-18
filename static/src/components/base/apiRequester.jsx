@@ -43,21 +43,18 @@ class ApiRequester extends React.Component {
     }//spoofData
 
 
+    /* Make an ajax call to the API and save the return state into this.state.fetched.
+     * Note, it will return at least two states during the runtime. First, it
+     * is a "Promise" object of type Response. It is used in this class to
+     * identify that the call has been made. When server response back, fetched
+     * will become a json object containing the response values.
+    */
     GetData() {
-        /* Make an ajax call to the API and save the return state into this.state.fetched.
-         * Note, it will return at least two states during the runtime. First, it
-         * is a "Promise" object of type Response. It is used in this class to
-         * identify that the call has been made. When server response back, fetched
-         * will become a json object containing the response values.
-        */
         var url= this.props.url; //just shorter to use during debugging
         if(!url){
             if(!this.state.isSpoofed)
                 console.log("Empty url string!");
             this.state.failedFetchCount += 1;
-            //if (this.state.failedFetchCount >= this.props.spoofAfterFails){
-            //    this.spoofData();
-            //}
             return;
         }
 

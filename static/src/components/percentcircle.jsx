@@ -23,8 +23,10 @@ class PercentCircle extends ApiRequester {
 
     constructor(props){
         super(props);
-        var nameSplit       = this.props.name.split(" "); //Replacing Spaces with underscore.
-        var replacedSpaces  = nameSplit.join("_"); //This seems simpler than using Regex...
+        //Replacing Spaces with underscore.
+        var nameSplit       = this.props.name.split(" ");
+        //This seems simpler than using Regex...
+        var replacedSpaces  = nameSplit.join("_");
 
         //ID will be assigned to the div that wrapps <sv> element. I don't
         //remember what for...
@@ -33,7 +35,8 @@ class PercentCircle extends ApiRequester {
 
 
     render() {
-        this.readFetchedValues(); //this will set this.state.percent value (spoofed or real).
+        //this will set this.state.percent value (spoofed or real).
+        this.readFetchedValues();
 
         //Radius of the circle that was set in css/stats.css.
         var radius = 100;
