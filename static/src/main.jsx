@@ -67,7 +67,9 @@ class SystemLoadStats extends React.Component{
                 </div>
             </div>
 
-            <div className="row" style={{textAlign:"center"}}>
+            <div className="row" style={{textAlign:"center",
+                                        padding: "0px",
+                                        width:"100%"}}>
                 <div className="col-md-12">
                     <button className="btn btn-warning"
                             onClick={this.allowBrowser}>
