@@ -16,7 +16,7 @@ import POverview            from './overview'
 import PMemoryManagement    from './memoryManagement'
 
 import PercentCircle    from    './components/percentcircle';
-import InfoSquare       from    './components/infoSquare';
+import ContentBox       from    './components/contentBox';
 import Header           from    './components/header';
 import Middle           from    './components/middle';
 

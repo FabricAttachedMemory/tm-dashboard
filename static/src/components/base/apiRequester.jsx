@@ -12,6 +12,7 @@ class ApiRequester extends React.Component {
         super(props);
 
         this.state = {
+            displayData : "",
             percent : -1,
             failedFetchCount : 0, //count how many times a failed request to api was made.
             isSpoofed : false,
@@ -33,13 +34,15 @@ class ApiRequester extends React.Component {
         if(this.state.spoofedData.length == 0)
             this.state.spoofedData = [0,1,2,3,4,5,6,7,8,9,15,32,44,48,50,66,73,81,97,100];
 
-        this.state.isSpoofed = true; //cant setState here. Browser complains...
+        this.state.isSpoofed = true; //cant setState here. React in browser complains...
         if (this.state.index > (this.state.spoofedData.length - 1)){
             this.state.index = 0;
         }else{
-            this.state.percent = this.state.spoofedData[this.state.index];
+            this.state.displayData = this.state.spoofedData[this.state.index];
+            //this.state.percent = this.state.spoofedData[this.state.index];
             this.state.index = this.state.index + 1;
         }
+        return this.state.displayData;
     }//spoofData
 
 
@@ -88,7 +91,7 @@ class ApiRequester extends React.Component {
     componentWillMount(){
         setInterval(() => {
             if (this.state.failedFetchCount >= this.props.spoofAfterFails){
-                this.spoofData();
+                //this.spoofData();
                 this.setState({isSpoofed : true}); //signal component to check for re-render
                 return;
             }
@@ -122,21 +125,25 @@ class ApiRequester extends React.Component {
 
 
     readFetchedValues(){
-        if(!this.state.fetched)
-            return;
-        var apiValue = -1;
-        var json = this.state.fetched;
-        if('value' in json)
-            apiValue = json['value']
+        if(!this.state.fetched){
+            if(this.state.isSpoofed)
+                return this.spoofData();
+            return "";
+        }
+        //var apiValue = -1;
+        //var json = this.state.fetched;
+//        if('value' in json)
+ //           apiValue = json['value']
+        //this.state.percent = Math.round(apiValue * 100.0) / 100.0;
 
-        this.state.percent = Math.round(apiValue * 100.0) / 100.0;
+        this.state.displayData = this.state.fetched;
+        return this.state.displayData;
     }//readFetchedValues
 
 }//class
 
 
 ApiRequester.defaultProps = {
-    percentage : 0,
     height : "300px",
     name : "",
     url : "",

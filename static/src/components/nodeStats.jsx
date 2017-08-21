@@ -3,17 +3,16 @@ import React        from 'react';
 import PropTypes    from 'prop-types';
 import {render}     from 'react-dom';
 
+import ApiRequester from './base/apiRequester';
+
 
 /* TODO: documentation will be here soon. */
-class NodeStats extends React.Component {
+class NodeStats extends ApiRequester {
 
     constructor(props){
         super(props);
-        this.state = {
-            data : this.props.data
-        }
+        this.state.data = {};
         this.state.data = this.ValidateAndDefault(this.state.data);
-        console.log(this.state.data);
     }//ctor
 
 
@@ -67,12 +66,30 @@ class NodeStats extends React.Component {
     }//BuildDataBox
 
 
+    spoofData(){
+        var displayData = {};
+        for(var key in this.state.spoofedData){
+            var value = this.state.spoofedData[key];
+            if(Array.isArray(value)){
+                var max = value.length;
+                var randomIndex = Math.floor(Math.random() * (max));
+                value = value[randomIndex];
+            }
+            displayData[key] = value;
+        }
+        return displayData;
+    }//spoofData
+
+
     render() {
+        var fetchedData = this.readFetchedValues();
+
         var boxes = [];
         for(var i=0; i < this.GetDataFields().length; i++){
             var field = this.GetDataFields()[i];
             var title = field[0];
-            var value = this.state.data[field[1]];
+            var value = fetchedData[field[1]];
+            value = (value === undefined) ? "---" : value;
             boxes.push(this.BuildDataBox(title, value));
         }//for
         return (
@@ -81,10 +98,6 @@ class NodeStats extends React.Component {
             </div>
         );
     }//render
-}
-
-NodeStats.defaultProps = {
-    data : {}
 }
 
 

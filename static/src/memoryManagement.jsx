@@ -5,7 +5,7 @@ import {render} from 'react-dom';
 
 import Skeleton         from    './skeleton';
 import Middle           from    './components/middle';
-import InfoSquare       from    './components/infoSquare';
+import ContentBox       from    './components/contentBox';
 
 
 //P for Page.. -> PageOverview
@@ -74,7 +74,7 @@ class PMemoryManagement extends Skeleton{
                         style={{minWidth: this.state.panelMinWidth,
                                 maxWidth: this.state.panelMaxWidth}}>
 
-                    <InfoSquare height={panelHeight}>
+                    <ContentBox height={panelHeight}>
                         <div className="data-display" style={{paddingTop: "0.9em"}}>
                             14
                         </div>
@@ -97,12 +97,12 @@ class PMemoryManagement extends Skeleton{
                             {this.mmDsc("Not Ready", "boxNotReady")}
                             {this.mmDsc("Offline", "boxOffline")}
                         </div>
-                    </InfoSquare>
+                    </ContentBox>
 
-                    <InfoSquare number='14'
+                    <ContentBox number='14'
                                 desc="ACTIVE SHELVES"
                                 height={panelHeight}/>
-                    <InfoSquare number="1,792"
+                    <ContentBox number="1,792"
                                 desc="BOOKS"
                                 height={panelHeight}/>
                 </div>

@@ -5,7 +5,7 @@ import ApiRequester from './base/apiRequester'
 import StatsBox from './wrappers/statsBox'
 
 
-class InfoSquare extends ApiRequester {
+class ContentBox extends ApiRequester {
 
     constructor(props){
         super(props);
@@ -41,4 +41,4 @@ class InfoSquare extends ApiRequester {
 }
 
 
-export default InfoSquare;
+export default ContentBox;
