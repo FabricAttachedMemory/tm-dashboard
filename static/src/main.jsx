@@ -30,12 +30,61 @@ class SystemLoadStats extends React.Component{
 // <----PROPS---->
     constructor(props) {
         super(props);
+        this.state = {
+            isAllowBrowser : false
+        };
+
+        this.allowBrowser = this.allowBrowser.bind(this);
     }//ctor
 
 
-    render() {
+    allowBrowser(e){
+        e.preventDefault(); //voodoo I don't care about.
+        this.setState({isAllowBrowser : true});
+    }//allowBrowser
 
-        return (
+
+    shouldComponentUpdate(nextProps, nextState){
+        return nextState.isAllowBrowser != this.state.isAllowBrowser;
+    }//shouldComponentUpdate
+
+
+    /* Render a warning page for non-Chrome based browser. */
+    renderNoBrowserSupport(){
+        return(
+        <div className="row">
+            <div className="row">
+                <div className="col-md-12 hpeFont" style={{textAlign : "center"}}>
+                    <div className="col-md-3"></div>
+                        <div className="col-md-6">
+                            <h1>
+        Due to the use of SVG elements on this page that are rendered differently
+        in This browser, we <u>recommend using Chrome</u>, since that is where we
+        get the most consistant (and intended) components alignment and rendering.
+                            </h1>
+                        </div>
+                    <div className="col-md-3"></div>
+                </div>
+            </div>
+
+            <div className="row" style={{textAlign:"center"}}>
+                <div className="col-md-12">
+                    <button className="btn btn-warning"
+                            onClick={this.allowBrowser}>
+
+                        Continue...
+
+                    </button>
+                </div>
+            </div>
+        </div>
+        );
+    }//renderNoBrowserSupport
+
+
+    /* A normal layout of the ED page */
+    renderPages(){
+        return(
             <HashRouter>
                 <div>
                     <Redirect from="/" to="/overview" />
@@ -43,6 +92,18 @@ class SystemLoadStats extends React.Component{
                     <Route path="/mm" component={PMemoryManagement} />
                 </div>
             </HashRouter>
+        );
+    }//renderPages
+
+
+    /* Display Warning page for non-Chrome based browsers. Render button that
+    will allow to preceed further with rendering a normal page. */
+    render() {
+        var isChrome = !!window.chrome && !!window.chrome.webstore;
+        return (
+            <div>
+                { isChrome == true || this.state.isAllowBrowser ? this.renderPages() : this.renderNoBrowserSupport() }
+            </div>
         );
 
     }//render
