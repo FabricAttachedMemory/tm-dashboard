@@ -5,11 +5,12 @@ import {render} from 'react-dom';
 
 import Skeleton         from    './skeleton';
 import Middle           from    './components/middle';
-import InfoSquare       from    './components/infoSquare';
+import ContentBox       from    './components/contentBox';
 import BRackOverview    from    './components/rackOverviewBox';
 import BoxHeader        from    './components/infoBoxHeader';
 import NodeStats        from    './components/nodeStats';
 import Chords           from    './visualization/chordWheel';
+import * as DataSpoofer from    './components/spoofer';
 
 
 //P for Page.. -> PageOverview
@@ -24,9 +25,11 @@ class POverview extends Skeleton{
         var panelClass = "col-md-2";
         var rackOverviewHeight  = this.getHeightRatio(0.3);
         var nodeInfoHeight      = this.getHeightRatio(0.635);
+        var dscBtnBox           = this.getHeightRatio(0.123);
         //maxHeight = height so that paddingTop does not extend height further.
         var nodeInfoMaxHeight   = nodeInfoHeight;
         var nodeInfoPaddingTop  = (nodeInfoHeight.split("px")[0] / 5) + "px";
+
 
         var middleWidth     = window.innerWidth - (this.state.panelWidth * 2);
         var middleHeight    = this.getHeight(105, 1);
@@ -38,20 +41,23 @@ class POverview extends Skeleton{
                                 minWidth: this.state.panelMinWidth,
                                 maxWidth: this.state.panelMaxWidth }}>
 
-                    <InfoSquare id="RackOverviewBox" desc="Rack Overview">
+                    <ContentBox id="RackOverviewBox" desc="Rack Overview">
                         <BoxHeader text="Rack Overview"
                                     textAlign="left"
                                     paddingLeft="20px"/>
                         <BRackOverview name="Enclosure 1"/>
                         <BRackOverview name="Enclosure 2"/>
-                    </InfoSquare>
+                    </ContentBox>
 
-                    <InfoSquare paddingTop={nodeInfoPaddingTop} height={nodeInfoHeight} maxHeight={nodeInfoMaxHeight}>
+                    <ContentBox paddingTop={nodeInfoPaddingTop} height={nodeInfoHeight} maxHeight={nodeInfoMaxHeight}>
                         <BoxHeader text="Node No. (Enclosure No.)"
                                     textAlign="left"
                                     paddingLeft="20px"/>
-                        <NodeStats/>
-                    </InfoSquare>
+                        <NodeStats spoofedData={DataSpoofer.nodeStatsData()}/>
+                    </ContentBox>
+
+                    <ContentBox height={dscBtnBox}>
+                    </ContentBox>
                 </div>
             </Skeleton>
         );//return

@@ -6,7 +6,6 @@ import React from 'react';
 import {render} from 'react-dom';
 
 
-
 export function createRandomList(range, size){
     var result = [];
     for(var i=0; i < size; i++){
@@ -30,3 +29,19 @@ export function famData(){
 export function fabData(){
     return [5,8,18,23,38,36,32,39,43,49,51,49,44,42,36,31,28,19,14,4];
 }
+
+
+export function nodeStatsData(){
+    var data = {
+        power : "on",
+        dram :  [4.88, 4.84, 4.52, 5.3, 4.9, 4.72],
+        cpu :   [0.8, 0.8, 0.7, 1.2, 1.0, 0.7],
+        netIn : [3041.5, 3125.4, 3612.7, 3561.2, 3125.8],
+        netOut : [7329.5, 7329.9, 7597.1, 7672.6, 7498.2],
+        fabric : [0, 2, 2, 4, 5, 2, 7, 5, 2],
+        shelves : [1, 1, 2, 1, 3, 5, 3, 4, 2],
+        books :   [128, 128, 256, 256],
+        manifestName : "Lsgi_spoofed",
+    }
+    return data;
+}//nodeStatsData

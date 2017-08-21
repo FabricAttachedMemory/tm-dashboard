@@ -36,7 +36,7 @@ class PercentCircle extends ApiRequester {
 
     render() {
         //this will set this.state.percent value (spoofed or real).
-        this.readFetchedValues();
+        var fetchedValue = this.readFetchedValues();
 
         //Radius of the circle that was set in css/stats.css.
         var radius = 100;
@@ -45,10 +45,10 @@ class PercentCircle extends ApiRequester {
         //of a circle.
         var progress_fill = radius * 2 * Math.PI;
         //How much filling to do of the circle based of desired precentage.
-        var percentVal = (this.state.percent < 0) ? 0 : this.state.percent;
+        var percentVal = (fetchedValue < 0) ? 0 : fetchedValue;
         var circle_fill_offset = ((100 - percentVal) / 100) * progress_fill;
 
-        var valueText = (this.state.percent < 0) ? "No Flow" : this.state.percent;
+        var valueText = (fetchedValue < 0 || fetchedValue == "") ? "No Flow" : fetchedValue;
         var metricsSymbol = parseInt(valueText);
         metricsSymbol = (isNaN(metricsSymbol)) ? "" : "%";
 
@@ -62,7 +62,7 @@ class PercentCircle extends ApiRequester {
         <StatsBox size={12} height={this.props.height}>
             <div className="statsboxContent" style={{height: this.props.height}}>
                 <div id={this.state.containerId} style={{ height : containerHeight}}>
-                    <svg viewBox="0 0 150 200" className="svg-progress-circle">
+                    <svg viewBox="0 0 150 210" className="svg-progress-circle">
                         <circle r={radius} className="progress-inactive progress-circle"/>
                         <circle r={radius} className="progress-active progress-circle"
                                 strokeDasharray={progress_fill}
