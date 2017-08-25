@@ -6,6 +6,7 @@ import {render} from 'react-dom';
 import Header           from    './components/header';
 import PercentCircle    from    './components/percentcircle';
 import Flatgrids        from    './visualization/grids'
+import Chords           from    './visualization/chordWheel';
 import Middle           from    './components/middle';
 import * as DataSpoofer from    './components/spoofer';
 
@@ -87,7 +88,7 @@ class Skeleton extends React.Component{
         var openedTab       = window.location.href.split("#/")[1];
         var tabContentToRender = "";
         if(openedTab == "overview"){
-            tabContentToRender = "Overview Tab";
+            tabContentToRender =  <Chords/>;
         }else if(openedTab == "mm"){
             tabContentToRender = <Flatgrids />;
         }

@@ -9,7 +9,6 @@ import ContentBox       from    './components/contentBox';
 import BRackOverview    from    './components/rackOverviewBox';
 import BoxHeader        from    './components/infoBoxHeader';
 import NodeStats        from    './components/nodeStats';
-import Chords           from    './visualization/chordWheel';
 import * as DataSpoofer from    './components/spoofer';
 
 
@@ -24,7 +23,7 @@ class POverview extends Skeleton{
     render() {
         var panelClass = "col-md-2";
         var rackOverviewHeight  = this.getHeightRatio(0.3);
-        var nodeInfoHeight      = this.getHeightRatio(0.635);
+        var nodeInfoHeight      = this.getHeightRatio(0.508);
         var dscBtnBox           = this.getHeightRatio(0.123);
         //maxHeight = height so that paddingTop does not extend height further.
         var nodeInfoMaxHeight   = nodeInfoHeight;
