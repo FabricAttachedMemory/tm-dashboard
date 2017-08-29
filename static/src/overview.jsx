@@ -23,8 +23,8 @@ class POverview extends Skeleton{
     render() {
         var panelClass = "col-md-2";
         var rackOverviewHeight  = this.getHeightRatio(0.3);
-        var nodeInfoHeight      = this.getHeightRatio(0.508);
-        var dscBtnBox           = this.getHeightRatio(0.123);
+        var nodeInfoHeight      = this.getHeightRatio(0.6);
+        var dscBtnBox           = this.getHeightRatio(0.094);
         //maxHeight = height so that paddingTop does not extend height further.
         var nodeInfoMaxHeight   = nodeInfoHeight;
         var nodeInfoPaddingTop  = (nodeInfoHeight.split("px")[0] / 5) + "px";
