@@ -1,9 +1,8 @@
 'use strict';
-import React from 'react';
-import {render} from 'react-dom';
-import PropTypes from 'prop-types';
-import {Grid, Col} from 'react-bootstrap';
-import * as d3 from 'd3'
+import React        from 'react';
+import {render}     from 'react-dom';
+import PropTypes    from 'prop-types';
+import * as d3      from 'd3'
 
 
 // Returns an array of tick angles and values for a given group and step.
@@ -21,14 +20,12 @@ class Chords extends React.Component{
         super(props);
         this.state = {
             numberOfNodes : 14,
-            toggleState : true,
-            loadingType : 1,
-            loadingOne : 0,
-            loadingTwo : 0,
-            refreshRate : 100,
-            deltaTime : 0,
-            activeNode : -1
+            innerRadius : 0,
+            outerRadius : 0,
+            svgWidth : 0,
+            svgHeight : 0,
         };
+        this.showNodeActivity = this.showNodeActivity.bind(this);
     }//constructor
 
 
@@ -44,147 +41,81 @@ class Chords extends React.Component{
             matrix.push(arcs);
         }
 
-        var svg = d3.select("#abyss-circle"),
-            width = svg.attr("width"),
-            height = svg.attr("height"),
-            outerRadius = Math.min(width, height)*0.435, //circle's overall radius
-            innerRadius = outerRadius - 30; //radius of where arcs are growing from
+        var svg = d3.select("#abyss-circle");
+        this.state.svgWidth = svg.attr("width");
+        this.state.svgHeight = svg.attr("height");
+        //circle's overall radius
+        this.state.outerRadius = Math.min(
+                                this.state.svgWidth,
+                                this.state.svgHeight)*0.415;
+        //radius of where arcs are growing from
+        this.state.innerRadius = this.state.outerRadius - 30;
 
         var chord = d3.chord()
             .padAngle(0.01)
             .sortSubgroups(d3.descending);
 
         var arc = d3.arc()
-            .innerRadius(innerRadius)
-            .outerRadius(outerRadius);
-
-        var ribbon = d3.ribbon()
-            .radius(innerRadius);
-
-        var color = d3.scaleOrdinal()
-            .domain(d3.range(4))
-            .range(["#425563", "green", "yellow", "orange"]);
-
+            .innerRadius(this.state.innerRadius)
+            .outerRadius(this.state.outerRadius);
 
         var g = svg.append("g")
             .attr("transform",
-                    "translate(" + width / 2.4 + "," + height / 2.8 + ")")
+                    "translate(" + this.state.svgWidth / 1.95 + "," +
+                                    this.state.svgHeight / 2 + ")")
             .datum(chord(matrix));
 
-        //Creating Inner circle with Node names labels
+        //Creating Inner circle with Node names
         var innerRectGroups = this.createRectCircle(g, arc);
-
-        g.append("g")
-            .attr("class", "ribbons")
-          .selectAll("path")
-          .data(function(chords) { return chords; })
-          .enter()
-            .append("path")
-            .attr("d", ribbon)
-            .attr("class", "ribbonPath")
-                .attr("id", function(d, i) { return "arcPath_" + i; })
-            // RIBBON inner collor
-            //.style("fill", function(d) { return "#2AD2C9"; })
-            .style("fill", function(d) { return "rgb(0, 0, 0, 0)"; })
-            //RIBBON corder\stroke color
-            //.style("stroke", function(d) { return d3.rgb("#2AD2C9").darker(); });
-            .style("stroke", function(d) { return d3.rgb("#00000"); });
+        innerRectGroups.selectAll("path")
+            .on("mouseover", (e) => this.onMouseOver(e))
+            .on("mouseout", (e) => this.onMouseOut(e));
+        this.createRibbonArcs(g);
 
 
-        setInterval(() => {
-            if(this.state.loadingOne == 3){
-                this.state.toggleState = true;
-                this.state.loadingType = 2;
-            }
-
-            if(this.state.loadingType == 1)
-                this.loading_1();
-
-            if(this.state.loadingType == 2){
-                this.state.deltaTime += 1;
-            }
-            if(this.state.deltaTime >= 10){
-                this.state.deltaTime = 0;
-                this.state.loadingType = 1;
-                this.state.loadingOne = 0;
-                this.state.toggleState = false;
-            }
-        }, this.state.refreshRate);
-
+        var arc2 = d3.arc()
+            .innerRadius(this.state.innerRadius + 35)
+            .outerRadius(this.state.outerRadius + 35);
+        var outerRectGroup = this.createRectCircle(g, arc2);
 
     }//componentDidUpdate
 
 
-    loading_1(){
-        var pathObj = d3.selectAll("g.ribbons path");
-        var node = this.state.activeNode;
-        if(node < 0){
-            this.state.toggleState = !this.state.toggleState;
-            node = 0;
-        }
+    /* Arcs representing data flow will be created. Arc path is calculated by
+     * d3.datum(matrix) object called before this function is executed.
+     * @param parentObj : element on the page to append created arcs into.
+     */
+    createRibbonArcs(parentObj){
+        var ribbon = d3.ribbon()
+            .radius(this.state.innerRadius);
 
-        var prevNode = node - 1;
-        if(prevNode < 0)
-            prevNode = this.state.numberOfNodes - 1;
-
-        this.showNodeActivity(pathObj, node, this.state.toggleState);
-
-        if(node >= this.state.numberOfNodes){
-            this.state.toggleState = !this.state.toggleState;
-            node = 0;
-            this.state.loadingOne += 1;
-        }
-
-        node = node + 1;
-        this.state.activeNode = node;
-    }//loading_1
-
-
-    showNodeActivity(path, node, isShow){
-        path.filter(function(d){
-                var isPath = d.source.index == node || d.target.index == node;
-                return isPath;
-            })
-      .transition()
-                .style("opacity", function(d) {
-                                return (isShow ? 1 : 0.2); })
-                .style("fill", function(d) {
-                                return (isShow ? "#2AD2C9" : "rgba(0, 0, 0, 0.0)"); })
-                .style("stroke", function(d) {
-                                return (isShow ? d3.rgb("#2AD2C9").darker() : "#000000"); });
-    }//showNodeActivity
-
-
-
-fade(opacity, node) {
-  return function(d, i) {
-    d3.selectAll("g.ribbons path")
-        .filter(function(d) {
-    console.log(node);
-          return d.source.index == node || d.target.index == node;
-        })
-      .transition()
-            .style("opacity", function(d) {
-                            return (opacity == 1 ? 1 : opacity); })
-            .style("fill", function(d) {
-                            return (opacity == 1 ? "#2AD2C9" : "rgba(0, 0, 0, 0.0)"); })
-            .style("stroke", function(d) {
-                            return (opacity == 1 ? d3.rgb("#2AD2C9").darker() : "#000000"); });
-  };
-
-}
-
+        var color = d3.scaleOrdinal()
+            .domain(d3.range(1));
+        parentObj.append("g")
+            .attr("class", "ribbons")
+            .selectAll("path")
+             .data(function(chords) { return chords; })
+             .enter()
+             .append("path")
+              .attr("d", ribbon)
+              .attr("class", "ribbonPath")
+              .attr("id", function(d, i) { return "arcPath_" + i; })
+              // RIBBON inner collor
+              .style("fill", function(d) { return "rgb(0, 0, 0, 0)"; })
+              //RIBBON corder\stroke color
+              .style("stroke", function(d) { return d3.rgb("#00000"); });
+    }//createRibbonArcs
 
 
     /* Create rectangle group forming a full circle.
      *
-     * @param g : <g> element to append rectangles to.
+     * @param parentObj : <g> element to append rectangles to.
      * @param arc : d3.arc() element.
      * @return : return created rectangles group.
     */
-    createRectCircle(g, arc){
+    createRectCircle(parentObj, arc){
         //Container for the inner rectangle group that has Node Number label
-        var nodeRectGroup = g.append("g")
+        var nodeRectGroup = parentObj.append("g")
             .attr("class", "nodeRectGroup")
             .selectAll("g")
              .data(function(chords) { return chords.groups; })
@@ -194,13 +125,13 @@ fade(opacity, node) {
             .attr("id", function(d, i) { return "outerRect_" + d.index; })
              //Background color for the inner circle rectangles
             .style("fill", function(d) { return "#425563"; })
-            .attr("d", arc)
-            .on("mouseover", this.fade(1))
-            .on("mouseout", this.fade(0.1));
+            .attr("d", arc);
 
 
         nodeRectGroup.append("text")
-            .attr("x", 80)
+            .on("mouseover", (e) => this.onMouseOver(e))
+            .on("mouseout", (e) => this.onMouseOut(e))
+            .attr("x", 50)
             .attr("dy", 20)
             .append("textPath")
                 .attr("xlink:href", function(d) {
@@ -211,16 +142,43 @@ fade(opacity, node) {
     }//createRectCircle
 
 
+    showNodeActivity(node, isShow){
+        var pathObj = d3.selectAll("g.ribbons path");
+        pathObj.filter(function(d){
+                var isPath = d.source.index == node || d.target.index == node;
+                return isPath;
+            })
+      .transition()
+                .style("opacity", function(d) {
+                                return (isShow ? 1 : 0.05); })
+                .style("fill", function(d) {
+                                return (isShow ? "#2AD2C9" : "rgba(0, 0, 0, 0.0)"); })
+                .style("stroke", function(d) {
+                                return (isShow ? d3.rgb("#2AD2C9").darker() : "#000000"); });
+    }//showNodeActivity
+
+
+    onMouseOver(arcData){
+        console.log(arcData);
+        this.showNodeActivity(arcData.index, true);
+    }//onMouseOver
+
+
+    onMouseOut(arcData){
+        this.showNodeActivity(arcData.index, false);
+    }//onMouseOut
+
+
     render(){
         return(
             <div className="row">
-                <div className="col-md-2"></div>
-                <div className="col-md-8">
+                <div className="col-md-1"></div>
+                <div className="col-md-10">
                     <svg id="abyss-circle" className="chord"
-                            width="800" height="800">
+                        width="1000" height="800">
                     </svg>
                 </div>
-                <div className="col-md-2"></div>
+                <div className="col-md-1"></div>
             </div>
         );
     }//render
