@@ -45,3 +45,12 @@ export function nodeStatsData(){
     }
     return data;
 }//nodeStatsData
+
+
+//Return an array of Nodes in the Enclosure, where array Index represents
+//enclosure number, and the value of the index is the Nodes number in that
+//enclosure.
+export function hardwareLayout(){
+    return [7, 7];
+}//hardwareLayout
+

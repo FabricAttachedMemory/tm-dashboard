@@ -12,18 +12,18 @@ class BRackOverview extends ApiRequester {
 
     constructor(props){
         super(props);
-    }
+    }//ctor
 
 
-    buildEnclosureCol(numOfCols){
+    buildEnclosureCol(enc, start, numOfCols){
         var columns = [];
-        for(var i=this.props.start; i < this.props.start + numOfCols; i++){
-            var index = i < 10 ? "0" + i : i;
-            var id = "RackOverview_Enc_" + this.props.enc + "_Node_" + i;
+        for(var i=start; i < start + numOfCols; i++){
+            var index = i + 1 < 10 ? "0" + (i+1) : i+1;
+            var id = "RackOverview_Enc_" + enc + "_Node_" + i;
             columns.push(
                         <td id={id} className="rackTbCell" key={i}
-                            onMouseEnter={this.onMouseOver.bind(this, i-1)}
-                            onMouseLeave={this.onMouseOut.bind(this, i-1)}>
+                            onMouseEnter={this.onMouseOver.bind(this, i)}
+                            onMouseLeave={this.onMouseOut.bind(this, i)}>
                         {index}
                         </td>);
         }//for
@@ -31,13 +31,34 @@ class BRackOverview extends ApiRequester {
     }//buildEnclosureCol
 
 
+    buildEnclosureTable(enc, start, numOfNodes){
+        return(
+            <table className="table rackTb">
+                <thead>
+                    <tr>
+                        <th colSpan={numOfNodes} className="rackTbHead">
+                            {"Enclosure " + (enc + 1)}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        {this.buildEnclosureCol(enc, start, numOfNodes)}
+                    </tr>
+                </tbody>
+            </table>
+        );
+    }//buildEnclosureTable
+
+
     onMouseOver(node, e){
         ChordWheel.ShowNodeActivity(node, true);
-    }
+    }//onMouseOver
+
 
     onMouseOut(node, e){
         ChordWheel.ShowNodeActivity(node, false);
-    }
+    }//onMouseOut
 
 
     render() {
@@ -46,24 +67,18 @@ class BRackOverview extends ApiRequester {
         };
 
         var numOfNodes = this.props.nodeCount;
+
+        var tables = [];
+        var layout = [ 7, 7 ]
+        var countStart = 0;
+        for(var i=0; i < layout.length; i++){
+            tables.push(this.buildEnclosureTable(i, countStart, layout[i]));
+            countStart = countStart + layout[i];
+        }//for
+
         return (
             <div>
-                <table className="table rackTb">
-
-                    <thead>
-                        <tr>
-                            <th colSpan={numOfNodes} className="rackTbHead">
-                                {this.props.name}
-                            </th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        <tr>
-                            {this.buildEnclosureCol(numOfNodes)}
-                        </tr>
-                    </tbody>
-                </table>
+                {tables}
             </div>
         );
     }//render
