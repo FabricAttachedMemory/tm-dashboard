@@ -20,7 +20,12 @@
     transition: background-color 0.2s ease;
 }
 
-.rackTbCell:hover{
+.rackTbCell:hover, .rackTbCell:active{
+    background-color: #2AD2C9 !important;
+    color: black;
+}
+
+.rackTbCellActive{
     background-color: #2AD2C9 !important;
     color: black;
 }
