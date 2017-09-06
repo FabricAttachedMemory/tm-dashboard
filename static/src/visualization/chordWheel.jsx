@@ -5,6 +5,7 @@ import PropTypes    from 'prop-types';
 import * as d3      from 'd3'
 
 import * as RackOverview from './rackOverviewBox';
+import * as DataSpoofer  from '../components/spoofer';
 
 
 // Returns an array of tick angles and values for a given group and step.
@@ -22,11 +23,14 @@ class Chords extends React.Component{
         super(props);
         this.state = {
             numberOfNodes : 14,
+            systemLayout : [],
             innerRadius : 0,
             outerRadius : 0,
             svgWidth : 0,
             svgHeight : 0,
         };
+
+        this.state.systemLayout = DataSpoofer.hardwareLayout(); //FIXME: TRASH
     }//constructor
 
 
@@ -129,8 +133,10 @@ class Chords extends React.Component{
 
 
         nodeRectGroup.append("text")
-            .on("mouseover", (e) => this.onMouseOver(e))
-            .on("mouseout", (e) => this.onMouseOut(e))
+            .on("mouseover", (e) => {
+                        this.onMouseOver(e)})
+            .on("mouseout", (e) => {
+                        this.onMouseOut(e)})
             .attr("x", 50)
             .attr("dy", 20)
             .append("textPath")
@@ -143,15 +149,19 @@ class Chords extends React.Component{
 
 
     onMouseOver(arcData){
-        RackOverview.SetActive(1, arcData.index, true);
+        var enc = GetEncFromNode(this.state.systemLayout, arcData.index);
+        RackOverview.SetActive(enc, arcData.index, true);
         ShowNodeActivity(arcData.index, true);
     }//onMouseOver
 
 
     onMouseOut(arcData){
-        RackOverview.SetActive(1, arcData.index, false);
+        var enc = GetEncFromNode(this.state.systemLayout, arcData.index);
+        RackOverview.SetActive(enc, arcData.index, false);
         ShowNodeActivity(arcData.index, false);
     }//onMouseOut
+
+
 
 
     render(){
@@ -174,8 +184,10 @@ class Chords extends React.Component{
 
 export default Chords;
 
-/* @param node: Node number to show activity of.
- * @param 
+
+/*  Highlight arcs going for the given node.
+ * @param node: Node number to show activity of.
+ * @param state: bool state to show(true) or hide(false) node activity.
 */
 export function ShowNodeActivity(node, state){
     var pathObj = d3.selectAll("g.ribbons path");
@@ -191,3 +203,22 @@ export function ShowNodeActivity(node, state){
             .style("stroke", function(d) {
                             return (state ? d3.rgb("#2AD2C9").darker() : "#000000"); });
 }//ShowNodeActivity
+
+
+/*  Return an enclosure number for the Node number. -1 will be returned if node
+ * is outside of the node count or not found in the layout array.
+ * @param layout: array representation of System layout. Index of the array is
+ *                an enclosure number, element of the index is number of nodes.
+ * @param node: node number to get an Enclosure number for.
+ */
+export function GetEncFromNode(layout, node){
+    var start = 0;
+    var end = 0;
+    for(var i=0; i < layout.length; i++){
+        end = start + layout[i] - 1;
+        if(node >= start && node <= end)
+            return i;
+        start = start + layout[i];
+    }//for
+    return -1;
+}//getEncFromNode

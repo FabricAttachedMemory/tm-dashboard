@@ -20,6 +20,13 @@ class POverview extends Skeleton{
     }//ctor
 
 
+    buildRackOverview(){
+        return(
+            <BRackOverview name="Enclosure 1" enc={1} nodeCount={7}/>
+        );
+    }//buildRackOverview
+
+
     render() {
         var panelClass = "col-md-2";
         var rackOverviewHeight  = this.getHeightRatio(0.3);
@@ -46,9 +53,6 @@ class POverview extends Skeleton{
                                     paddingLeft="20px"/>
                         <BRackOverview name="Enclosure 1" enc={1}
                                                           nodeCount={7}/>
-                        <BRackOverview name="Enclosure 2" start={8}
-                                                          nodeCount={7}
-                                                          enc={2}/>
                     </ContentBox>
 
                     <ContentBox paddingTop={nodeInfoPaddingTop} height={nodeInfoHeight} maxHeight={nodeInfoMaxHeight}>
