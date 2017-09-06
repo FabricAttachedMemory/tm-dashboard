@@ -53,8 +53,11 @@ class NodeStats extends ApiRequester {
         var titleSt = {
             textAlign: "left",
         }
+        //NOTE: property "key" is needed for react to shutup complaining about
+        // having a "key" with unique ID in the array....
         return(
-            <div className="col-md-6" style={boxSt}>
+            <div id={"Nodebox_" + title} key={title}
+                    className="col-md-6" style={boxSt}>
                 <div style={titleSt}>
                     {title}
                 </div>

@@ -4,6 +4,8 @@ import {render}     from 'react-dom';
 import PropTypes    from 'prop-types';
 import * as d3      from 'd3'
 
+import * as RackOverview from './rackOverviewBox';
+
 
 // Returns an array of tick angles and values for a given group and step.
 function groupTicks(d, step) {
@@ -25,13 +27,11 @@ class Chords extends React.Component{
             svgWidth : 0,
             svgHeight : 0,
         };
-        this.showNodeActivity = this.showNodeActivity.bind(this);
     }//constructor
 
 
 
     componentDidMount(){
-
         var matrix = [];
 
         for(var i =0; i < this.state.numberOfNodes; i++){
@@ -136,36 +136,21 @@ class Chords extends React.Component{
             .append("textPath")
                 .attr("xlink:href", function(d) {
                     return "#outerRect_" + d.index; })
-                .text(function(d, i) { return "Node " + (d.index); })
+                .text(function(d, i) { return "Node " + (d.index + 1); })
                 .style("fill", "white");
         return nodeRectGroup;
     }//createRectCircle
 
 
-    showNodeActivity(node, isShow){
-        var pathObj = d3.selectAll("g.ribbons path");
-        pathObj.filter(function(d){
-                var isPath = d.source.index == node || d.target.index == node;
-                return isPath;
-            })
-      .transition()
-                .style("opacity", function(d) {
-                                return (isShow ? 1 : 0.05); })
-                .style("fill", function(d) {
-                                return (isShow ? "#2AD2C9" : "rgba(0, 0, 0, 0.0)"); })
-                .style("stroke", function(d) {
-                                return (isShow ? d3.rgb("#2AD2C9").darker() : "#000000"); });
-    }//showNodeActivity
-
-
     onMouseOver(arcData){
-        console.log(arcData);
-        this.showNodeActivity(arcData.index, true);
+        RackOverview.SetActive(1, arcData.index, true);
+        ShowNodeActivity(arcData.index, true);
     }//onMouseOver
 
 
     onMouseOut(arcData){
-        this.showNodeActivity(arcData.index, false);
+        RackOverview.SetActive(1, arcData.index, false);
+        ShowNodeActivity(arcData.index, false);
     }//onMouseOut
 
 
@@ -187,5 +172,22 @@ class Chords extends React.Component{
 }//class
 
 
-
 export default Chords;
+
+/* @param node: Node number to show activity of.
+ * @param 
+*/
+export function ShowNodeActivity(node, state){
+    var pathObj = d3.selectAll("g.ribbons path");
+    pathObj.filter(function(d){
+            var isPath = d.source.index == node || d.target.index == node;
+            return isPath;
+        })
+  .transition()
+            .style("opacity", function(d) {
+                            return (state ? 1 : 0.05); })
+            .style("fill", function(d) {
+                            return (state ? "#2AD2C9" : "rgba(0, 0, 0, 0.0)"); })
+            .style("stroke", function(d) {
+                            return (state ? d3.rgb("#2AD2C9").darker() : "#000000"); });
+}//ShowNodeActivity

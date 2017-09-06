@@ -6,10 +6,10 @@ import {render} from 'react-dom';
 import Skeleton         from    './skeleton';
 import Middle           from    './components/middle';
 import ContentBox       from    './components/contentBox';
-import BRackOverview    from    './components/rackOverviewBox';
 import BoxHeader        from    './components/infoBoxHeader';
 import NodeStats        from    './components/nodeStats';
 import * as DataSpoofer from    './components/spoofer';
+import BRackOverview    from    './visualization/rackOverviewBox';
 
 
 //P for Page.. -> PageOverview
@@ -44,8 +44,11 @@ class POverview extends Skeleton{
                         <BoxHeader text="Rack Overview"
                                     textAlign="left"
                                     paddingLeft="20px"/>
-                        <BRackOverview name="Enclosure 1"/>
-                        <BRackOverview name="Enclosure 2"/>
+                        <BRackOverview name="Enclosure 1" enc={1}
+                                                          nodeCount={7}/>
+                        <BRackOverview name="Enclosure 2" start={8}
+                                                          nodeCount={7}
+                                                          enc={2}/>
                     </ContentBox>
 
                     <ContentBox paddingTop={nodeInfoPaddingTop} height={nodeInfoHeight} maxHeight={nodeInfoMaxHeight}>
