@@ -9,6 +9,7 @@ import ContentBox       from    './components/contentBox';
 import BoxHeader        from    './components/infoBoxHeader';
 import NodeStats        from    './components/nodeStats';
 import * as DataSpoofer from    './components/spoofer';
+import * as DataSharing from    './components/dataSharing';
 import BRackOverview    from    './visualization/rackOverviewBox';
 
 
@@ -27,15 +28,29 @@ class POverview extends Skeleton{
     }//buildRackOverview
 
 
+    componentDidMount(){
+        var box = document.getElementById("RackOverviewBox");
+        var boxHeight = box.offsetHeight;
+        var statsBox = document.getElementById("NodeStatsBox");
+        var statsBoxHeight = statsBox.offestHeight;
+    }//componentDidMount
+
+
     render() {
         var panelClass = "col-md-2";
+        var encCount = parseInt(DataSharing.Get("Enclosures"));
         var rackOverviewHeight  = this.getHeightRatio(0.3);
-        var nodeInfoHeight      = this.getHeightRatio(0.6);
-        var dscBtnBox           = this.getHeightRatio(0.094);
+        var heightTaken = 0.12 * encCount;
+        if(encCount != null){
+            rackOverviewHeight  = this.getHeightRatio(heightTaken);
+        }
+        heightTaken = 0.93 - heightTaken - 0.092;
+        var nodeInfoHeight      = this.getHeightRatio(heightTaken);
+        var dscBtnBox           = this.getHeightRatio(0.092);
+
         //maxHeight = height so that paddingTop does not extend height further.
         var nodeInfoMaxHeight   = nodeInfoHeight;
         var nodeInfoPaddingTop  = (nodeInfoHeight.split("px")[0] / 5) + "px";
-
 
         var middleWidth     = window.innerWidth - (this.state.panelWidth * 2);
         var middleHeight    = this.getHeight(105, 1);
@@ -47,7 +62,8 @@ class POverview extends Skeleton{
                                 minWidth: this.state.panelMinWidth,
                                 maxWidth: this.state.panelMaxWidth }}>
 
-                    <ContentBox id="RackOverviewBox" desc="Rack Overview">
+                    <ContentBox id="RackOverviewBox" desc="Rack Overview"
+                                height={"auto"}>
                         <BoxHeader text="Rack Overview"
                                     textAlign="left"
                                     paddingLeft="20px"/>
@@ -55,7 +71,9 @@ class POverview extends Skeleton{
                                                           nodeCount={7}/>
                     </ContentBox>
 
-                    <ContentBox paddingTop={nodeInfoPaddingTop} height={nodeInfoHeight} maxHeight={nodeInfoMaxHeight}>
+                    <ContentBox id="NodeStatsBox" paddingTop={nodeInfoPaddingTop}
+                                    height={nodeInfoHeight}
+                                    maxHeight={nodeInfoMaxHeight}>
                         <BoxHeader text="Node No. (Enclosure No.)"
                                     textAlign="left"
                                     paddingLeft="20px"/>

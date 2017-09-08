@@ -5,6 +5,7 @@ import {render}     from 'react-dom';
 
 import ApiRequester     from '../components/base/apiRequester';
 import * as ChordWheel  from './chordWheel';
+import * as DataSpoofer from '../components/spoofer';
 
 
 /* TODO: Documentation shall be here soon */
@@ -69,7 +70,7 @@ class BRackOverview extends ApiRequester {
         var numOfNodes = this.props.nodeCount;
 
         var tables = [];
-        var layout = [ 7, 7 ]
+        var layout = DataSpoofer.hardwareLayout();
         var countStart = 0;
         for(var i=0; i < layout.length; i++){
             tables.push(this.buildEnclosureTable(i, countStart, layout[i]));

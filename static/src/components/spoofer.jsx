@@ -51,6 +51,6 @@ export function nodeStatsData(){
 //enclosure number, and the value of the index is the Nodes number in that
 //enclosure.
 export function hardwareLayout(){
-    return [7, 7];
+    return [7, 7, 7];
 }//hardwareLayout
 
