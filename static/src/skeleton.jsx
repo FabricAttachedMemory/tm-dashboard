@@ -42,7 +42,7 @@ class Skeleton extends React.Component{
 
     getElementDimensions(elementId){
         var element = document.getElementById(elementId);
-        var dimensions = leftPanel.getBoundingClientRect();
+        var dimensions = element.getBoundingClientRect();
         return [dimensions.width, dimensions.height];
     }//getElementDimensions
 

@@ -6,6 +6,7 @@ import * as d3      from 'd3'
 
 import * as RackOverview from './rackOverviewBox';
 import * as DataSpoofer  from '../components/spoofer';
+import * as DataSharing  from '../components/dataSharing';
 
 
 // Returns an array of tick angles and values for a given group and step.
@@ -22,7 +23,7 @@ class Chords extends React.Component{
     constructor(props){
         super(props);
         this.state = {
-            numberOfNodes : 14,
+            numberOfNodes : 0,
             systemLayout : [],
             innerRadius : 0,
             outerRadius : 0,
@@ -31,6 +32,12 @@ class Chords extends React.Component{
         };
 
         this.state.systemLayout = DataSpoofer.hardwareLayout(); //FIXME: TRASH
+        for(var i=0; i < this.state.systemLayout.length; i++){
+            this.state.numberOfNodes += this.state.systemLayout[i];
+        }//for
+
+        if(this.state.numberOfNodes < 2) //No layout? Show at least something...
+            this.state.numberOfNodes = 14;
     }//constructor
 
 
@@ -74,15 +81,50 @@ class Chords extends React.Component{
         innerRectGroups.selectAll("path")
             .on("mouseover", (e) => this.onMouseOver(e))
             .on("mouseout", (e) => this.onMouseOut(e));
+        this.setGroupId(innerRectGroups, "innerRectCircle_");
+
+        innerRectGroups.append("text")
+            .on("mouseover", (e) => {
+                        this.onMouseOver(e)})
+            .on("mouseout", (e) => {
+                        this.onMouseOut(e)})
+            .attr("x", 40)
+            .attr("dy", 20)
+            .append("textPath")
+                .attr("xlink:href", function(d) {
+                    return "#innerRectCircle_" + d.index; })
+                .text(function(d, i) { return (d.index + 1); })
+                .style("fill", "white");
+
         this.createRibbonArcs(g);
 
+        //Outere Rect Circle Group
+        //IR = Inner Radius. OR = Outer Radius
+        var outerRectIR = this.state.innerRadius + 35;
+        var outerRectOR = this.state.outerRadius + 35;
+        var outerRect = d3.arc()
+            .innerRadius(outerRectIR)
+            .outerRadius(outerRectOR);
 
-        var arc2 = d3.arc()
-            .innerRadius(this.state.innerRadius + 35)
-            .outerRadius(this.state.outerRadius + 35);
-        var outerRectGroup = this.createRectCircle(g, arc2);
+        var outerRectGroup = this.createRectCircle(g, outerRect);
+        this.setGroupId(outerRectGroup, "outerRect_");
 
+        //filling percent relative to the arc2 (outer rect group).
+        var arc3Outer = outerRectOR - 26;
+        var arc3 = d3.arc()
+            .innerRadius(outerRectIR)
+            .outerRadius(arc3Outer);
+        var highlightGroup = this.createRectCircle(g, arc3, "green");
+        this.setGroupId(highlightGroup, "HightlightGroup_");
+
+        DataSharing.Set("Enclosures", this.state.systemLayout.length);
     }//componentDidUpdate
+
+
+    setGroupId(group, idPrefix){
+        group.selectAll("path")
+            .attr("id", function(d, i) { return idPrefix + d.index; });
+    }//setGroupId
 
 
     /* Arcs representing data flow will be created. Arc path is calculated by
@@ -95,6 +137,7 @@ class Chords extends React.Component{
 
         var color = d3.scaleOrdinal()
             .domain(d3.range(1));
+
         parentObj.append("g")
             .attr("class", "ribbons")
             .selectAll("path")
@@ -117,7 +160,7 @@ class Chords extends React.Component{
      * @param arc : d3.arc() element.
      * @return : return created rectangles group.
     */
-    createRectCircle(parentObj, arc){
+    createRectCircle(parentObj, arc, fill="#425563"){
         //Container for the inner rectangle group that has Node Number label
         var nodeRectGroup = parentObj.append("g")
             .attr("class", "nodeRectGroup")
@@ -126,24 +169,9 @@ class Chords extends React.Component{
              .enter().append("g");
 
         nodeRectGroup.append("path")
-            .attr("id", function(d, i) { return "outerRect_" + d.index; })
              //Background color for the inner circle rectangles
-            .style("fill", function(d) { return "#425563"; })
+            .style("fill", fill)
             .attr("d", arc);
-
-
-        nodeRectGroup.append("text")
-            .on("mouseover", (e) => {
-                        this.onMouseOver(e)})
-            .on("mouseout", (e) => {
-                        this.onMouseOut(e)})
-            .attr("x", 50)
-            .attr("dy", 20)
-            .append("textPath")
-                .attr("xlink:href", function(d) {
-                    return "#outerRect_" + d.index; })
-                .text(function(d, i) { return "Node " + (d.index + 1); })
-                .style("fill", "white");
         return nodeRectGroup;
     }//createRectCircle
 
@@ -160,8 +188,6 @@ class Chords extends React.Component{
         RackOverview.SetActive(enc, arcData.index, false);
         ShowNodeActivity(arcData.index, false);
     }//onMouseOut
-
-
 
 
     render(){
