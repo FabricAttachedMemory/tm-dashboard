@@ -8,8 +8,7 @@ __maintainer__ = "Zakhar Volchak"
 __email__ = "zakhar.volchak@hpe.com"
 
 import flask
-import flask_cors #PIP3 REQUIRES to install flask-cors!
-#import importlib
+import addons.flask_cors as flask_cors
 from importlib.machinery import SourceFileLoader # to import blueprints from path
 import glob
 import os
