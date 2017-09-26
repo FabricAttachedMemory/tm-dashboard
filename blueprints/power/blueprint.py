@@ -31,8 +31,7 @@ class JPower(Journal):
         TODO: if spoofing data becomes somewhat important, a more sophisticated
         'algorithm' to generate patterns should be applied.
         """
-        if self.allow_random:
-            self.stats['power'] = random.randint(0, 100)
+        self.stats['power'] = random.randint(0, 100)
         return self.stats
 
 

@@ -114,7 +114,7 @@ class Chords extends React.Component{
         var arc3 = d3.arc()
             .innerRadius(outerRectIR)
             .outerRadius(arc3Outer);
-        var highlightGroup = this.createRectCircle(g, arc3, "green");
+        var highlightGroup = this.createRectCircle(g, arc3, "#425462");
         this.setGroupId(highlightGroup, "HightlightGroup_");
 
         DataSharing.Set("Enclosures", this.state.systemLayout.length);

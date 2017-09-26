@@ -18,15 +18,15 @@ class NodeStats extends ApiRequester {
 
     GetDataFields(){
         return [
-                    ["Power State", "power"],
-                    ["DRAM Usage", "dram"],
-                    ["CPU Usage", "cpu"],
-                    ["Network In", "netIn"],
-                    ["Fabric Usage", "fabric"],
-                    ["Network Out", "netOut"],
-                    ["No. of Shelves", "shelves"],
-                    ["OS Manifest", "manifestName"],
-                    ["No. of Books", "books"],
+                    ["Power State",     "power"],
+                    ["DRAM Usage",      "dram"],
+                    ["CPU Usage",       "cpu"],
+                    ["Network In",      "netIn"],
+                    ["Fabric Usage",    "fabric"],
+                    ["Network Out",     "netOut"],
+                    ["No. of Shelves",  "shelves"],
+                    ["OS Manifest",     "manifestName"],
+                    ["No. of Books",    "books"],
                 ];
     }//GetDataFields
 
