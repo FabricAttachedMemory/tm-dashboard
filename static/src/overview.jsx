@@ -77,7 +77,8 @@ class POverview extends Skeleton{
                         <BoxHeader text="Node No. (Enclosure No.)"
                                     textAlign="left"
                                     paddingLeft="20px"/>
-                        <NodeStats spoofedData={DataSpoofer.nodeStatsData()}/>
+                        <NodeStats name="RightBoxEnclosureNo"
+                                   spoofedData={DataSpoofer.nodeStatsData()}/>
                     </ContentBox>
 
                     <ContentBox height={dscBtnBox}>

@@ -53,16 +53,6 @@ class Journal():
         raise NotImplemented("You have you overwrite this property!")
 
 
-    @property
-    def allow_random(self):
-        """ Allow generation of random data when external APIs does not respond.
-            True - allow; False - return default data.
-        """
-        if not self.mainapp or 'ALLOW_RANDOM' not in self.mainapp.config:
-            return False
-        return self.mainapp.config['ALLOW_RANDOM']
-
-
     ''' --- Request handles. Validation and Response makers.... --- '''
 
     def requestor_wants_json(self, headers):

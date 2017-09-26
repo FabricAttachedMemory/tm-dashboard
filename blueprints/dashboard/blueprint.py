@@ -53,3 +53,12 @@ def index_api():
                 all_routes.append(url_for(route.endpoint))
 
     return make_response(jsonify({'routes' : sorted(all_routes)}), 200)
+
+
+@Journal.BP.route('/api/toggle_spoof', methods=['GET'])
+def toggle_spoof():
+    mainapp = Journal.mainapp
+
+    mainapp.config['ALLOW_SPOOF'] = not mainapp.config['ALLOW_SPOOF']
+    isSpoof = mainapp.config['ALLOW_SPOOF']
+    return make_response(jsonify('Spoofer set to %s' % isSpoof), 200)

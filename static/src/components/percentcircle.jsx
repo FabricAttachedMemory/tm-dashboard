@@ -17,8 +17,7 @@ to set properties - or it will just override parent's props. As a work around,
 you can add new state properties in the constructor with default values. Refere
 to visualization/grids.jsx component for example. Usually, I try to avoid referring
 this.props anywhere in the code outside of constructor... so this.state should be
-fine.
-*/
+fine.*/
 class PercentCircle extends ApiRequester {
 
     constructor(props){
@@ -54,9 +53,6 @@ class PercentCircle extends ApiRequester {
 
         this.state.fetched = null; //Resetting fetched for the next circle\interval.
         var containerHeight = parseFloat(this.props.height.split("px")[0]) / 2;
-//                <div className="col-md-12 data-display-container">
-//                    <text className="data-container-name">{this.props.name}</text>
-//                </div>
 
         return (
         <StatsBox size={12} height={this.props.height}>

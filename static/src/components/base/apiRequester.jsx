@@ -1,6 +1,7 @@
 'use strict';
-import React from 'react';
-import {render} from 'react-dom';
+import React     from 'react';
+import {render}  from 'react-dom';
+import PropTypes from 'prop-types';
 
 
 class ApiRequester extends React.Component {
@@ -10,7 +11,6 @@ class ApiRequester extends React.Component {
     //variables in Python: self.props={};
     constructor(props){
         super(props);
-
         this.state = {
             displayData : "",
             percent : -1,
@@ -22,11 +22,11 @@ class ApiRequester extends React.Component {
             spoofedData : this.props.spoofedData
         }
 
-        this.spoofData = this.spoofData.bind(this);
-        this.GetData = this.GetData.bind(this);
-        this.readFetchedValues = this.readFetchedValues.bind(this);
-        this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this)
-        this.componentWillMount = this.componentWillMount.bind(this);
+        this.spoofData              = this.spoofData.bind(this);
+        this.GetData                = this.GetData.bind(this);
+        this.readFetchedValues      = this.readFetchedValues.bind(this);
+        this.shouldComponentUpdate  = this.shouldComponentUpdate.bind(this)
+        this.componentWillMount     = this.componentWillMount.bind(this);
     }//constructor
 
 
@@ -50,13 +50,12 @@ class ApiRequester extends React.Component {
      * Note, it will return at least two states during the runtime. First, it
      * is a "Promise" object of type Response. It is used in this class to
      * identify that the call has been made. When server response back, fetched
-     * will become a json object containing the response values.
-    */
+     * will become a json object containing the response values. */
     GetData() {
         var url= this.props.url; //just shorter to use during debugging
         if(!url){
             if(!this.state.isSpoofed)
-                console.log("Empty url string!");
+                console.log("Empty url string! Name: " + this.props.name);
             this.state.failedFetchCount += 1;
             return;
         }
@@ -91,8 +90,8 @@ class ApiRequester extends React.Component {
     componentWillMount(){
         setInterval(() => {
             if (this.state.failedFetchCount >= this.props.spoofAfterFails){
-                //this.spoofData();
-                this.setState({isSpoofed : true}); //signal component to check for re-render
+                //signal component to check for re-render
+                this.setState({isSpoofed : true});
                 return;
             }
             if(!this.state.fetched || this.state.fetched == null){
@@ -130,13 +129,12 @@ class ApiRequester extends React.Component {
                 return this.spoofData();
             return "";
         }
-        //var apiValue = -1;
-        //var json = this.state.fetched;
-//        if('value' in json)
- //           apiValue = json['value']
-        //this.state.percent = Math.round(apiValue * 100.0) / 100.0;
 
-        this.state.displayData = this.state.fetched;
+        if (this.state.fetched.value === undefined)
+            this.state.displayData = this.state.fetched;
+        else
+            this.state.displayData = this.state.fetched.value;
+
         return this.state.displayData;
     }//readFetchedValues
 
@@ -144,12 +142,12 @@ class ApiRequester extends React.Component {
 
 
 ApiRequester.defaultProps = {
-    height : "300px",
-    name : "",
-    url : "",
-    refreshRate : 2000,
-    spoofAfterFails : 0,
-    spoofedData : []
+    height  : "300px",
+    name    : "",
+    url     : "",
+    refreshRate     : 2000,
+    spoofAfterFails : 2,
+    spoofedData     : []
 }
 
 

@@ -34,7 +34,7 @@ class BRackOverview extends ApiRequester {
 
     buildEnclosureTable(enc, start, numOfNodes){
         return(
-            <table className="table rackTb">
+            <table className="table rackTb" key={"EncTbl_"+enc}>
                 <thead>
                     <tr>
                         <th colSpan={numOfNodes} className="rackTbHead">
@@ -85,12 +85,13 @@ class BRackOverview extends ApiRequester {
     }//render
 }//class
 
-
+/*
 BRackOverview.defaultProps = {
     start : 1, //first node index to start count from.
     nodeCount : PropTypes.number.isRequired,
     enc : PropTypes.number.isRequired
 }
+*/
 
 
 export default BRackOverview;
