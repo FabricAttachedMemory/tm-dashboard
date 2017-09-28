@@ -5,8 +5,8 @@
     background: none;
     border-radius: 0px;
     border: none;
-    padding: 0px;
-    margin: 0px;
+    padding: 0px !important;
+    margin: 0px !important;
 }
 
 .navbar .navbar-default{
@@ -18,15 +18,6 @@
     background: #4C5E6C;
 }
 
-.nav-justified{
-    padding: 0px !important;
-}
-
-
-.nav-tabs .navbar-nav{
-    padding-left: 0px !important;
-}
-
 
 .navbar-nav > li > a{
     background: #425563 !important;
@@ -35,6 +26,7 @@
     font-size: 1.4em !important;
     border: none !important;
     border-radius: 0px !important;
+margin: 0px !important;
 }
 
 

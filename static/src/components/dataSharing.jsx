@@ -26,7 +26,7 @@ function makeSharedField(varName){
     var input = document.createElement("input");
     input.id = varName;
     input.value = "";
-    //input.style.display = 'none';
+    input.style.display = 'none';
     document.body.appendChild(input);
     return input;
 }

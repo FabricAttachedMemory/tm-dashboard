@@ -18,6 +18,7 @@ class POverview extends Skeleton{
 
     constructor(props) {
         super(props);
+        this.state.isFirstRender = true;
     }//ctor
 
 
@@ -41,12 +42,27 @@ class POverview extends Skeleton{
         var encCount = parseInt(DataSharing.Get("Enclosures"));
         var rackOverviewHeight  = this.getHeightRatio(0.3);
         var heightTaken = 0.12 * encCount;
-        if(encCount != null){
+
+        var elm = document.getElementById("RackOverviewBox");
+        if(elm != null)
+            heightTaken = elm.clientHeight;
+        else
+            heightTaken = 351;
+
+        elm = document.getElementById("headerPanel");
+        if(elm != null)
+            heightTaken += elm.clientHeight;
+        else
+            heightTaken += 40;
+
+        if(!isNaN(encCount))
             rackOverviewHeight  = this.getHeightRatio(heightTaken);
-        }
-        heightTaken = 0.93 - heightTaken - 0.092;
-        var nodeInfoHeight      = this.getHeightRatio(heightTaken);
-        var dscBtnBox           = this.getHeightRatio(0.092);
+
+        heightTaken += 135;
+        //heightTaken = 0.93 - heightTaken - 0.092;
+//        var nodeInfoHeight  = this.getHeightRatio(heightTaken);
+        var nodeInfoHeight  = window.innerHeight - heightTaken + "px";
+        var dscBtnBox       = this.getHeightRatio(0.092);
 
         //maxHeight = height so that paddingTop does not extend height further.
         var nodeInfoMaxHeight   = nodeInfoHeight;
@@ -68,7 +84,7 @@ class POverview extends Skeleton{
                                     textAlign="left"
                                     paddingLeft="20px"/>
                         <BRackOverview name="Enclosure 1" enc={1}
-                                                          nodeCount={7}/>
+                                        nodeCount={7}/>
                     </ContentBox>
 
                     <ContentBox id="NodeStatsBox" paddingTop={nodeInfoPaddingTop}

@@ -19,7 +19,7 @@ class ApiRequester extends React.Component {
             forceRerender : false,
             fetched : null,
             index: 0,
-            spoofedData : this.props.spoofedData
+            spoofedData : this.props.spoofedData,
         }
 
         this.spoofData              = this.spoofData.bind(this);
@@ -145,7 +145,7 @@ ApiRequester.defaultProps = {
     height  : "300px",
     name    : "",
     url     : "",
-    refreshRate     : 2000,
+    refreshRate     : 5000,
     spoofAfterFails : 2,
     spoofedData     : []
 }

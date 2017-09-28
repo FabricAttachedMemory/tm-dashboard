@@ -51,6 +51,45 @@ export function nodeStatsData(){
 //enclosure number, and the value of the index is the Nodes number in that
 //enclosure.
 export function hardwareLayout(){
-    return [7, 7, 7];
+    return [5, 5, 5];
 }//hardwareLayout
 
+
+
+export function GridsData(numOfBooks){
+    var newColors = [];
+    var list = []
+    for(var i=0; i < numOfBooks; i++){
+        var min = Math.ceil(-1);
+        var max = Math.floor(4); //max is exclusive
+        var randState = Math.floor(Math.random() * (max - min) + min);
+        list.push(randState);
+    }//for
+
+    for (var i=0; i < list.length; i++) {
+        var bookState = list[i];
+        if (bookState == -1){
+          newColors.push("boxOffline");
+        }else if (bookState == 1){
+          newColors.push("boxAllocated");
+        }else if (bookState == 0){
+          newColors.push("boxAvailable");
+        }else if (bookState == 2){
+          newColors.push("boxNotReady");
+        }
+    }
+    return { dataSet : list, colorSet : newColors};
+}//GridsData
+
+
+//TODO: not used yet. finish spoofing flow.
+export function ChordFlow(){
+    var matrix =[];
+    for(var i=0; i < 4; i++){
+        var arcs = [];
+        for(var j=0; j < 4; j++)
+            arcs.push(10);
+        matrix.push(arcs);
+    }//for
+    return matrix;
+}

@@ -90,7 +90,7 @@ class Skeleton extends React.Component{
         if(openedTab == "overview"){
             tabContentToRender =  <Chords/>;
         }else if(openedTab == "mm"){
-            tabContentToRender = <Flatgrids />;
+            tabContentToRender = <Flatgrids spoofedData={DataSpoofer.GridsData()}/>;
         }
 
 

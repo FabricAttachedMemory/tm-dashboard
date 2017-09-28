@@ -48,9 +48,18 @@ class Chords extends React.Component{
         for(var i =0; i < this.state.numberOfNodes; i++){
             var arcs = [];
             for(var j =0; j < this.state.numberOfNodes; j++)
-                arcs.push(50);
+                arcs.push(5);
             matrix.push(arcs);
         }
+/*
+        matrix = [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1]
+        ];
+*/
+
 
         var svg = d3.select("#abyss-circle");
         this.state.svgWidth = svg.attr("width");
@@ -60,10 +69,10 @@ class Chords extends React.Component{
                                 this.state.svgWidth,
                                 this.state.svgHeight)*0.415;
         //radius of where arcs are growing from
-        this.state.innerRadius = this.state.outerRadius - 30;
+        this.state.innerRadius = this.state.outerRadius - 35;
 
         var chord = d3.chord()
-            .padAngle(0.01)
+            .padAngle(0.01) //space between rectangles
             .sortSubgroups(d3.descending);
 
         var arc = d3.arc()
@@ -88,19 +97,20 @@ class Chords extends React.Component{
                         this.onMouseOver(e)})
             .on("mouseout", (e) => {
                         this.onMouseOut(e)})
-            .attr("x", 40)
+            .attr("x", 55)
             .attr("dy", 20)
             .append("textPath")
                 .attr("xlink:href", function(d) {
                     return "#innerRectCircle_" + d.index; })
-                .text(function(d, i) { return (d.index + 1); })
+                .text(function(d, i) { return (d.index +1 < 10) ? "0" + (d.index + 1) : (d.index + 1); })
                 .style("fill", "white");
 
+        //Creating Arcs(path) flow between nodes(rects)
         this.createRibbonArcs(g);
 
-        //Outere Rect Circle Group
+        //Outer Rect Circle Group
         //IR = Inner Radius. OR = Outer Radius
-        var outerRectIR = this.state.innerRadius + 35;
+        var outerRectIR = this.state.innerRadius + 40;
         var outerRectOR = this.state.outerRadius + 35;
         var outerRect = d3.arc()
             .innerRadius(outerRectIR)
@@ -114,7 +124,7 @@ class Chords extends React.Component{
         var arc3 = d3.arc()
             .innerRadius(outerRectIR)
             .outerRadius(arc3Outer);
-        var highlightGroup = this.createRectCircle(g, arc3, "#425462");
+        var highlightGroup = this.createRectCircle(g, arc3, d3.rgb("#35444F"));
         this.setGroupId(highlightGroup, "HightlightGroup_");
 
         DataSharing.Set("Enclosures", this.state.systemLayout.length);
@@ -191,12 +201,23 @@ class Chords extends React.Component{
 
 
     render(){
+        var wRatio = 0.5;
+        //FIXME: this is bs... need some "smarter" approach to dynamic positioning
+        if(window.innerWidth > 1200)
+            wRatio = 0.55;
+        if(window.innerWidth > 1800)
+            wRatio = 0.57;
+        if(window.innerWidth > 2400)
+            wRatio = 0.6;
+
+        var w = window.innerWidth * wRatio;
+        var h = window.innerHeight * 0.8;
         return(
             <div className="row">
                 <div className="col-md-1"></div>
                 <div className="col-md-10">
                     <svg id="abyss-circle" className="chord"
-                        width="1000" height="800">
+                        width={w} height={h}>
                     </svg>
                 </div>
                 <div className="col-md-1"></div>
@@ -217,6 +238,7 @@ export default Chords;
 */
 export function ShowNodeActivity(node, state){
     var pathObj = d3.selectAll("g.ribbons path");
+
     pathObj.filter(function(d){
             var isPath = d.source.index == node || d.target.index == node;
             return isPath;
