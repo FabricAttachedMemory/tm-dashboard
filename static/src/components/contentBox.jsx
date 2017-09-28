@@ -14,9 +14,16 @@ class ContentBox extends ApiRequester {
 
 
     defaultRender(){
+        var fontStyle = {};
+        if(this.props.fontSize === undefined)
+            fontStyle = {};
+        else
+            fontStyle.fontSize = this.props.fontSize;
+        fontStyle.fontWeight = "bold";
+
         return(
             <div>
-                <div className="data-display">
+                <div className="data-display" style={fontStyle}>
                     {this.props.number}
                 </div>
                 <div className="data-container-name"

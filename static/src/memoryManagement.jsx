@@ -62,11 +62,18 @@ class PMemoryManagement extends Skeleton{
     render() {
         var panelClass = "col-md-2";
         var panelHeight = this.getHeight(65, 3);
-
         //extract value from string of the form "8px".
         var boxMarginVal    = parseFloat(this.state.boxMargin.split("px")[0]);
         var middleWidth     = window.innerWidth - (this.state.panelWidth * 2) - boxMarginVal * 3;
         var middleHeight    = this.getHeight(105, 1);
+
+        //Adjust margins for the smaller screen size.
+        var memValPadT = "0.8em";
+        var memValMarginB = "3.0em";
+        if(window.innerHeight < 1000){
+            memValPadT = "0.5em";
+            memValMarginB = "0.0em";
+        }
 
         return (
             <Skeleton>
@@ -75,10 +82,22 @@ class PMemoryManagement extends Skeleton{
                                 maxWidth: this.state.panelMaxWidth}}>
 
                     <ContentBox height={panelHeight}>
-                        <div className="data-display" style={{paddingTop: "0.9em"}}>
+                        <div className="data-container-name"
+                        style={{marginTop: "1.5em"}}>
+                            Memory breakdown
+                        </div>
+                        <div className="data-display"
+                                        style={{fontSize:"5em",
+                                                paddingTop:memValPadT}}>
                             14
                         </div>
-                        <div className="data-container-name">
+                        <div className="data-container-name"
+                                        style={{fontSize:"2em",
+                                            marginTop: "-1em",
+                                            marginBottom: memValMarginB,
+                                            fontWeight: "normal",
+                                            color: "#A5AEB5",
+                                            }}>
                             TB
                         </div>
                         <div className="row" style={{margin:"0px",
@@ -101,9 +120,13 @@ class PMemoryManagement extends Skeleton{
 
                     <ContentBox number='14'
                                 desc="ACTIVE SHELVES"
-                                height={panelHeight}/>
+                                height={panelHeight}
+                                fontSize={"5em"}
+                                paddingTop={"0em"}/>
                     <ContentBox number="1,792"
                                 desc="BOOKS"
+                                fontSize={"5em"}
+                                paddingTop={"0em"}
                                 height={panelHeight}/>
                 </div>
             </Skeleton>

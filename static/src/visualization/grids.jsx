@@ -130,8 +130,9 @@ class Flatgrids extends ApiRequester{
 
 
     render() {
-        this.readFetchedValues(); //doesn't do anyhthing for this component yet.
-
+        //doesn't do anyhthing for this component yet.
+        var fetched = this.readFetchedValues();
+console.log("-> " + fetched);
         var spoofed = this.spoofData();
         this.state.booksMap = spoofed.dataSet;
         var colorClasses = spoofed.colorSet;
