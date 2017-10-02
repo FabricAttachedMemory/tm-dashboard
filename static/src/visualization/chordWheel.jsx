@@ -53,10 +53,10 @@ class Chords extends React.Component{
         }
 /*
         matrix = [
-            [1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1]
+            [1, 1, 1, 1],
+            [1, 1, 1, 1],
+            [1, 1, 1, 1],
+            [1, 1, 1, 1]
         ];
 */
 
@@ -73,7 +73,7 @@ class Chords extends React.Component{
 
         var chord = d3.chord()
             .padAngle(0.01) //space between rectangles
-            .sortSubgroups(d3.descending);
+            .sortSubgroups(d3.acscending);
 
         var arc = d3.arc()
             .innerRadius(this.state.innerRadius)
