@@ -25,8 +25,8 @@ class Journal():
 
     def __init__(self, name, **args):
         """
-            @param name: pass __file__ to assign caller's dirname as Journal name,
-                        or pass non empty string to set a custom name.
+            @param name: pass __file__ to assign blueprint's dirname as Journal
+                        name, or pass non empty string to set a custom name.
             @args mainapp: a Flask server that is using this jouranl/blueprint.
         """
         self.mainapp = args['mainapp'] if ('mainapp' in args) else None

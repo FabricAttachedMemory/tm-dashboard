@@ -20,7 +20,7 @@ class Middle extends React.Component {
         return (
         <div className="col-md-12" style={{padding: paddings.join(' '),}}>
             <Navbar fluid>
-                <Nav bsStyle="tabs" navbar justified activeKey={this.props.activeKey}>
+                <Nav bsStyle="tabs" justified activeKey={this.props.activeKey}>
                     <LinkContainer to="/overview">
                         <NavItem eventKey={1}>Overview</NavItem>
                     </LinkContainer>

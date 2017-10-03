@@ -23,6 +23,7 @@ class BRackOverview extends ApiRequester {
             var id = "RackOverview_Enc_" + enc + "_Node_" + i;
             columns.push(
                         <td id={id} className="rackTbCell" key={i}
+                        style={{paddingLeft:"0px", paddingRight:"0px"}}
                             onMouseEnter={this.onMouseOver.bind(this, i)}
                             onMouseLeave={this.onMouseOut.bind(this, i)}>
                         {index}
@@ -63,18 +64,14 @@ class BRackOverview extends ApiRequester {
 
 
     render() {
-        var boxStyle = {
-            fontSize: "16px"
-        };
-
         var numOfNodes = this.props.nodeCount;
 
         var tables = [];
-        var layout = DataSpoofer.hardwareLayout();
+        var topology = DataSpoofer.SystemTopology(); //FIXME: get topology from API call
         var countStart = 0;
-        for(var i=0; i < layout.length; i++){
-            tables.push(this.buildEnclosureTable(i, countStart, layout[i]));
-            countStart = countStart + layout[i];
+        for(var i=0; i < topology.length; i++){
+            tables.push(this.buildEnclosureTable(i, countStart, topology[i]));
+            countStart = countStart + topology[i];
         }//for
 
         return (

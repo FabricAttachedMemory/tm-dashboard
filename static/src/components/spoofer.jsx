@@ -47,13 +47,29 @@ export function nodeStatsData(){
 }//nodeStatsData
 
 
-//Return an array of Nodes in the Enclosure, where array Index represents
-//enclosure number, and the value of the index is the Nodes number in that
-//enclosure.
-export function hardwareLayout(){
-    return [5, 5, 5];
-}//hardwareLayout
+// Return a Matrix of data flow between nodes needed for the Chord diagram to
+// render arcs (Overview tab)...
+export function ChordMatrix(topology){
+    var nodesCount = 0;
+    for(var i=0; i < topology.length; i++){
+        nodesCount += topology[i];
+    }//for
 
+    var matrix = [];
+    for(var i=0; i<nodesCount; i++){
+        var nodes_flow = [];
+        for(var j=0; j<nodesCount; j++){
+            nodes_flow.push(1);
+        }
+        matrix.push(nodes_flow);
+    }//for i
+    return matrix;
+}//ChordMatrix
+
+
+export function SystemTopology(){
+    return [10, 10, 10];
+}//SystemTopology
 
 
 export function GridsData(numOfBooks){
