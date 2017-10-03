@@ -24,95 +24,47 @@ class Chords extends React.Component{
         super(props);
         this.state = {
             numberOfNodes : 0,
-            systemLayout : [],
+            topology : [],
+            matrix : [[]],
             innerRadius : 0,
             outerRadius : 0,
             svgWidth : 0,
             svgHeight : 0,
         };
 
-        this.state.systemLayout = DataSpoofer.hardwareLayout(); //FIXME: TRASH
-        for(var i=0; i < this.state.systemLayout.length; i++){
-            this.state.numberOfNodes += this.state.systemLayout[i];
-        }//for
-
-        if(this.state.numberOfNodes < 2) //No layout? Show at least something...
-            this.state.numberOfNodes = 14;
+        this.state.topology = DataSpoofer.SystemTopology(); // FIXME: Real data here
+        this.state.matrix = DataSpoofer.ChordMatrix(this.state.topology); //FIXME: TRASH
+        this.state.numberOfNodes += this.state.matrix.length;
     }//constructor
 
 
 
     componentDidMount(){
-        var matrix = [];
-
-        for(var i =0; i < this.state.numberOfNodes; i++){
-            var arcs = [];
-            for(var j =0; j < this.state.numberOfNodes; j++)
-                arcs.push(5);
-            matrix.push(arcs);
-        }
-/*
-        matrix = [
-            [1, 1, 1, 1],
-            [1, 1, 1, 1],
-            [1, 1, 1, 1],
-            [1, 1, 1, 1]
-        ];
-*/
         var svg = d3.select("#abyss-circle");
-/*
-        this.state.svgWidth = svg.attr("width");
-        this.state.svgHeight = svg.attr("height");
-        //circle's overall radius
-        this.state.outerRadius = Math.min(
-                                this.state.svgWidth,
-                                this.state.svgHeight)*0.415;
-        //radius of where arcs are growing from
-        this.state.innerRadius = this.state.outerRadius - 35;
 
-
-        var chord = d3.chord()
-            .padAngle(0.01) //space between rectangles
-            .sortSubgroups(d3.acscending)
-            .sortChords(d3.acscending);
-
+        //Create a d3.chord() component to be used for the main drawing.
+        var mainChord = this.createChord(svg, this.state.matrix);
+        var chord = mainChord.chord;
+        var g = mainChord.g;
         var arc = d3.arc()
             .innerRadius(this.state.innerRadius)
             .outerRadius(this.state.outerRadius);
 
-        var g = svg.append("g")
-            .attr("transform",
-                    "translate(" + this.state.svgWidth / 1.95 + "," +
-                                    this.state.svgHeight / 2 + ")")
-            .datum(chord(matrix));
-*/
-
-        //Outer circle enclosure goup name
-        var allThings = this.createChord(svg, this.state.numberOfNodes);
-        var chord = allThings.chord;
-        var g = allThings.g;
-        var arc = d3.arc()
-            .innerRadius(this.state.innerRadius)
-            .outerRadius(this.state.outerRadius);
-
-        //Creating Inner circle with Node names
+        //Creating first Inner "circle" rectangle group with the node names in it.
         var innerRectGroups = this.createRectCircle(g, arc);
         innerRectGroups.selectAll("path")
-            .on("mouseover", (e) => this.onMouseOver(e))
+            .on("mouseover", (e) => this.onMouseOver(e)) // use "(e) =>" to be able to use "this"
             .on("mouseout", (e) => this.onMouseOut(e));
         this.setGroupId(innerRectGroups, "innerRectCircle_");
 
         innerRectGroups.append("text")
-            .on("mouseover", (e) => {
-                        this.onMouseOver(e)})
-            .on("mouseout", (e) => {
-                        this.onMouseOut(e)})
+            .on("mouseover", (e) => { this.onMouseOver(e)})
+            .on("mouseout", (e) => { this.onMouseOut(e)})
             .attr("x", 55)
             .attr("dy", 20)
             .append("textPath")
-                .attr("xlink:href", function(d) {
-                    return "#innerRectCircle_" + d.index; })
-                .text(function(d, i) { return (d.index +1 < 10) ? "0" + (d.index + 1) : (d.index + 1); })
+                .attr("xlink:href", function(d) { return "#innerRectCircle_" + d.index; })
+                .text(function(d, i) { return (d.index+1 < 10) ? "0" + (d.index+1) : (d.index+1); })
                 .style("fill", "white");
 
         //Creating Arcs(path) flow between nodes(rects)
@@ -137,8 +89,9 @@ class Chords extends React.Component{
         var highlightGroup = this.createRectCircle(g, arc3, d3.rgb("#35444F"));
         this.setGroupId(highlightGroup, "HightlightGroup_");
 
-
-        var encThingy = this.createChord(svg, 3);
+        //Creat an arc line group with the Enclosure names.
+        var encMatrix = Array(this.state.topology.length).fill(Array(this.state.topology.length).fill(1));
+        var encThingy = this.createChord(svg, encMatrix);
         var encChord = encThingy.chord;
         var encG = encThingy.g;
         var encArc = d3.arc()
@@ -158,8 +111,37 @@ class Chords extends React.Component{
                 .text(function(d, i) { return "Enclosure " + (d.index + 1); })
                 .style("fill", "#A0A9B1");
 
-        DataSharing.Set("Enclosures", this.state.systemLayout.length);
+        DataSharing.Set("Enclosures", this.state.topology.length);
     }//componentDidUpdate
+
+
+    // Create an outer circle arc line with the enclosure name for the group.
+    // param@ svg: svg object reference (d3.select()) to create chords into.
+    // param@ matrix: a 2D array of integers showing the data flow between nodes. 
+    createChord(svg, matrix){
+        if(matrix === undefined)
+            return;
+
+        this.state.svgWidth = svg.attr("width");
+        this.state.svgHeight = svg.attr("height");
+        //circle's overall radius
+        this.state.outerRadius = Math.min(
+                                this.state.svgWidth,
+                                this.state.svgHeight)*0.415;
+        //radius of where arcs are growing from
+        this.state.innerRadius = this.state.outerRadius - 35;
+        var chord = d3.chord()
+            .padAngle(0.01) //space between rectangles
+            .sortSubgroups(d3.acscending)
+            .sortChords(d3.acscending);
+
+        var g = svg.append("g")
+            .attr("transform",
+                    "translate(" + this.state.svgWidth / 1.95 + "," +
+                                   this.state.svgHeight / 2 + ")")
+            .datum(chord(matrix));
+        return {"chord": chord, "g": g};
+    }//createEnclosureArc
 
 
     setGroupId(group, idPrefix){
@@ -199,16 +181,14 @@ class Chords extends React.Component{
               // RIBBON inner collor
               .style("fill", function(d) { return "rgb(0, 0, 0, 0)"; })
               //RIBBON corder\stroke color
-              .style("stroke", function(d) { return d3.rgb("#00000"); });
+              .style("stroke", function(d) { return "rbg(0,0,0,0)" });
     }//createRibbonArcs
 
 
-    /* Create rectangle group forming a full circle.
-     *
-     * @param parentObj : <g> element to append rectangles to.
-     * @param arc : d3.arc() element.
-     * @return : return created rectangles group.
-    */
+    // Create rectangle group forming a full circle.
+    //  @param parentObj : <g> element to append rectangles to.
+    //  @param arc : d3.arc() element.
+    //  @return : return created rectangles group.
     createRectCircle(parentObj, arc, fill="#425563"){
         //Container for the inner rectangle group that has Node Number label
         var nodeRectGroup = parentObj.append("g")
@@ -225,49 +205,19 @@ class Chords extends React.Component{
     }//createRectCircle
 
 
-    /* Create an outer circle arc line with the enclosure name for the group. */
-    createChord(svg, nodesNum){
-        var matrix = [];
-        for(var i=0; i <nodesNum; i++){
-            var sub = [];
-            for(var j=0; j < nodesNum; j++){
-                sub.push(1);
-            }
-            matrix.push(sub);
-        }//for i
-
-        this.state.svgWidth = svg.attr("width");
-        this.state.svgHeight = svg.attr("height");
-        //circle's overall radius
-        this.state.outerRadius = Math.min(
-                                this.state.svgWidth,
-                                this.state.svgHeight)*0.415;
-        //radius of where arcs are growing from
-        this.state.innerRadius = this.state.outerRadius - 35;
-
-        var chord = d3.chord()
-            .padAngle(0.01) //space between rectangles
-            .sortSubgroups(d3.acscending)
-            .sortChords(d3.acscending);
-
-        var g = svg.append("g")
-            .attr("transform",
-                    "translate(" + this.state.svgWidth / 1.95 + "," +
-                                    this.state.svgHeight / 2 + ")")
-            .datum(chord(matrix));
-        return {"chord": chord, "g": g};
-    }//createEnclosureArc
-
-
+    // React to the mouse hover over the rectangle element with the Node name
+    // in it to display data flow (ribbons path). 
     onMouseOver(arcData){
-        var enc = GetEncFromNode(this.state.systemLayout, arcData.index);
+        var enc = GetEncFromNode(this.state.topology, arcData.index);
         RackOverview.SetActive(enc, arcData.index, true);
         ShowNodeActivity(arcData.index, true);
     }//onMouseOver
 
 
+    // React to the mouse hover out from the rectangle element to hide data
+    // flow (ribbon path) between nodes.
     onMouseOut(arcData){
-        var enc = GetEncFromNode(this.state.systemLayout, arcData.index);
+        var enc = GetEncFromNode(this.state.topology, arcData.index);
         RackOverview.SetActive(enc, arcData.index, false);
         ShowNodeActivity(arcData.index, false);
     }//onMouseOut
@@ -309,7 +259,7 @@ export default Chords;
  * @param node: Node number to show activity of.
  * @param state: bool state to show(true) or hide(false) node activity.
 */
-export function ShowNodeActivity(node, state){
+export function ShowNodeActivity(node, hide){
     var pathObj = d3.selectAll("g.ribbons path");
 
     pathObj.filter(function(d){
@@ -318,11 +268,11 @@ export function ShowNodeActivity(node, state){
         })
   .transition()
             .style("opacity", function(d) {
-                            return (state ? 1 : 0.05); })
+                            return (hide ? 1 : 0); })
             .style("fill", function(d) {
-                            return (state ? "#2AD2C9" : "rgba(0, 0, 0, 0.0)"); })
+                            return (hide ? "#2AD2C9" : "rgb(0,0,0,0)"); })
             .style("stroke", function(d) {
-                            return (state ? d3.rgb("#2AD2C9").darker() : "#000000"); });
+                            return (hide ? d3.rgb("#2AD2C9").darker() : "rgb(0,0,0,0)"); });
 }//ShowNodeActivity
 
 
