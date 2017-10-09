@@ -143,9 +143,10 @@ class ApiRequester extends React.Component {
 
 ApiRequester.defaultProps = {
     height  : "300px",
+    className : "",
     name    : "",
     url     : "",
-    refreshRate     : 5000,
+    refreshRate     : 2500,
     spoofAfterFails : 2,
     spoofedData     : []
 }

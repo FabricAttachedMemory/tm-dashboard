@@ -82,18 +82,14 @@ class BRackOverview extends ApiRequester {
     }//render
 }//class
 
-/*
-BRackOverview.defaultProps = {
-    start : 1, //first node index to start count from.
-    nodeCount : PropTypes.number.isRequired,
-    enc : PropTypes.number.isRequired
-}
-*/
-
 
 export default BRackOverview;
 
 
+// This primary will be called by chordWheel.jsx onMouseOver and on MouseOut
+// functions.
+// Highlight or unhighlight enclosure's cell (node) based on the currently
+// hightlighed chord's arc.
 export function SetActive(enc, node, state){
     var tableCellId = "RackOverview_Enc_"+enc+"_Node_"+node;
     var element = document.getElementById(tableCellId);

@@ -1,0 +1,22 @@
+.smoothHeight{
+    -webkit-transition: max-height 1s; 
+    -moz-transition: max-height 1s; 
+    -ms-transition: max-height 1s; 
+    -o-transition: max-height 1s; 
+    transition: max-height 1s; 
+}
+
+.smoothFadein{
+    opacity: 1;
+    transition: opacity 1.0s ease-out;
+    -ms-transition: opacity 1.0s ease-out;
+    -moz-transition: opacity 1.0s ease-out;
+    -webkit-transition: opacity 1.0s ease-out;
+
+    -webkit-transition-delay: 1s; /* Safari */
+    transition-delay: 1s;
+}
+
+.smoothFadeout{
+    opacity: 0;
+}

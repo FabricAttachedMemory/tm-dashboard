@@ -25,6 +25,7 @@ class Skeleton extends React.Component{
             panelPadding : ["5px", "5px", "5px", "5px"],
             windowHeight : window.innerHeight,
             windowWidth : window.innerWidth,
+            forceRender : false,
         }
     }//ctor
 
@@ -70,7 +71,9 @@ class Skeleton extends React.Component{
     shouldComponentUpdate(nextProps, nextState){
         var isHeightChanged = (this.state.windowHeight != window.innerHeight);
         var isWidthChanged = (this.state.widnowWidth != window.innerWidth);
-        return isHeightChanged || isWidthChanged || isPanelWidthChanged;
+        var isForceRender = nextState.forceRender != this.state.forceRender;
+
+        return isHeightChanged || isWidthChanged || isPanelWidthChanged || isForceRender;
     }//shouldComponentUpdate
 
 

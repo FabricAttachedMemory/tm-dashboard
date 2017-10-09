@@ -1,7 +1,6 @@
 @font-face { font-family: MetricHPE; src: url("./fonts/MetricHPE.otf"); }
 @font-face { font-family: MetricHPE-Semi; src: url("./fonts/MetricHPE-Semi.otf"); }
 
-
 .hpeFont{
     color: white;
     font-family: MetricHPE-Semi;

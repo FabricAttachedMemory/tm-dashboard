@@ -19,6 +19,7 @@ class POverview extends Skeleton{
     constructor(props) {
         super(props);
         this.state.isFirstRender = true;
+        this.state.heightStack = [];
     }//ctor
 
 
@@ -30,12 +31,41 @@ class POverview extends Skeleton{
 
 
     componentDidMount(){
-        var box = document.getElementById("RackOverviewBox");
-        var boxHeight = box.offsetHeight;
-        var statsBox = document.getElementById("NodeStatsBox");
-        var statsBoxHeight = statsBox.offestHeight;
+        this.state.heightStack = [];
+        var headerBox = document.getElementById("headerPanel");
+        var marginBottom = 0;
+        if(headerBox != null){
+            marginBottom = parseFloat(window.getComputedStyle(headerBox).marginBottom.split("px")[0]);
+            this.state.heightStack.push(parseFloat(headerBox.clientHeight) + marginBottom);
+        }
+        
+        var rackBox = document.getElementById("RackOverviewBox");
+        if(rackBox != null){
+            marginBottom = parseFloat(window.getComputedStyle(rackBox).marginBottom.split("px")[0]);
+            this.state.heightStack.push(parseFloat(rackBox.clientHeight) + marginBottom);
+        }
+        if(this.state.heightStack.length == 2){
+            this.setState({forceRender : true});
+        }
     }//componentDidMount
 
+
+    buildNodeStats(state){
+        //make stats smoothly appear on the screen when ready to render data.
+        //otherwise - set oppacity to 0 to hide all stats data.
+        var className = (state) ? "smoothFadein" : "smoothFadeout";
+        return (
+            <div>
+            <BoxHeader text="Node No. (Enclosure No.)"
+                        className={className}
+                        textAlign="left"
+                        paddingLeft="20px"/>
+            <NodeStats name="RightBoxEnclosureNo"
+                        className={className}
+                        spoofedData={DataSpoofer.nodeStatsData()}/>
+            </div>
+        );
+    }
 
     render() {
         var panelClass = "col-md-2";
@@ -43,34 +73,24 @@ class POverview extends Skeleton{
         var rackOverviewHeight  = this.getHeightRatio(0.3);
         var heightTaken = 0.12 * encCount;
 
-        var elm = document.getElementById("RackOverviewBox");
-        if(elm != null)
-            heightTaken = elm.clientHeight;
-        else
-            heightTaken = 351;
-
-        elm = document.getElementById("headerPanel");
-        if(elm != null)
-            heightTaken += elm.clientHeight;
-        else
-            heightTaken += 40;
-
         if(!isNaN(encCount))
             rackOverviewHeight  = this.getHeightRatio(heightTaken);
 
-        heightTaken += 135;
-        //heightTaken = 0.93 - heightTaken - 0.092;
-//        var nodeInfoHeight  = this.getHeightRatio(heightTaken);
-        var nodeInfoHeight  = window.innerHeight - heightTaken + "px";
+        // heightTaken += 135;
+        // var nodeInfoHeight  = window.innerHeight - heightTaken + "px";
+        var nodeInfoHeight  = "0px";
         var dscBtnBox       = this.getHeightRatio(0.092);
 
-        //maxHeight = height so that paddingTop does not extend height further.
-        var nodeInfoMaxHeight   = nodeInfoHeight;
+        if(this.state.heightStack.length == 2){
+            nodeInfoHeight = window.innerHeight;
+            nodeInfoHeight -= this.state.heightStack[0];
+            nodeInfoHeight -= this.state.heightStack[1];
+            nodeInfoHeight -= parseFloat(dscBtnBox.split("px")[0]);
+            nodeInfoHeight -= 12;
+            nodeInfoHeight += "px";
+        }
+        
         var nodeInfoPaddingTop  = (nodeInfoHeight.split("px")[0] / 5) + "px";
-
-        var middleWidth     = window.innerWidth - (this.state.panelWidth * 2);
-        var middleHeight    = this.getHeight(105, 1);
-
         return (
             <Skeleton>
                 <div className={panelClass}
@@ -87,14 +107,11 @@ class POverview extends Skeleton{
                                         nodeCount={7}/>
                     </ContentBox>
 
-                    <ContentBox id="NodeStatsBox" paddingTop={nodeInfoPaddingTop}
-                                    height={nodeInfoHeight}
-                                    maxHeight={nodeInfoMaxHeight}>
-                        <BoxHeader text="Node No. (Enclosure No.)"
-                                    textAlign="left"
-                                    paddingLeft="20px"/>
-                        <NodeStats name="RightBoxEnclosureNo"
-                                   spoofedData={DataSpoofer.nodeStatsData()}/>
+                    <ContentBox id="NodeStatsBox"
+                                paddingTop={nodeInfoPaddingTop}
+                                height={nodeInfoHeight}
+                                maxHeight={nodeInfoHeight}>
+                        {this.buildNodeStats(nodeInfoHeight != "0px")}
                     </ContentBox>
 
                     <ContentBox height={dscBtnBox}>
