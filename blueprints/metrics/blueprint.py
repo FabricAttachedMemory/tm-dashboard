@@ -74,18 +74,42 @@ def metrics_all(metric_type=None):
     """
     mainapp = Journal.mainapp
     response = None
-
-    http = HTTP_REQUESTS.get(mainapp.config['LMP_SERVER'] + 'metrics/',
+    r = None
+    fabr = None
+    try:
+        fabr = HTTP_REQUESTS.get(mainapp.config['ZMETRICS_SERVER'],
                                      headers=mainapp.config['HTTP_HEADERS'])
+    except HTTP_REQUESTS.exceptions.RequestException as e:
+#        print(fabr.status_code)
+        print(e)
+        fab = 0.0
+        print('zmetrics.py is not responding.')
 
-    if http.status_code >= 300:
+#    if fabr.status_code != HTTP_REQUESTS.codes.ok:
+#        fab = 0.0
+    else:
+        fab_data = fabr.json()
+        fab = round(fab_data["fabric"]["percentage"], 2)
+
+    r = HTTP_REQUESTS.get(mainapp.config['LMP_SERVER'] + 'global/',
+                                     headers=mainapp.config['HTTP_HEADERS'])
+    if r.status_code >= 300:
         if Journal.mainapp.config['ALLOW_SPOOF']:
             response = make_response(jsonify(Journal.spoofed), 206)
         else:
             Journal.reset_metrics()
-            response = make_response(jsonify(Journal.metrics), http.status_code)
+            response = make_response(jsonify(Journal.metrics), r.status_code)
     else:
-        response = make_response(jsonify(http.json()), http.status_code)
+        data = r.json()
+        cpu = data["socs"]["cpu_percent"]
+        fam = round((float(data["memory"]["allocated"]) / data["memory"]["available"]) * 100, 2)
+        metrics = {
+            "cpu": cpu,
+            "fabric": fab,
+            "fam": fam
+        }
+
+        response = make_response(jsonify(metrics), r.status_code)
 
     if(metric_type is None):
         return response
