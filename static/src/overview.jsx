@@ -38,7 +38,7 @@ class POverview extends Skeleton{
             marginBottom = parseFloat(window.getComputedStyle(headerBox).marginBottom.split("px")[0]);
             this.state.heightStack.push(parseFloat(headerBox.clientHeight) + marginBottom);
         }
-        
+
         var rackBox = document.getElementById("RackOverviewBox");
         if(rackBox != null){
             marginBottom = parseFloat(window.getComputedStyle(rackBox).marginBottom.split("px")[0]);
@@ -86,10 +86,10 @@ class POverview extends Skeleton{
             nodeInfoHeight -= this.state.heightStack[0];
             nodeInfoHeight -= this.state.heightStack[1];
             nodeInfoHeight -= parseFloat(dscBtnBox.split("px")[0]);
-            nodeInfoHeight -= 12;
+            nodeInfoHeight -= 22;
             nodeInfoHeight += "px";
         }
-        
+
         var nodeInfoPaddingTop  = (nodeInfoHeight.split("px")[0] / 5) + "px";
         return (
             <Skeleton>
