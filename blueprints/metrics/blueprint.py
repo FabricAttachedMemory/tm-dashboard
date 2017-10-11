@@ -64,6 +64,45 @@ def metrics_html():
     return render_template('index.html') # Someday it might change. Or not...
 
 
+@Journal.BP.route('/api/metrics/fab', methods=['GET'])
+def get_fab():
+    global Journal
+    mainapp = Journal.mainapp
+    request = None
+    fab_data = { 'fabric' : { 'percentage' : -1 }} #json response from request
+    response_dict = { 'value' : -1 } #dict data that will be returned
+
+    try:
+        request = HTTP_REQUESTS.get(mainapp.config['LMP_SERVER'] + '/fab/',
+                                     headers=mainapp.config['HTTP_HEADERS'])
+    except HTTP_REQUESTS.exceptions.RequestException as e:
+        print('Zmetrics server is not responding! \n Error msg:\n%s' % e)
+
+    if request.status_code != HTTP_REQUESTS.codes.ok:
+        if mainapp.config['ALLOW_SPOOF']:
+            response_dict['value'] = Journal.spoofed['fabric']
+        return make_response(jsonify(response_dict), 500)
+
+    fab_data = request.json()
+
+    if fab_data.get('fabric', None) is None: #to preserve server's state on fail
+        response_dict['error'] = 'Key [\'fabric\'] was not found!'
+        return make_response(jsonify(response_dict), 500)
+
+    if fab_data['fabric'].get("percentage", None) is None:
+        response_dict['error'] = 'Key [\'fabric\'][\'percentage\'] was not found!'
+        return make_response(jsonify(response_dict), 500)
+
+    # LMP server returned json data that was handled incorrectly. Quit.
+    if response_dict.get('error', None) is None:
+        return make_response(jsonify(response_dict), 500)
+
+    #At this point all 'idiot checks' has passed and we can safely extract data
+    response_dict['value'] = round(fab_data["fabric"]["percentage"], 2)
+
+    return make_response(jsonify(response_dict), request.status_code)
+
+
 @Journal.BP.route('/api/metrics/<metric_type>', methods=['GET'])
 @Journal.BP.route('/api/metrics', methods=['GET'])
 def metrics_all(metric_type=None):
@@ -72,57 +111,46 @@ def metrics_all(metric_type=None):
     When RestAPI server providing metrics data is not running, user can set flags
     in this server config to return random data instead.
     """
+    global Journal
     mainapp = Journal.mainapp
-    response = None
-    r = None
-    fabr = None
-    try:
-        fabr = HTTP_REQUESTS.get(mainapp.config['ZMETRICS_SERVER'],
-                                     headers=mainapp.config['HTTP_HEADERS'])
-    except HTTP_REQUESTS.exceptions.RequestException as e:
-#        print(fabr.status_code)
-        print(e)
-        fab = 0.0
-        print('zmetrics.py is not responding.')
+    request = None
+    metrics_data = None
+    status_code = 200
 
-#    if fabr.status_code != HTTP_REQUESTS.codes.ok:
-#        fab = 0.0
-    else:
-        fab_data = fabr.json()
-        fab = round(fab_data["fabric"]["percentage"], 2)
-
-    r = HTTP_REQUESTS.get(mainapp.config['LMP_SERVER'] + 'global/',
+    request = HTTP_REQUESTS.get(mainapp.config['LMP_SERVER'] + 'global/',
                                      headers=mainapp.config['HTTP_HEADERS'])
-    if r.status_code >= 300:
+
+    if request.status_code != HTTP_REQUESTS.codes.ok:
         if Journal.mainapp.config['ALLOW_SPOOF']:
-            response = make_response(jsonify(Journal.spoofed), 206)
+            status_code = 200
+            Journal.metrics = Journal.spoofed
         else:
             Journal.reset_metrics()
-            response = make_response(jsonify(Journal.metrics), r.status_code)
+            status_code = request.status_code
     else:
-        data = r.json()
-        cpu = data["socs"]["cpu_percent"]
-        fam = round((float(data["memory"]["allocated"]) / data["memory"]["available"]) * 100, 2)
-        metrics = {
+        metrics_data = request.json()
+
+        #TODO: idiot's check on tmetrics_data keys should be here
+
+        cpu = metrics_data["socs"]["cpu_percent"]
+        mem_allocated = metrics_data["memory"]["allocated"]
+        mem_available = metrics_data["memory"]["available"]
+        fam = round((float(mem_allocated) / mem_available) * 100, 2)
+        fab = json.loads(get_fab().response[0]).get('value', -1)
+        Journal.metrics = {
             "cpu": cpu,
             "fabric": fab,
-            "fam": fam
+            "fam": fam,
+            'error' : None
         }
 
-        response = make_response(jsonify(metrics), r.status_code)
-
     if(metric_type is None):
-        return response
-    return makeSingleValue(response, metric_type)
+        return make_response(jsonify(Journal.metrics), status_code)
 
+    # Return a key-value pair { 'value' : -1 } for the metrics type (cpu, fam, fab)
+    if(Journal.metrics.get(metric_type, None) is None):
+        error_dict = { 'value' : -1, #so that front end wont freak out
+                        'error' : 'no such key [' + metric_type + ']' }
+        return make_response(jsonify(error_dict), 400)
 
-def makeSingleValue(response, key):
-    """ Extract cpu, fabric or fab values from the response json string, which
-    is build by "metrics_all" function. This will make a single key-value pair
-    of the form { value : -1 }.
-        @param key: metrics type to extract - cpu, fabric, fab.
-    """
-    response_dict = json.loads(response.response[0])
-    if(response_dict.get(key, None) is None):
-        return make_response(jsonify('No such key "%s"!' % key), 400)
-    return make_response(jsonify({'value' : response_dict[key]}), 200)
+    return make_response(jsonify({'value' : Journal.metrics[metric_type]}), 200)

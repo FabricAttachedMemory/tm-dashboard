@@ -111,15 +111,15 @@ class Skeleton extends React.Component{
                                 maxWidth : this.state.panelMaxWidth,
                                 minWidth : this.state.panelMinWidth}}>
                     <PercentCircle name="CPU" height={panelHeight}
-                                    url={"http://10.33.234.150:9099/api/metrics/cpu"}
+                                    url={"http://localhost:9099/api/metrics/cpu"}
                                     mbBottom={this.state.boxMargin}
                                     spoofedData={DataSpoofer.cpuData()}/>
                     <PercentCircle name="Fabric Attached Memory"  height={panelHeight}
-                                    url={"http://10.33.234.150:9099/api/metrics/fam"}
+                                    url={"http://localhost:9099/api/metrics/fam"}
                                     mbBottom={this.state.boxMargin}
                                     spoofedData={DataSpoofer.famData()}/>
                     <PercentCircle name="Fabric" height={panelHeight}
-                                    url={"http://10.33.234.150:9099/api/metrics/fabric"}
+                                    url={"http://localhost:9099/api/metrics/fabric"}
                                     mgBottom={"0px"}
                                     spoofedData={DataSpoofer.fabData()}/>
                 </div>
