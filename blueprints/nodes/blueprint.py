@@ -13,8 +13,8 @@ import os
 import requests as HTTP_REQUESTS
 import random
 from flask import Blueprint, jsonify, render_template, make_response, url_for, request
-from pdb import set_trace
 from pprint import pprint
+from pdb import set_trace
 
 from tm_dashboard.blueprints.bp_base import Journal
 
@@ -23,11 +23,12 @@ class JNodes(Journal):
 
     def __init__(self, name, **args):
         super().__init__(name, **args)
-        self.topology = {
-            "size" : -1,
-            "nodes" : {},
-            "flow_matrix" : []
-        }
+        self.json_model = {
+                        "size" : -1,
+                        "nodes" : {},
+                        "flow_matrix" : []
+                        }
+        self.topology = {}
         # headers = {
         #     "Accept": "application/json; Content-Type: application/json; charset=utf-8; version=1.0",
         # }
@@ -67,13 +68,7 @@ class JNodes(Journal):
     @property
     def spoofed(self):
         """ Refer to the base class (../bp_base.py) for documentation."""
-        nodes = { 'somePath_1/SocBoard/1/Soc/1' : 'node_id_1',
-                'somePath_2/SocBoard/1/Soc/1' : 'node_id_2',
-                'somePath_3/SocBoard/1/Soc/1' : 'node_id_3'
-        }
-        return { 'nodes' : nodes,
-                 "flow_matrix" : self.spoof_flow_matrix(10)
-                }
+        return { "NOT IMPLEMENTED" : "YET" }
 
 
     def spoof_flow_matrix(self, size):
@@ -99,26 +94,78 @@ def validate_request(*args, **kwargs):
 
 
 @Journal.BP.route('/api/topology', methods=['GET'])
-def get_machine_topology():
+@Journal.BP.route('/api/topology/<is_force_update>', methods=['GET'])
+def get_machine_topology(is_force_update=None):
     global Journal
+    response = None
 
+    # save time if topology has been already created, since it doesn't change
+    # during server's runtime. However, it is possible to re-update by calling
+    # api/topology/force endpoint.
+    if Journal.topology and is_force_update is None:
+        # spoofed should be regenerated for the hope of getting real data during
+        # the API call..
+        if Journal.topology.get('spoofed', False) is False:
+            return make_response(jsonify(Journal.topology), 206)
+
+    return make_response(jsonify(build_topology()), 200)
+
+
+@Journal.BP.route('/api/nodes', methods=['GET'])
+def nodes_api():
+    """ Make an API request to the LMP(?) server to get all Nodes relevant
+    data: books, shelves, data flow between nodes and etc.
+     To get the arcs matrix, loop through all shelves and look for active ones.
+    The arcs matrix is base 0. The rows represent the source node and the columns
+    represent the nodes accessed for memory by the souce node.
+    """
+    global Journal
     mainapp = Journal.mainapp
-    request = None
-    response = Journal.topology #dict data to be returned
+    response = None
 
-    #request = HTTP_REQUESTS.get(mainapp.config['LMP_SERVER'] + 'lmp/nodes/',
-    #                            headers=mainapp.config['HTTP_HEADERS'])
+    if not Journal.topology:
+        build_topology() # that will build into Journal.topology variable
 
-    url = mainapp.config['LMP_SERVER'] + 'lmp/nodes/'
-    request = Journal.make_request(url)
+    num_nodes =  Journal.topology['size']
 
-    if request.status_code != HTTP_REQUESTS.codes.ok:
-        if mainapp.config['ALLOW_SPOOF']:
-            return make_response(jsonify(Journal.spoofed), 206)
-        return make_response(jsonify(response), 500)
+    arcs = [[0]*(num_nodes) for i in range(num_nodes)]
 
-    data = request.json()
-    nodes_list = data['nodes']
+    # get the list of all shelves
+    url = mainapp.config['LMP_SERVER'] + "shelf/"
+    response = Journal.make_request(url)
+
+    data = response.json()
+    shelf_list = data['entries']
+    for s in shelf_list:
+        # for each shelf, determine if it is active and what books it uses
+        shelf_req_url = url + s['name']
+        shelf_resp = Journal.make_request(shelf_req_url)
+        shelf_data = shelf_resp.json()
+
+        # If it is active then add to the arc matrix
+        if len(shelf_data['active']) > 0:
+            for book in shelf_data['books']:
+                book_lza = Journal.topology['lza'][book]
+                uses_memory_from_node = Journal.book_dict[book] - 1
+                for coord in shelf_data['active']:
+                        source_node = Journal.node_dict[coord] - 1
+                        arcs[int(source_node)][int(uses_memory_from_node)] = 1
+
+    return make_response(jsonify({'results': arcs}), 200)
+
+
+def build_topology():
+    global Journal
+    mainapp = Journal.mainapp
+    response = None
+
+    result = Journal.topology #json data to be returned
+
+    url = mainapp.config['LMP_SERVER'] + 'nodes/'
+    response = Journal.make_request(url)
+
+    resp_json = response.json()
+    nodes_list = resp_json['nodes']
 
     # nodes_list has {coordinate, node_id} for converting coordinate path
     # from the active shelf data to the node number.
@@ -130,57 +177,37 @@ def get_machine_topology():
 
     # num_nodes is used to return a NxN matrix with the connection data
     # It is zero based matrix meaning node N is indexed with N-1.
-    self.num_nodes = max(node_dict.values())
+    result['size'] = max(node_dict.values())
 
-    Journal.topology['nodes'] = node_dict
-    return make_response(jsonify(Journal.topology['nodes']), 200)
+    result['nodes'] = node_dict
+    result['lza'] = build_lza_data(node_dict)
+
+    # save result into Journal.topology, so that it can be accessed on the next
+    # calls without making API request.
+    Journal.topology.update(result)
+
+    return Journal.topology
 
 
-@Journal.BP.route('/api/nodes', methods=['GET'])
-def nodes_api():
-    """ Make an API request to the LMP(?) server to get all Nodes relevant
-    data: books, shelves, data flow between nodes and etc.
-    """
+def build_lza_data(node_dict):
+    '''Create a list of all LZA addresses per node. This is used to associate
+    the LZAs of an active shelf with the nodes that contribute the LZAs of the
+    active shelf.
+    '''
     global Journal
     mainapp = Journal.mainapp
-    response = Journal.topology
-    request = None
+    url = mainapp.config['LMP_SERVER'] + 'books/'
+    book_dict = {}
 
-    # To get the arcs matrix, loop through all shelves and look for
-    # active ones. The arcs matrix is base 0. The rows represent the
-    # source node and the columns represent the nodes accessed for
-    # memory by the souce node.
+    for node_id in node_dict.values():
+        # ASSUMPTION: interleave group number is node number-1
+        interleave_url = url + str(node_id - 1)
+        interleave_resp = Journal.make_request(interleave_url)
+        data=interleave_resp.json()
 
-    # arcs = [[0]*(Journal.num_nodes) for i in range(Journal.num_nodes)]
-
-    # get the list of all shelves
-    request = HTTP_REQUESTS.get(mainapp.config['LMP_SERVER'] + "/lmp/shelf/",
-                                headers=mainapp.config['HTTP_HEADERS'])
-
-    is_bad_response = self.handle_bad_response(request)
-    if is_bad_response is not None:
-        return is_bad_response #make_response() type with a proper status code
-
-    '''
-    if request.status_code != HTTP_REQUESTS.codes.ok:
-        if mainapp.config['ALLOW_SPOOF']:
-            return make_response(jsonify(Journal.spoofed), 206)
-        return make_response(jsonify(response), 500)
-    '''
-
-    data = request.json()
-    shelf_list = data['entries']
-    for s in shelf_list:
-        # for each shelf, determine if it is active and what books it uses
-        r = HTTP_REQUESTS.get(url + s['name'], headers=mainapp.config['HTTP_HEADERS'])
-        shelf_data = r.json()
-
-        # If it is active then add to the arc matrix
-        if len(shelf_data['active']) > 0:
-            for book in shelf_data['books']:
-                uses_memory_from_node = Journal.book_dict[book] - 1
-                for coord in shelf_data['active']:
-                        source_node = Journal.node_dict[coord] - 1
-                        arcs[int(source_node)][int(uses_memory_from_node)] = 1
-
-    return make_response(jsonify({'results': arcs}), 200)
+        books_list = data['books']
+        for book in books_list:
+            for keys, values in book.items():
+                lza = book['lza']
+                book_dict[lza] = node_id
+    return book_dict
