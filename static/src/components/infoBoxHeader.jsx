@@ -26,7 +26,7 @@ class BoxHeader extends React.Component {
             paddingRight : this.props.paddingRight
         };
         return (
-            <div className="data-container-name"
+            <div className={"data-container-name " + this.props.className}
                             style={boxStyle}>
                 {this.props.text}
             </div>
@@ -37,6 +37,7 @@ class BoxHeader extends React.Component {
 
 BoxHeader.defaultProps = {
     text : PropTypes.string.isRequired, // Text to display - a header.
+    className : "",
     height: "60px", // size of the wrapper <div>. Works like a margin in this case.
     lineHeight: "60px", // verticle alignment of the header relative to wrapped <div>
     textAlign : "center", //horizontal allignment of the header text.

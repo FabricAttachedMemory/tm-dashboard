@@ -8,14 +8,7 @@ import * as RackOverview from './rackOverviewBox';
 import * as DataSpoofer  from '../components/spoofer';
 import * as DataSharing  from '../components/dataSharing';
 
-
-// Returns an array of tick angles and values for a given group and step.
-function groupTicks(d, step) {
-  var k = (d.endAngle - d.startAngle) / d.value;
-  return d3.range(0, d.value, step).map(function(value) {
-    return {value: value, angle: value * k + d.startAngle};
-  });
-}
+var MATRIX = [];
 
 
 class Chords extends React.Component{
@@ -30,86 +23,118 @@ class Chords extends React.Component{
             outerRadius : 0,
             svgWidth : 0,
             svgHeight : 0,
+            renderMatrix : [[]],
         };
 
         this.state.topology = DataSpoofer.SystemTopology(); // FIXME: Real data here
-        this.state.matrix = DataSpoofer.ChordMatrix(this.state.topology); //FIXME: TRASH
-        this.state.numberOfNodes += this.state.matrix.length;
+        this.state.matrix   = DataSpoofer.ChordMatrix(this.state.topology); //FIXME: TRASH
+
+        this.state.numberOfNodes    = this.state.matrix.length;
+        this.state.renderMatrix     = this.constructRenderMatrix(this.state.matrix);
+
+        MATRIX = this.state.matrix;
     }//constructor
 
+
+    /**
+     *  Given matrix with the data flow, construct a matrix that will be used for
+     * arcs rendering. It will have "1" for each node, except for "0" for those
+     * arcs that looping into itself: [[0, 1], [1, 0]];
+     * @param {2d array} matrix "real" data with the nodes activity data.
+     */
+    constructRenderMatrix(matrix){
+        var length = matrix.length;
+        var renderMatrix = [];
+
+        for(var i=0; i<length; i++){
+            var flow = [];
+            for(var j=0; j<length; j++)
+                flow.push(1)
+            flow[i] = 0; //removing self lopping arc
+            renderMatrix.push(flow);
+        }//for
+
+        return renderMatrix;
+    }//constructRenderMatrix
 
 
     componentDidMount(){
         var svg = d3.select("#abyss-circle");
-
-        //Create a d3.chord() component to be used for the main drawing.
-        var mainChord = this.createChord(svg, this.state.matrix);
+        
+        // --- Create a d3.chord() component to be used for the main drawing. ---
+        var mainChord = this.createChord(svg, this.state.renderMatrix);
         var chord = mainChord.chord;
         var g = mainChord.g;
         var arc = d3.arc()
             .innerRadius(this.state.innerRadius)
             .outerRadius(this.state.outerRadius);
 
-        //Creating first Inner "circle" rectangle group with the node names in it.
+        // --- Creating first Inner "circle" rectangle group with the node names in it. ---
         var innerRectGroups = this.createRectCircle(g, arc);
         innerRectGroups.selectAll("path")
             .on("mouseover", (e) => this.onMouseOver(e)) // use "(e) =>" to be able to use "this"
             .on("mouseout", (e) => this.onMouseOut(e));
-        this.setGroupId(innerRectGroups, "innerRectCircle_");
-
+        this.setGroupId(innerRectGroups, "innerRectCircle_", "nodeNumberRect");
         innerRectGroups.append("text")
             .on("mouseover", (e) => { this.onMouseOver(e)})
             .on("mouseout", (e) => { this.onMouseOut(e)})
-            .attr("x", 55)
             .attr("dy", 20)
             .append("textPath")
-                .attr("xlink:href", function(d) { return "#innerRectCircle_" + d.index; })
-                .text(function(d, i) { return (d.index+1 < 10) ? "0" + (d.index+1) : (d.index+1); })
-                .style("fill", "white");
-
-        //Creating Arcs(path) flow between nodes(rects)
+            .attr("startOffset", "12%")
+            .attr("xlink:href", function(d) { return "#innerRectCircle_" + d.index; })
+            .text(function(d, i) { return (d.index+1 < 10) ? "0" + (d.index+1) : (d.index+1); })
+            .style("fill", "white");
+        
+        // --- Creating Arcs(path) flow between nodes(rects) ---
         this.createRibbonArcs(g);
-
+        
         //Outer Rect Circle Group
-        //IR = Inner Radius. OR = Outer Radius
+        //IR is short for Inner Radius. OR = Outer Radius
         var outerRectIR = this.state.innerRadius + 40;
         var outerRectOR = this.state.outerRadius + 35;
         var outerRect = d3.arc()
             .innerRadius(outerRectIR)
             .outerRadius(outerRectOR);
-
+        
         var outerRectGroup = this.createRectCircle(g, outerRect);
         this.setGroupId(outerRectGroup, "outerRect_");
-
-        //filling percent relative to the arc2 (outer rect group).
+        
+        // --- filling percent relative to the arc2 (outer rect group). ---
         var arc3Outer = outerRectOR - 26;
         var arc3 = d3.arc()
             .innerRadius(outerRectIR)
             .outerRadius(arc3Outer);
         var highlightGroup = this.createRectCircle(g, arc3, d3.rgb("#35444F"));
-        this.setGroupId(highlightGroup, "HightlightGroup_");
+        this.setGroupId(highlightGroup, "HightlightGroup_", "cpuRectangle");
 
-        //Creat an arc line group with the Enclosure names.
+        // --- Create an arc line group with the Enclosure names. ---
+        var sectionSpace = 0.1; //To add more space between Enclosure # arcs
         var encMatrix = Array(this.state.topology.length).fill(Array(this.state.topology.length).fill(1));
-        var encThingy = this.createChord(svg, encMatrix);
+        var encThingy = this.createChord(svg, encMatrix, sectionSpace);
         var encChord = encThingy.chord;
         var encG = encThingy.g;
+
         var encArc = d3.arc()
             .innerRadius(outerRectOR + 12)
-            .outerRadius(outerRectOR + 14);
+            .outerRadius(outerRectOR + 14)
+            //adds rotation since .padAngle() pads on one side only. It is set
+            //in createChord() func by passing third optional argument "sectionSpace"
+            .startAngle(function(d) { return d.startAngle + sectionSpace / 2;}) 
+            .endAngle(function(d) { return d.endAngle + sectionSpace / 2;});
+
         var encArcGroup = this.createRectCircle(encG, encArc, "#A0A9B1");
         this.setGroupId(encArcGroup, "EnclosureName_");
 
         encArcGroup.append("text")
-                .attr("font-size", "1.5em")
-                .attr("letter-spacing", "0.2em")
-                .attr("dy", -5)
-            .append("textPath")
-                .attr("startOffset", "25%")
-                .attr("xlink:href", function(d) {
-                    return "#EnclosureName_" + d.index; })
-                .text(function(d, i) { return "Enclosure " + (d.index + 1); })
-                .style("fill", "#A0A9B1");
+            .attr("font-size", "1.5em")
+            .attr("letter-spacing", "0.2em")
+            .attr("dy", -5)
+        .append("textPath")
+            .attr("startOffset", "25%")
+            .attr("xlink:href", function(d) {
+                return "#EnclosureName_" + d.index; })
+            .text(function(d, i) { return "Enclosure " + (d.index + 1); })
+            .style("fill", "#A0A9B1");
 
         DataSharing.Set("Enclosures", this.state.topology.length);
     }//componentDidUpdate
@@ -118,7 +143,7 @@ class Chords extends React.Component{
     // Create an outer circle arc line with the enclosure name for the group.
     // param@ svg: svg object reference (d3.select()) to create chords into.
     // param@ matrix: a 2D array of integers showing the data flow between nodes. 
-    createChord(svg, matrix){
+    createChord(svg, matrix, sectionSpace=0.01){
         if(matrix === undefined)
             return;
 
@@ -131,7 +156,7 @@ class Chords extends React.Component{
         //radius of where arcs are growing from
         this.state.innerRadius = this.state.outerRadius - 35;
         var chord = d3.chord()
-            .padAngle(0.01) //space between rectangles
+            .padAngle(sectionSpace) //space between rectangles
             .sortSubgroups(d3.acscending)
             .sortChords(d3.acscending);
 
@@ -144,27 +169,28 @@ class Chords extends React.Component{
     }//createEnclosureArc
 
 
-    setGroupId(group, idPrefix){
+    setGroupId(group, idPrefix, className=""){
         group.selectAll("path")
-            .attr("id", function(d, i) { return idPrefix + d.index; });
+            .attr("id", function(d, i) { return idPrefix + d.index; })
+            .attr("class", className);
     }//setGroupId
 
 
-    /* Arcs representing data flow will be created. Arc path is calculated by
-     * d3.datum(matrix) object called before this function is executed.
-     * @param parentObj : element on the page to append created arcs into.
-     */
+    // Arcs representing data flow will be created. Arc path is calculated by
+    // d3.datum(matrix) object called before this function is executed.
+    //  @param parentObj : element on the page to append created arcs into.
     createRibbonArcs(parentObj){
         var startAng = {}; //used to save StartAngle for each ribbon subgroup.
         var ribbon = d3.ribbon()
-            .startAngle(function(d) {
-                if(d.subindex == 0){
-                    startAng[d.index] = d.startAngle;
-                }
-                return startAng[d.index];})
-            .endAngle(function(d){
-                return startAng[d.index] + 0.02;})
-            .radius(this.state.innerRadius);
+        .radius(this.state.innerRadius - 5); // offset value defines where arcs start and ends
+        
+        ribbon.startAngle(function(d) {
+            if(!(d.index in startAng))
+                startAng[d.index] = d.startAngle + 0.02;
+            return startAng[d.index];
+        });
+        
+        ribbon.endAngle(function(d){ return startAng[d.index] + 0.02;});
 
         var color = d3.scaleOrdinal()
             .domain(d3.range(1));
@@ -172,16 +198,16 @@ class Chords extends React.Component{
         parentObj.append("g")
             .attr("class", "ribbons")
             .selectAll("path")
-             .data(function(chords) { return chords; })
-             .enter()
-             .append("path")
-              .attr("d", ribbon)
-              .attr("class", "ribbonPath")
-              .attr("id", function(d, i) { return "arcPath_" + i; })
-              // RIBBON inner collor
-              .style("fill", function(d) { return "rgb(0, 0, 0, 0)"; })
-              //RIBBON corder\stroke color
-              .style("stroke", function(d) { return "rbg(0,0,0,0)" });
+                .data(function(chords) { return chords; })
+                .enter()
+                    .append("path")
+                    .attr("d", ribbon)
+                    .attr("class", "ribbonPath")
+                    .attr("id", function(d, i) { return "arcPath_" + i; });
+                    // // RIBBON inner collor
+                    // .style("fill", function(d) { return "rgba(0, 0, 0, 0.1)"; })
+                    // //RIBBON corder\stroke color
+                    // .style("stroke", function(d) { return "rgba(0, 0, 0, 0.1)" });
     }//createRibbonArcs
 
 
@@ -254,34 +280,104 @@ class Chords extends React.Component{
 
 export default Chords;
 
+const COLORS = {
+    default : {
+        systemLoadRect : "#35444F",
+        nodeNumberRect : "#425563",
+        outerRect : "",
+    },
+    active : {
+        systemLoadRect : "#00AA84",
+        nodeNumberRect : "#2AD2C9",
+    },
+    passive : {
+        systemLoadRect : "#217D73",
+    },
+};
 
-/*  Highlight arcs going for the given node.
- * @param node: Node number to show activity of.
- * @param state: bool state to show(true) or hide(false) node activity.
-*/
-export function ShowNodeActivity(node, hide){
+
+// Highlight arcs going for the given node.
+//  @param node: Node number to show activity of.
+//  @param state: bool state to show(true) or hide(false) node activity.
+export function ShowNodeActivity(node, state){
     var pathObj = d3.selectAll("g.ribbons path");
 
-    pathObj.filter(function(d){
-            var isPath = d.source.index == node || d.target.index == node;
-            return isPath;
+    var connections = findArcsFromMatrix(node);
+
+    pathObj.filter((d) =>{
+        var pathIndex = d.source.index + "->" + d.source.subindex;
+        return connections.includes(pathIndex);
         })
-  .transition()
+        .transition()
             .style("opacity", function(d) {
-                            return (hide ? 1 : 0); })
+                    return (state ? 1 : 0.1); })
             .style("fill", function(d) {
-                            return (hide ? "#2AD2C9" : "rgb(0,0,0,0)"); })
+                    return state ? "#2AD2C9" : "none"; })
             .style("stroke", function(d) {
-                            return (hide ? d3.rgb("#2AD2C9").darker() : "rgb(0,0,0,0)"); });
+                    return state ? d3.rgb("#2AD2C9").darker() : "none"; });
+
+    var filter_func = (d) => { 
+        return connections.includes(node+"->"+d.index);
+    } //same as writing function(d) {}
+    setRectGroupStyle(".cpuRectangle", "systemLoadRect", state, filter_func, "passive")
+
+    filter_func = (d) => { return d.index == node; }
+    setRectGroupStyle("#HightlightGroup_" + node, "systemLoadRect", state, filter_func)
+
+    setRectGroupStyle("#innerRectCircle_" + node, "nodeNumberRect", state, filter_func);
 }//ShowNodeActivity
 
 
-/*  Return an enclosure number for the Node number. -1 will be returned if node
- * is outside of the node count or not found in the layout array.
- * @param layout: array representation of System layout. Index of the array is
- *                an enclosure number, element of the index is number of nodes.
- * @param node: node number to get an Enclosure number for.
+/**
+ * This function should only be called by ShowNodeActivity(). It will construct
+ * a list of arc flows based of the selected node and the real MATRIX data (not
+ * the one used by chords to render arcs).
+ * 
+ * @param {int} node 
+ * @returns {list of str} data flows between nodes in the format of ["0->1"].
  */
+function findArcsFromMatrix(node){
+    var list = [];
+    
+    for(var i=0; i < MATRIX[node].length; i++){
+        if(MATRIX[node][i] == 0)
+            continue;
+        list.push(i + "->" + node);
+        list.push(node + "->" +i);
+    }//for
+    return list;
+}//findArcsFromMatrix
+
+
+/**
+ * Same code patterns has been used several times to set rectangles' group style
+ * properties (fill, stroke). To reduce code "repeatability" - this disgusting
+ * function was born. It should only be used by "ShowNodeActivity()" function.
+ *  @param selection: string to be used by d3.selectAll() function. It can be
+ *                    classes, ids or both. (e.g. "#id_to_select, .className")
+ * @param {str} selection pattern d3.selectAll() function. It can be classes,
+ *                        ids or both. (e.g. "#id_to_select, .className")
+ * @param {str} colorPropName Color property name found in the COLORS global.
+ * @param {bool} state Show or Hide state propagated from ShowNodeActivity().
+ * @param {any} filter_func function. Filter which elements to apply style to.
+ * @param {string} [colorType="active"] active, passive, default.
+ */
+function setRectGroupStyle(selection, colorPropName, state, filter_func, colorType="active"){
+    d3.selectAll(selection)
+    .filter(filter_func)
+        .transition()
+            .style("fill", function(d) {
+                return state ? COLORS[colorType][colorPropName] : COLORS.default[colorPropName]; })
+            .style("stroke", function(d) {
+                return state ? COLORS[colorType][colorPropName] : "none"; });
+}//setRectGroupStyle
+
+
+// Return an enclosure number for the Node number. -1 will be returned if node
+// is outside of the node count or not found in the layout array.
+//  @param layout: array representation of System layout. Index of the array is
+//                an enclosure number, element of the index is number of nodes.
+//  @param node: node number to get an Enclosure number for.
 export function GetEncFromNode(layout, node){
     var start = 0;
     var end = 0;

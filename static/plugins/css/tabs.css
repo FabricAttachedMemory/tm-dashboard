@@ -1,6 +1,17 @@
 @font-face { font-family: MetricHPE; src: url("./fonts/MetricHPE.otf"); }
 @font-face { font-family: MetricHPE-Semi; src: url("./fonts/MetricHPE-Semi.otf"); }
 
+
+.overviewTabHeader {
+    font-size: 2.0em;
+    font-family: MetricHPE;
+    text-align: center;
+    color: white;
+    
+    padding-top: 2%;
+}
+
+
 .navbar{
     background: none;
     border-radius: 0px;

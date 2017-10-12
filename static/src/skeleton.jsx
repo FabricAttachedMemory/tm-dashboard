@@ -25,6 +25,7 @@ class Skeleton extends React.Component{
             panelPadding : ["5px", "5px", "5px", "5px"],
             windowHeight : window.innerHeight,
             windowWidth : window.innerWidth,
+            forceRender : false,
         }
     }//ctor
 
@@ -70,7 +71,9 @@ class Skeleton extends React.Component{
     shouldComponentUpdate(nextProps, nextState){
         var isHeightChanged = (this.state.windowHeight != window.innerHeight);
         var isWidthChanged = (this.state.widnowWidth != window.innerWidth);
-        return isHeightChanged || isWidthChanged || isPanelWidthChanged;
+        var isForceRender = nextState.forceRender != this.state.forceRender;
+
+        return isHeightChanged || isWidthChanged || isPanelWidthChanged || isForceRender;
     }//shouldComponentUpdate
 
 
@@ -108,15 +111,15 @@ class Skeleton extends React.Component{
                                 maxWidth : this.state.panelMaxWidth,
                                 minWidth : this.state.panelMinWidth}}>
                     <PercentCircle name="CPU" height={panelHeight}
-                                    url={"http://10.33.234.150:9099/api/metrics/cpu"}
+                                    url={"http://localhost:9099/api/metrics/cpu"}
                                     mbBottom={this.state.boxMargin}
                                     spoofedData={DataSpoofer.cpuData()}/>
                     <PercentCircle name="Fabric Attached Memory"  height={panelHeight}
-                                    url={"http://10.33.234.150:9099/api/metrics/fam"}
+                                    url={"http://localhost:9099/api/metrics/fam"}
                                     mbBottom={this.state.boxMargin}
                                     spoofedData={DataSpoofer.famData()}/>
                     <PercentCircle name="Fabric" height={panelHeight}
-                                    url={"http://10.33.234.150:9099/api/metrics/fabric"}
+                                    url={"http://localhost:9099/api/metrics/fabric"}
                                     mgBottom={"0px"}
                                     spoofedData={DataSpoofer.fabData()}/>
                 </div>

@@ -36,8 +36,12 @@ class ContentBox extends ApiRequester {
 
 
     render() {
+        var className = "";
+        if(this.props.className !== undefined){ //allow adding custom classes to this component.
+            className = this.props.className;
+        }
         return (
-            <StatsBox className="statsboxContent" id={this.props.id}
+            <StatsBox className={"statsboxContent " + className} id={this.props.id}
                             size={12} height={this.props.height}
                             maxHeight={this.props.maxHeight}
                             paddingTop={this.props.paddingTop}>

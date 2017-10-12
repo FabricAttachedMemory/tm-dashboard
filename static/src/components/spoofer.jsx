@@ -61,13 +61,27 @@ export function ChordMatrix(topology){
         for(var j=0; j<nodesCount; j++){
             nodes_flow.push(1);
         }
+        nodes_flow[i] = 0;
         matrix.push(nodes_flow);
     }//for i
+    matrix[1][2] = 0;
+    matrix[1][3] = 0;
+    matrix[4][1] = 0;
+    matrix[5][9] = 0;
+    // matrix = [
+    //     [0, 1, 1, 0],
+    //     [1, 0, 1, 1],
+    //     [1, 1, 0, 1],
+    //     [0, 1, 0, 0],
+    // ]
     return matrix;
 }//ChordMatrix
 
 
+// Return Nodes topology, where each element in the array represents number of
+// nodes in that enclosure.
 export function SystemTopology(){
+    // return [2, 2];
     return [10, 10, 10];
 }//SystemTopology
 

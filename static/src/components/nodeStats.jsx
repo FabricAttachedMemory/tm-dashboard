@@ -5,6 +5,18 @@ import {render}     from 'react-dom';
 
 import ApiRequester from './base/apiRequester';
 
+const NodeStatFields = [
+                    ["Power State",     "power"],
+                    ["DRAM Usage",      "dram"],
+                    ["CPU Usage",       "cpu"],
+                    ["Network In",      "netIn"],
+                    ["Fabric Usage",    "fabric"],
+                    ["Network Out",     "netOut"],
+                    ["No. of Shelves",  "shelves"],
+                    ["OS Manifest",     "manifestName"],
+                    ["No. of Books",    "books"],
+                  ];
+
 
 /* TODO: documentation will be here soon. */
 class NodeStats extends ApiRequester {
@@ -16,23 +28,8 @@ class NodeStats extends ApiRequester {
     }//ctor
 
 
-    GetDataFields(){
-        return [
-                    ["Power State",     "power"],
-                    ["DRAM Usage",      "dram"],
-                    ["CPU Usage",       "cpu"],
-                    ["Network In",      "netIn"],
-                    ["Fabric Usage",    "fabric"],
-                    ["Network Out",     "netOut"],
-                    ["No. of Shelves",  "shelves"],
-                    ["OS Manifest",     "manifestName"],
-                    ["No. of Books",    "books"],
-                ];
-    }//GetDataFields
-
-
     ValidateAndDefault(data){
-        var expectedFields = this.GetDataFields();
+        var expectedFields = NodeStatFields; 
         for(var i=0; i < expectedFields.length; i++){
             var field = expectedFields[i];
             if(field[1] in data)
@@ -88,15 +85,15 @@ class NodeStats extends ApiRequester {
         var fetchedData = this.readFetchedValues();
 
         var boxes = [];
-        for(var i=0; i < this.GetDataFields().length; i++){
-            var field = this.GetDataFields()[i];
+        for(var i=0; i < NodeStatFields.length; i++){
+            var field = NodeStatFields[i];
             var title = field[0];
             var value = fetchedData[field[1]];
             value = (value === undefined) ? "---" : value;
             boxes.push(this.BuildDataBox(title, value));
         }//for
         return (
-            <div className="gridCanvas">
+            <div className={"gridCanvas " +this.props.className}>
                 {boxes}
             </div>
         );
@@ -105,3 +102,8 @@ class NodeStats extends ApiRequester {
 
 
 export default NodeStats;
+
+
+export function SetFields(values){
+    //TODO: Implement this 
+}//SetFields

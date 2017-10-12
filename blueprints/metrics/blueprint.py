@@ -8,6 +8,7 @@ __copyright__ = "Copyright 2017 Hewlett Packard Enterprise Development LP"
 __maintainer__ = "Zakhar Volchak"
 __email__ = "zakhar.volchak@hpe.com"
 
+from collections import namedtuple
 import os
 import requests as HTTP_REQUESTS
 import random
@@ -22,10 +23,13 @@ class JMetrics(Journal):
 
     def __init__(self, name, **args):
         super().__init__(name, **args)
-        self.metrics = {
-                'cpu': -1,
-                'fam': -1,
-                'fabric': -1 }
+        self.json_model = {
+                'metrics' : {
+                    'cpu': -1,
+                    'fam': -1,
+                    'fabric': -1
+                }
+        }
         pass
 
 
@@ -35,17 +39,15 @@ class JMetrics(Journal):
         TODO: if spoofing data becomes somewhat important, a more sophisticated
         'algorithm' to generate patterns should be applied.
         """
-        self.metrics['cpu'] = random.randint(0, 100)
-        self.metrics['fam'] = random.randint(0, 100)
-        self.metrics['fabric'] = random.randint(0, 100)
-        return self.metrics
+        self.json_model['metrics']['cpu'] = random.randint(0, 100)
+        self.json_model['metrics']['fam'] = random.randint(0, 100)
+        self.json_model['metrics']['fabric'] = random.randint(0, 100)
+        return self.json_model
 
 
     def reset_metrics(self):
-        self.metrics['cpu'] = -1
-        self.metrics['fam'] = -1
-        self.metrics['fabric'] = -1
-
+        for key, _ in self.json_model:
+            self.json_model[key] = -1
 
 Journal = JMetrics(__file__)
 
@@ -72,57 +74,73 @@ def metrics_all(metric_type=None):
     When RestAPI server providing metrics data is not running, user can set flags
     in this server config to return random data instead.
     """
+    global Journal
     mainapp = Journal.mainapp
     response = None
-    r = None
-    fabr = None
-    try:
-        fabr = HTTP_REQUESTS.get(mainapp.config['ZMETRICS_SERVER'],
-                                     headers=mainapp.config['HTTP_HEADERS'])
-    except HTTP_REQUESTS.exceptions.RequestException as e:
-#        print(fabr.status_code)
-        print(e)
-        fab = 0.0
-        print('zmetrics.py is not responding.')
+    resp_model = Journal.json_model
+    status_code = 200
 
-#    if fabr.status_code != HTTP_REQUESTS.codes.ok:
-#        fab = 0.0
+    url = mainapp.config['LMP_SERVER'] + 'global/';
+    response = Journal.make_request(url)
+    resp_json = response.json()
+
+    if response.status_code == HTTP_REQUESTS.codes.ok:
+        cpu = resp_json["socs"]["cpu_percent"]
+        mem_allocated = resp_json["memory"]["allocated"]
+        mem_available = resp_json["memory"]["available"]
+        fam = round((float(mem_allocated) / mem_available) * 100, 2)
+
+        fab_result = get_fab()
+        fab = fab_result.value
+
+        # since cpu and fam getting real data at this point, fab should show
+        # no flow, if it can't get a response from the FAB(zmetrics) server
+        if fab_result.response.status_code >= 300:
+            fab = -1
+
+        resp_model['metrics'] = {
+                                'cpu': cpu,
+                                'fabric': fab,
+                                'fam': fam
+                                }
+    #keep json_data in sync with the last response data. That will help with
+    #debugging, logging and such
+    #Journal.json_model.update(metrics_data)
+
+    if metric_type is None:
+        return make_response(jsonify(resp_model), response.status_code)
+
+    # Make a dict obj with {'value': 99} for the metrics type (cpu, fam, fab)
+    if(resp_model['metrics'].get(metric_type, None) is None):
+        #Keep 'value' key alive, so that front end wont freak out
+        error_dict = { 'value' : -1,
+                        'error' : 'no such key [%s]' % metric_type }
+    return make_response(jsonify(error_dict), 400)
+
+    return make_response(jsonify({'value' : resp_model['metrics'][metric_type]}),
+                                    200)
+
+def get_fab():
+    global Journal
+    mainapp = Journal.mainapp
+    request = None
+    result = namedtuple('FabResponse', 'value response')
+
+    url = mainapp.config['ZMETRICS_SERVER'] + 'fab/'
+    response = Journal.make_request(url)
+
+    fab_val = -1
+    resp_json = response.json()
+
+    if response.status_code < 300:
+        try:
+            fab_val = resp_json['fabric']['percentage']
+        except KeyError as err:
+            Journal.json_model['error'] = err
     else:
-        fab_data = fabr.json()
-        fab = round(fab_data["fabric"]["percentage"], 2)
+        fab_val = resp_json['metrics']['fabric']
 
-    r = HTTP_REQUESTS.get(mainapp.config['LMP_SERVER'] + 'global/',
-                                     headers=mainapp.config['HTTP_HEADERS'])
-    if r.status_code >= 300:
-        if Journal.mainapp.config['ALLOW_SPOOF']:
-            response = make_response(jsonify(Journal.spoofed), 206)
-        else:
-            Journal.reset_metrics()
-            response = make_response(jsonify(Journal.metrics), r.status_code)
-    else:
-        data = r.json()
-        cpu = data["socs"]["cpu_percent"]
-        fam = round((float(data["memory"]["allocated"]) / data["memory"]["available"]) * 100, 2)
-        metrics = {
-            "cpu": cpu,
-            "fabric": fab,
-            "fam": fam
-        }
-
-        response = make_response(jsonify(metrics), r.status_code)
-
-    if(metric_type is None):
-        return response
-    return makeSingleValue(response, metric_type)
-
-
-def makeSingleValue(response, key):
-    """ Extract cpu, fabric or fab values from the response json string, which
-    is build by "metrics_all" function. This will make a single key-value pair
-    of the form { value : -1 }.
-        @param key: metrics type to extract - cpu, fabric, fab.
-    """
-    response_dict = json.loads(response.response[0])
-    if(response_dict.get(key, None) is None):
-        return make_response(jsonify('No such key "%s"!' % key), 400)
-    return make_response(jsonify({'value' : response_dict[key]}), 200)
+    fab_val = round(fab_val, 2)
+    result.value = fab_val
+    result.response = response
+    return result
