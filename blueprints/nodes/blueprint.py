@@ -106,8 +106,11 @@ def get_machine_topology():
     request = None
     response = Journal.topology #dict data to be returned
 
-    request = HTTP_REQUESTS.get(mainapp.config['LMP_SERVER'] + 'lmp/nodes/',
-                                headers=mainapp.config['HTTP_HEADERS'])
+    #request = HTTP_REQUESTS.get(mainapp.config['LMP_SERVER'] + 'lmp/nodes/',
+    #                            headers=mainapp.config['HTTP_HEADERS'])
+
+    url = mainapp.config['LMP_SERVER'] + 'lmp/nodes/'
+    request = Journal.make_request(url)
 
     if request.status_code != HTTP_REQUESTS.codes.ok:
         if mainapp.config['ALLOW_SPOOF']:
@@ -154,10 +157,16 @@ def nodes_api():
     request = HTTP_REQUESTS.get(mainapp.config['LMP_SERVER'] + "/lmp/shelf/",
                                 headers=mainapp.config['HTTP_HEADERS'])
 
+    is_bad_response = self.handle_bad_response(request)
+    if is_bad_response is not None:
+        return is_bad_response #make_response() type with a proper status code
+
+    '''
     if request.status_code != HTTP_REQUESTS.codes.ok:
         if mainapp.config['ALLOW_SPOOF']:
             return make_response(jsonify(Journal.spoofed), 206)
         return make_response(jsonify(response), 500)
+    '''
 
     data = request.json()
     shelf_list = data['entries']
