@@ -17,7 +17,7 @@ class ApiRequester extends React.Component {
             failedFetchCount : 0, //count how many times a failed request to api was made.
             isSpoofed : false,
             forceRerender : false,
-            fetched : null,
+            fetched : undefined,
             index: 0,
             spoofedData : this.props.spoofedData,
         }
@@ -65,7 +65,6 @@ class ApiRequester extends React.Component {
             headers: {
                 "Accept" : "application/json; version=1.0",
                 "Content-Type": "application/json",
-                "Access-Control-Allow-Origin" : "*"
             }
         }//fetchParam
 
@@ -95,9 +94,11 @@ class ApiRequester extends React.Component {
                 return;
             }
             if(!this.state.fetched || this.state.fetched == null){
-                if(!this.state.isSpoofed)
+                if(!this.state.isSpoofed){
                     this.GetData();
+                }
             }
+            this.setState({forceRender : true });
         }, this.props.refreshRate);
     }//componentWillMount
 

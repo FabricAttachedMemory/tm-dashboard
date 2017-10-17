@@ -80,7 +80,7 @@ def metrics_all(metric_type=None):
     resp_model = Journal.json_model
     status_code = 200
 
-    url = mainapp.config['LMP_SERVER'] + 'global/';
+    url = mainapp.config['LMP_SERVER'] + 'lmp/global/';
     response = Journal.make_request(url)
     resp_json = response.json()
 
@@ -115,7 +115,7 @@ def metrics_all(metric_type=None):
         #Keep 'value' key alive, so that front end wont freak out
         error_dict = { 'value' : -1,
                         'error' : 'no such key [%s]' % metric_type }
-    return make_response(jsonify(error_dict), 400)
+        return make_response(jsonify(error_dict), 400)
 
     return make_response(jsonify({'value' : resp_model['metrics'][metric_type]}),
                                     200)
@@ -126,7 +126,7 @@ def get_fab():
     request = None
     result = namedtuple('FabResponse', 'value response')
 
-    url = mainapp.config['ZMETRICS_SERVER'] + 'fab/'
+    url = mainapp.config['LMP_SERVER'] + 'fab/'
     response = Journal.make_request(url)
 
     fab_val = -1
