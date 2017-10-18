@@ -91,7 +91,7 @@ class Skeleton extends React.Component{
         var openedTab       = window.location.href.split("#/")[1];
         var tabContentToRender = "";
         if(openedTab == "overview"){
-            tabContentToRender =  <Chords/>;
+            tabContentToRender =  <Chords name="ChordWheel" url="http://localhost:9099/api/nodes"/>;
         }else if(openedTab == "mm"){
             tabContentToRender = <Flatgrids spoofedData={DataSpoofer.GridsData()}/>;
         }

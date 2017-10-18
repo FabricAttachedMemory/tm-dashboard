@@ -29,7 +29,7 @@ class NodeStats extends ApiRequester {
 
 
     ValidateAndDefault(data){
-        var expectedFields = NodeStatFields; 
+        var expectedFields = NodeStatFields;
         for(var i=0; i < expectedFields.length; i++){
             var field = expectedFields[i];
             if(field[1] in data)
@@ -105,5 +105,5 @@ export default NodeStats;
 
 
 export function SetFields(values){
-    //TODO: Implement this 
+    //TODO: Implement this
 }//SetFields

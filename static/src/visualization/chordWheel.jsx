@@ -7,30 +7,42 @@ import * as d3      from 'd3'
 import * as RackOverview from './rackOverviewBox';
 import * as DataSpoofer  from '../components/spoofer';
 import * as DataSharing  from '../components/dataSharing';
+import ApiRequester      from '../components/base/apiRequester';
 
 var MATRIX = [];
+var ACTIVE_NODE = -1;
 
 
-class Chords extends React.Component{
+class Chords extends ApiRequester{
 
     constructor(props){
         super(props);
-        this.state = {
-            numberOfNodes : 0,
-            topology : [],
-            matrix : [[]],
-            innerRadius : 0,
-            outerRadius : 0,
-            svgWidth : 0,
-            svgHeight : 0,
-            renderMatrix : [[]],
-        };
+        this.state.numberOfNodes = 0;
+        this.state.topology = [];
+        this.state.prevTopology = [];
 
-        this.state.topology = DataSpoofer.SystemTopology(); // FIXME: Real data here
-        this.state.matrix   = DataSpoofer.ChordMatrix(this.state.topology); //FIXME: TRASH
+        this.state.matrix = [[]];       //original data arrived from the server
+        this.state.innerRadius = 0;
+        this.state.outerRadius = 0;
+        this.state.svgWidth = 0;
+        this.state.svgHeight = 0;
+        this.state.renderMatrix = [[]]; //all inputs converted to 0 and 1 (only!)
+        this.state.svg = undefined;
+        this.state.chordLayout = undefined;
+        this.state.noReRender = false;
 
-        this.state.numberOfNodes    = this.state.matrix.length;
-        this.state.renderMatrix     = this.constructRenderMatrix(this.state.matrix);
+        this.state.selectedNode = -1;
+
+       this.state.topology = DataSpoofer.SystemTopology(); // FIXME: Real data here
+       this.state.matrix   = DataSpoofer.ChordMatrix(this.state.topology); //FIXME: TRASH
+
+        // this.state.topology = undefined
+        // this.state.matrix   = undefined
+
+       this.state.numberOfNodes    = this.state.matrix.length;
+       this.state.renderMatrix     = this.constructRenderMatrix(this.state.matrix);
+        // this.state.numberOfNodes    = undefined
+        // this.state.renderMatrix     = undefined
 
         MATRIX = this.state.matrix;
     }//constructor
@@ -58,11 +70,15 @@ class Chords extends React.Component{
     }//constructRenderMatrix
 
 
-    componentDidMount(){
-        var svg = d3.select("#abyss-circle");
-        
+    buildChordsDiagram(svg, renderMatrix){
+        if(this.state.matrix === undefined){
+            return;
+        }
+        if(svg === undefined)
+            return;
+
         // --- Create a d3.chord() component to be used for the main drawing. ---
-        var mainChord = this.createChord(svg, this.state.renderMatrix);
+        var mainChord = this.createChord(svg, renderMatrix);
         var chord = mainChord.chord;
         var g = mainChord.g;
         var arc = d3.arc()
@@ -84,10 +100,10 @@ class Chords extends React.Component{
             .attr("xlink:href", function(d) { return "#innerRectCircle_" + d.index; })
             .text(function(d, i) { return (d.index+1 < 10) ? "0" + (d.index+1) : (d.index+1); })
             .style("fill", "white");
-        
+
         // --- Creating Arcs(path) flow between nodes(rects) ---
         this.createRibbonArcs(g);
-        
+
         //Outer Rect Circle Group
         //IR is short for Inner Radius. OR = Outer Radius
         var outerRectIR = this.state.innerRadius + 40;
@@ -95,10 +111,10 @@ class Chords extends React.Component{
         var outerRect = d3.arc()
             .innerRadius(outerRectIR)
             .outerRadius(outerRectOR);
-        
+
         var outerRectGroup = this.createRectCircle(g, outerRect);
         this.setGroupId(outerRectGroup, "outerRect_");
-        
+
         // --- filling percent relative to the arc2 (outer rect group). ---
         var arc3Outer = outerRectOR - 26;
         var arc3 = d3.arc()
@@ -119,7 +135,7 @@ class Chords extends React.Component{
             .outerRadius(outerRectOR + 14)
             //adds rotation since .padAngle() pads on one side only. It is set
             //in createChord() func by passing third optional argument "sectionSpace"
-            .startAngle(function(d) { return d.startAngle + sectionSpace / 2;}) 
+            .startAngle(function(d) { return d.startAngle + sectionSpace / 2;})
             .endAngle(function(d) { return d.endAngle + sectionSpace / 2;});
 
         var encArcGroup = this.createRectCircle(encG, encArc, "#A0A9B1");
@@ -137,12 +153,13 @@ class Chords extends React.Component{
             .style("fill", "#A0A9B1");
 
         DataSharing.Set("Enclosures", this.state.topology.length);
+        DataSharing.Set("Topology", this.state.topology.toString());
     }//componentDidUpdate
 
 
     // Create an outer circle arc line with the enclosure name for the group.
     // param@ svg: svg object reference (d3.select()) to create chords into.
-    // param@ matrix: a 2D array of integers showing the data flow between nodes. 
+    // param@ matrix: a 2D array of integers showing the data flow between nodes.
     createChord(svg, matrix, sectionSpace=0.01){
         if(matrix === undefined)
             return;
@@ -155,10 +172,11 @@ class Chords extends React.Component{
                                 this.state.svgHeight)*0.415;
         //radius of where arcs are growing from
         this.state.innerRadius = this.state.outerRadius - 35;
-        var chord = d3.chord()
-            .padAngle(sectionSpace) //space between rectangles
-            .sortSubgroups(d3.acscending)
-            .sortChords(d3.acscending);
+        var chord = undefined;
+            chord = d3.chord()
+                .padAngle(sectionSpace) //space between rectangles
+                .sortSubgroups(d3.acscending)
+                .sortChords(d3.acscending);
 
         var g = svg.append("g")
             .attr("transform",
@@ -180,16 +198,18 @@ class Chords extends React.Component{
     // d3.datum(matrix) object called before this function is executed.
     //  @param parentObj : element on the page to append created arcs into.
     createRibbonArcs(parentObj){
-        var startAng = {}; //used to save StartAngle for each ribbon subgroup.
+        //used to save StartAngle for each ribbon subgroup.
+        var startAng = {};
         var ribbon = d3.ribbon()
-        .radius(this.state.innerRadius - 5); // offset value defines where arcs start and ends
-        
+        // offset value defines where arcs start and ends
+            .radius(this.state.innerRadius - 5);
+
         ribbon.startAngle(function(d) {
             if(!(d.index in startAng))
                 startAng[d.index] = d.startAngle + 0.02;
             return startAng[d.index];
         });
-        
+
         ribbon.endAngle(function(d){ return startAng[d.index] + 0.02;});
 
         var color = d3.scaleOrdinal()
@@ -204,10 +224,6 @@ class Chords extends React.Component{
                     .attr("d", ribbon)
                     .attr("class", "ribbonPath")
                     .attr("id", function(d, i) { return "arcPath_" + i; });
-                    // // RIBBON inner collor
-                    // .style("fill", function(d) { return "rgba(0, 0, 0, 0.1)"; })
-                    // //RIBBON corder\stroke color
-                    // .style("stroke", function(d) { return "rgba(0, 0, 0, 0.1)" });
     }//createRibbonArcs
 
 
@@ -232,9 +248,10 @@ class Chords extends React.Component{
 
 
     // React to the mouse hover over the rectangle element with the Node name
-    // in it to display data flow (ribbons path). 
+    // in it to display data flow (ribbons path).
     onMouseOver(arcData){
         var enc = GetEncFromNode(this.state.topology, arcData.index);
+
         RackOverview.SetActive(enc, arcData.index, true);
         ShowNodeActivity(arcData.index, true);
     }//onMouseOver
@@ -244,10 +261,62 @@ class Chords extends React.Component{
     // flow (ribbon path) between nodes.
     onMouseOut(arcData){
         var enc = GetEncFromNode(this.state.topology, arcData.index);
+
         RackOverview.SetActive(enc, arcData.index, false);
         ShowNodeActivity(arcData.index, false);
     }//onMouseOut
 
+
+    shouldComponentUpdate(nextProps, nextState){
+        var shouldUpdate = this.getUpdateState(nextProps, nextState);
+
+        if (!shouldUpdate)
+            return false;
+        var isNo = this.noNameFunc();
+        if(!isNo)
+            return false;
+
+        if(this.state.topology.toString() !== this.state.fetched["topology"].toString()){
+            RackOverview.Update(this.state.fetched["topology"])
+        }
+
+        var matrix = this.state.fetched["data_flow"];
+        var renderMatrix = this.constructRenderMatrix(matrix);
+        var newTopology = this.state.fetched["topology"];
+        this.setState({ topology : newTopology });
+        this.setState({ matrix : matrix });
+        this.setState({ renderMatrix : renderMatrix});
+        MATRIX = this.state.fetched["data_flow"];
+        var svgObj = d3.select("#abyss-circle");
+        svgObj.selectAll("g").remove();
+
+        this.setState({svg : svgObj});
+        this.buildChordsDiagram(svgObj, renderMatrix);
+
+        if(ACTIVE_NODE != -1){
+            ShowNodeActivity(ACTIVE_NODE, true);
+        }
+        return shouldUpdate;
+    }//shouldComponentUpdate
+
+
+    componentDidMount(){
+        var svgObj = d3.select("#abyss-circle");
+        this.setState({svg : svgObj});
+        this.buildChordsDiagram(svgObj, this.state.matrix);
+    }
+
+    noNameFunc(){
+        if(this.state.fetched === undefined)
+            return false;
+        if (this.state.fetched instanceof Response)
+            return false;
+
+        var fetched = this.state.fetched;
+        if(fetched["data_flow"] == this.state.matrix)
+            return false;
+        return true;
+    }
 
     render(){
         var wRatio = 0.5;
@@ -300,6 +369,7 @@ const COLORS = {
 //  @param node: Node number to show activity of.
 //  @param state: bool state to show(true) or hide(false) node activity.
 export function ShowNodeActivity(node, state){
+    ACTIVE_NODE = state == true ? node : -1;
     var pathObj = d3.selectAll("g.ribbons path");
 
     var connections = findArcsFromMatrix(node);
@@ -316,7 +386,7 @@ export function ShowNodeActivity(node, state){
             .style("stroke", function(d) {
                     return state ? d3.rgb("#2AD2C9").darker() : "none"; });
 
-    var filter_func = (d) => { 
+    var filter_func = (d) => {
         return connections.includes(node+"->"+d.index);
     } //same as writing function(d) {}
     setRectGroupStyle(".cpuRectangle", "systemLoadRect", state, filter_func, "passive")
@@ -332,13 +402,13 @@ export function ShowNodeActivity(node, state){
  * This function should only be called by ShowNodeActivity(). It will construct
  * a list of arc flows based of the selected node and the real MATRIX data (not
  * the one used by chords to render arcs).
- * 
- * @param {int} node 
+ *
+ * @param {int} node
  * @returns {list of str} data flows between nodes in the format of ["0->1"].
  */
 function findArcsFromMatrix(node){
     var list = [];
-    
+
     for(var i=0; i < MATRIX[node].length; i++){
         if(MATRIX[node][i] == 0)
             continue;
