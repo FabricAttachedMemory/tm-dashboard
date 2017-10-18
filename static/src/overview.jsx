@@ -29,8 +29,17 @@ class POverview extends Skeleton{
         );
     }//buildRackOverview
 
+    componentWillMount(){
+        window.addEventListener("resize", this.updateDimensions.bind(this));
 
-    componentDidMount(){
+        setInterval(() => {
+            this.setState({isForceRender : true });
+            this.calculateHeights();
+        }, 1000);
+
+    }//componentWillMount
+
+    calculateHeights(){
         this.state.heightStack = [];
         var headerBox = document.getElementById("headerPanel");
         var marginBottom = 0;
@@ -42,12 +51,15 @@ class POverview extends Skeleton{
         var rackBox = document.getElementById("RackOverviewBox");
         if(rackBox != null){
             marginBottom = parseFloat(window.getComputedStyle(rackBox).marginBottom.split("px")[0]);
-            this.state.heightStack.push(parseFloat(rackBox.clientHeight) + marginBottom);
+            console.log(marginBottom);
+            this.state.heightStack.push(parseFloat(rackBox.clientHeight) + marginBottom * 3);
         }
         if(this.state.heightStack.length == 2){
             this.setState({forceRender : true});
         }
     }//componentDidMount
+
+
 
 
     buildNodeStats(state){
@@ -69,24 +81,24 @@ class POverview extends Skeleton{
 
     render() {
         var panelClass = "col-md-2";
-        var encCount = parseInt(DataSharing.Get("Enclosures"));
-        var rackOverviewHeight  = this.getHeightRatio(0.3);
-        var heightTaken = 0.12 * encCount;
+        // var encCount = parseInt(DataSharing.Get("Enclosures"));
+        // var rackOverviewHeight  = this.getHeightRatio(0.3);
+        // var heightTaken = 0.125 * encCount;
 
-        if(!isNaN(encCount))
-            rackOverviewHeight  = this.getHeightRatio(heightTaken);
+        // if(!isNaN(encCount))
+            // rackOverviewHeight  = this.getHeightRatio(heightTaken);
 
         // heightTaken += 135;
         // var nodeInfoHeight  = window.innerHeight - heightTaken + "px";
         var nodeInfoHeight  = "0px";
-        var dscBtnBox       = this.getHeightRatio(0.092);
+        var dscBtnBox       = this.getHeightRatio(0.08);
 
         if(this.state.heightStack.length == 2){
             nodeInfoHeight = window.innerHeight;
             nodeInfoHeight -= this.state.heightStack[0];
             nodeInfoHeight -= this.state.heightStack[1];
             nodeInfoHeight -= parseFloat(dscBtnBox.split("px")[0]);
-            nodeInfoHeight -= 22;
+            // nodeInfoHeight -= 20;
             nodeInfoHeight += "px";
         }
 
@@ -104,6 +116,7 @@ class POverview extends Skeleton{
                                     textAlign="left"
                                     paddingLeft="20px"/>
                         <BRackOverview name="Enclosure 1" enc={1}
+                                        url="http://localhost:9099/api/nodes"
                                         nodeCount={7}/>
                     </ContentBox>
 

@@ -55,7 +55,7 @@ class JNodes(Journal):
         for i in range(size):
             row = []
             for j in range(size):
-                row.append(1)
+                row.append(random.randrange(0, 2))
             row[i] = 0
             matrix.append(row)
         return matrix

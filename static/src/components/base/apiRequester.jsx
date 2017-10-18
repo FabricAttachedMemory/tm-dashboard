@@ -91,13 +91,13 @@ class ApiRequester extends React.Component {
             if (this.state.failedFetchCount >= this.props.spoofAfterFails){
                 //signal component to check for re-render
                 this.setState({isSpoofed : true});
-                return;
+                // return;
             }
-            if(!this.state.fetched || this.state.fetched == null){
+            // if(!this.state.fetched || this.state.fetched == null){
                 if(!this.state.isSpoofed){
                     this.GetData();
                 }
-            }
+            // }
             this.setState({forceRender : true });
         }, this.props.refreshRate);
     }//componentWillMount
@@ -107,6 +107,11 @@ class ApiRequester extends React.Component {
      * Re-render the page only when fetch() request is finished and returned
      * object that is not of a "Response" type.*/
     shouldComponentUpdate(nextProps, nextState){
+        return this.getUpdateState(nextProps, nextState);
+    }//shouldComponentUpdate
+
+
+    getUpdateState(nextProps, nextState){
         var isResponse = nextState.fetched instanceof Response;
         var isObject = nextState.fetched instanceof Object;
         var isReady = !isResponse && isObject;
@@ -121,7 +126,7 @@ class ApiRequester extends React.Component {
             return true;
         }//if
         return isReady;
-    }//shouldComponentUpdate
+    }
 
 
     readFetchedValues(){

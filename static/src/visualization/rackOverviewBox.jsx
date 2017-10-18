@@ -6,13 +6,19 @@ import {render}     from 'react-dom';
 import ApiRequester     from '../components/base/apiRequester';
 import * as ChordWheel  from './chordWheel';
 import * as DataSpoofer from '../components/spoofer';
+import * as DataSharing  from '../components/dataSharing';
 
+
+var UPDATE_RACK=false;
+var TOPOLOGY=[];
 
 /* TODO: Documentation shall be here soon */
 class BRackOverview extends ApiRequester {
 
     constructor(props){
         super(props);
+
+        TOPOLOGY = DataSpoofer.SystemTopology();
     }//ctor
 
 
@@ -63,14 +69,25 @@ class BRackOverview extends ApiRequester {
     }//onMouseOut
 
 
-    render() {
-        var numOfNodes = this.props.nodeCount;
+    shouldComponentUpdate(nextProps, nextState){
+        if(UPDATE_RACK){
+            UPDATE_RACK = false;
+            return true;
+        }
+        return false;
+    }
 
+    render() {
+        var topology = TOPOLOGY;
+
+        // var numOfNodes = this.props.nodeCount;
         var tables = [];
-        var topology = DataSpoofer.SystemTopology(); //FIXME: get topology from API call
+        // var topology = DataSpoofer.SystemTopology(); //FIXME: get topology from API call
         var countStart = 0;
+
         for(var i=0; i < topology.length; i++){
-            tables.push(this.buildEnclosureTable(i, countStart, topology[i]));
+            var nodeCount = parseInt(topology[i]);
+            tables.push(this.buildEnclosureTable(i, countStart, nodeCount));
             countStart = countStart + topology[i];
         }//for
 
@@ -107,3 +124,10 @@ export function SetActive(enc, node, state){
             element.classList.remove(classToAdd);
     }
 }//SetActive
+
+
+export function Update(topology){
+    UPDATE_RACK=true;
+    TOPOLOGY=topology;
+    DataSharing.Set("Enclosures", TOPOLOGY.length);
+}

@@ -10,6 +10,7 @@ import * as DataSharing  from '../components/dataSharing';
 import ApiRequester      from '../components/base/apiRequester';
 
 var MATRIX = [];
+var ACTIVE_NODE = -1;
 
 
 class Chords extends ApiRequester{
@@ -18,14 +19,19 @@ class Chords extends ApiRequester{
         super(props);
         this.state.numberOfNodes = 0;
         this.state.topology = [];
-        this.state.matrix = [[]];
+        this.state.prevTopology = [];
+
+        this.state.matrix = [[]];       //original data arrived from the server
         this.state.innerRadius = 0;
         this.state.outerRadius = 0;
         this.state.svgWidth = 0;
         this.state.svgHeight = 0;
-        this.state.renderMatrix = [[]];
+        this.state.renderMatrix = [[]]; //all inputs converted to 0 and 1 (only!)
         this.state.svg = undefined;
         this.state.chordLayout = undefined;
+        this.state.noReRender = false;
+
+        this.state.selectedNode = -1;
 
        this.state.topology = DataSpoofer.SystemTopology(); // FIXME: Real data here
        this.state.matrix   = DataSpoofer.ChordMatrix(this.state.topology); //FIXME: TRASH
@@ -34,7 +40,7 @@ class Chords extends ApiRequester{
         // this.state.matrix   = undefined
 
        this.state.numberOfNodes    = this.state.matrix.length;
-        this.state.renderMatrix     = this.constructRenderMatrix(this.state.matrix);
+       this.state.renderMatrix     = this.constructRenderMatrix(this.state.matrix);
         // this.state.numberOfNodes    = undefined
         // this.state.renderMatrix     = undefined
 
@@ -64,15 +70,15 @@ class Chords extends ApiRequester{
     }//constructRenderMatrix
 
 
-    buildChordsDiagram(svg){
+    buildChordsDiagram(svg, renderMatrix){
         if(this.state.matrix === undefined){
             return;
         }
-
-        //var svg = d3.select("#abyss-circle");
+        if(svg === undefined)
+            return;
 
         // --- Create a d3.chord() component to be used for the main drawing. ---
-        var mainChord = this.createChord(svg, this.state.renderMatrix);
+        var mainChord = this.createChord(svg, renderMatrix);
         var chord = mainChord.chord;
         var g = mainChord.g;
         var arc = d3.arc()
@@ -147,6 +153,7 @@ class Chords extends ApiRequester{
             .style("fill", "#A0A9B1");
 
         DataSharing.Set("Enclosures", this.state.topology.length);
+        DataSharing.Set("Topology", this.state.topology.toString());
     }//componentDidUpdate
 
 
@@ -166,16 +173,10 @@ class Chords extends ApiRequester{
         //radius of where arcs are growing from
         this.state.innerRadius = this.state.outerRadius - 35;
         var chord = undefined;
-
-        if(this.state.chordLayour === undefined){
             chord = d3.chord()
                 .padAngle(sectionSpace) //space between rectangles
                 .sortSubgroups(d3.acscending)
                 .sortChords(d3.acscending);
-            this.state.chordLayout = chord;
-        }else{
-            chord = this.state.chordLayout;
-        }
 
         var g = svg.append("g")
             .attr("transform",
@@ -250,6 +251,7 @@ class Chords extends ApiRequester{
     // in it to display data flow (ribbons path).
     onMouseOver(arcData){
         var enc = GetEncFromNode(this.state.topology, arcData.index);
+
         RackOverview.SetActive(enc, arcData.index, true);
         ShowNodeActivity(arcData.index, true);
     }//onMouseOver
@@ -259,42 +261,64 @@ class Chords extends ApiRequester{
     // flow (ribbon path) between nodes.
     onMouseOut(arcData){
         var enc = GetEncFromNode(this.state.topology, arcData.index);
+
         RackOverview.SetActive(enc, arcData.index, false);
         ShowNodeActivity(arcData.index, false);
     }//onMouseOut
 
 
+    shouldComponentUpdate(nextProps, nextState){
+        var shouldUpdate = this.getUpdateState(nextProps, nextState);
+
+        if (!shouldUpdate)
+            return false;
+        var isNo = this.noNameFunc();
+        if(!isNo)
+            return false;
+
+        if(this.state.topology.toString() !== this.state.fetched["topology"].toString()){
+            RackOverview.Update(this.state.fetched["topology"])
+        }
+
+        var matrix = this.state.fetched["data_flow"];
+        var renderMatrix = this.constructRenderMatrix(matrix);
+        var newTopology = this.state.fetched["topology"];
+        this.setState({ topology : newTopology });
+        this.setState({ matrix : matrix });
+        this.setState({ renderMatrix : renderMatrix});
+        MATRIX = this.state.fetched["data_flow"];
+        var svgObj = d3.select("#abyss-circle");
+        svgObj.selectAll("g").remove();
+
+        this.setState({svg : svgObj});
+        this.buildChordsDiagram(svgObj, renderMatrix);
+
+        if(ACTIVE_NODE != -1){
+            ShowNodeActivity(ACTIVE_NODE, true);
+        }
+        return shouldUpdate;
+    }//shouldComponentUpdate
+
+
     componentDidMount(){
-        var svg = d3.select("#abyss-circle");
-        this.buildChordsDiagram(svg);
+        var svgObj = d3.select("#abyss-circle");
+        this.setState({svg : svgObj});
+        this.buildChordsDiagram(svgObj, this.state.matrix);
     }
 
-    updateChordData(data){
-        if(this.state.chordLayout === undefined){
-console.log("!!!! NOT SET !!!!!");
-        }else{
-console.log("!!!! SET !!!!!");
-        }
-    }//updateChordData
+    noNameFunc(){
+        if(this.state.fetched === undefined)
+            return false;
+        if (this.state.fetched instanceof Response)
+            return false;
+
+        var fetched = this.state.fetched;
+        if(fetched["data_flow"] == this.state.matrix)
+            return false;
+        return true;
+    }
 
     render(){
-
-        if(this.readFetchedValues()['data_flow'] !== undefined){
-            this.state.matrix = this.readFetchedValues()['data_flow'];
-            this.state.topology = this.readFetchedValues()['topology'];
-            this.state.numberOfNodes    = this.state.matrix.length;
-            this.state.renderMatrix     = this.constructRenderMatrix(this.state.matrix);
-this.updateChordData(this.state.renderMatrix);
-        }
-        /*
-        var svg = d3.select("#abyss-circle");
-        if(svg !== undefined){
-            if(this.state.svg === undefined){
-                this.state.svg = svg;
-                this.buildChordsDiagram(this.state.svg);
-            }
-        }
-        */
         var wRatio = 0.5;
         //FIXME: this is bs... need some "smarter" approach to dynamic positioning
         if(window.innerWidth > 1200)
@@ -345,6 +369,7 @@ const COLORS = {
 //  @param node: Node number to show activity of.
 //  @param state: bool state to show(true) or hide(false) node activity.
 export function ShowNodeActivity(node, state){
+    ACTIVE_NODE = state == true ? node : -1;
     var pathObj = d3.selectAll("g.ribbons path");
 
     var connections = findArcsFromMatrix(node);
