@@ -70,7 +70,7 @@ class Chords extends ApiRequester{
     }//constructRenderMatrix
 
 
-    buildChordsDiagram(svg, renderMatrix){
+    buildChordsDiagram(svg, renderMatrix, topology){
         if(this.state.matrix === undefined){
             return;
         }
@@ -96,7 +96,7 @@ class Chords extends ApiRequester{
             .on("mouseout", (e) => { this.onMouseOut(e)})
             .attr("dy", 20)
             .append("textPath")
-            .attr("startOffset", "12%")
+            .attr("startOffset", "17%") //nodes names text offset
             .attr("xlink:href", function(d) { return "#innerRectCircle_" + d.index; })
             .text(function(d, i) { return (d.index+1 < 10) ? "0" + (d.index+1) : (d.index+1); })
             .style("fill", "white");
@@ -125,7 +125,7 @@ class Chords extends ApiRequester{
 
         // --- Create an arc line group with the Enclosure names. ---
         var sectionSpace = 0.1; //To add more space between Enclosure # arcs
-        var encMatrix = Array(this.state.topology.length).fill(Array(this.state.topology.length).fill(1));
+        var encMatrix = Array(topology.length).fill(Array(topology.length).fill(1));
         var encThingy = this.createChord(svg, encMatrix, sectionSpace);
         var encChord = encThingy.chord;
         var encG = encThingy.g;
@@ -152,8 +152,8 @@ class Chords extends ApiRequester{
             .text(function(d, i) { return "Enclosure " + (d.index + 1); })
             .style("fill", "#A0A9B1");
 
-        DataSharing.Set("Enclosures", this.state.topology.length);
-        DataSharing.Set("Topology", this.state.topology.toString());
+        DataSharing.Set("Enclosures", topology.length);
+        DataSharing.Set("Topology", topology.toString());
     }//componentDidUpdate
 
 
@@ -270,11 +270,11 @@ class Chords extends ApiRequester{
     shouldComponentUpdate(nextProps, nextState){
         var shouldUpdate = this.getUpdateState(nextProps, nextState);
 
-        if (!shouldUpdate)
-            return false;
+        //if (!shouldUpdate)
+        //    return false;
         var isNo = this.noNameFunc();
         if(!isNo)
-            return false;
+            return shouldUpdate;
 
         if(this.state.topology.toString() !== this.state.fetched["topology"].toString()){
             RackOverview.Update(this.state.fetched["topology"])
@@ -282,20 +282,24 @@ class Chords extends ApiRequester{
 
         var matrix = this.state.fetched["data_flow"];
         var renderMatrix = this.constructRenderMatrix(matrix);
-        var newTopology = this.state.fetched["topology"];
-        this.setState({ topology : newTopology });
         this.setState({ matrix : matrix });
         this.setState({ renderMatrix : renderMatrix});
+
+        var newTopology = this.state.fetched["topology"];
+        this.setState({ topology : newTopology });
+        this.setState({ isRetop : false });
+
         MATRIX = this.state.fetched["data_flow"];
         var svgObj = d3.select("#abyss-circle");
         svgObj.selectAll("g").remove();
 
         this.setState({svg : svgObj});
-        this.buildChordsDiagram(svgObj, renderMatrix);
+        this.buildChordsDiagram(svgObj, renderMatrix, this.state.fetched["topology"]);
 
         if(ACTIVE_NODE != -1){
             ShowNodeActivity(ACTIVE_NODE, true);
         }
+
         return shouldUpdate;
     }//shouldComponentUpdate
 
@@ -303,7 +307,7 @@ class Chords extends ApiRequester{
     componentDidMount(){
         var svgObj = d3.select("#abyss-circle");
         this.setState({svg : svgObj});
-        this.buildChordsDiagram(svgObj, this.state.matrix);
+        this.buildChordsDiagram(svgObj, this.state.matrix, this.state.topology);
     }
 
     noNameFunc(){

@@ -35,6 +35,16 @@ class ContentBox extends ApiRequester {
     }//defaultRender
 
 
+    shouldComponentUpdate(nextProps, nextState){
+        //Re-render component when props height changed from previous frame.
+        //This happenes when overview.jsx script (for example) calls its own
+        //render() method where it changes property of the ContenBox component.
+        var heightChange = this.props.height != nextProps.height;
+        var isUpdate = this.getUpdateState(nextProps, nextState);
+        return heightChange || isUpdate;
+    }//shouldComponentUpdate
+
+
     render() {
         var className = "";
         if(this.props.className !== undefined){ //allow adding custom classes to this component.

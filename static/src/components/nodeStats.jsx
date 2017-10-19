@@ -19,11 +19,12 @@ const NodeStatFields = [
 
 
 /* TODO: documentation will be here soon. */
-class NodeStats extends ApiRequester {
+class NodeStats extends React.Component {
 
     constructor(props){
         super(props);
-        this.state.data = {};
+        this.state = { data : {} };
+        //this.state.data = {};
         this.state.data = this.ValidateAndDefault(this.state.data);
     }//ctor
 
@@ -82,8 +83,8 @@ class NodeStats extends ApiRequester {
 
 
     render() {
-        var fetchedData = this.readFetchedValues();
-
+        //var fetchedData = this.readFetchedValues();
+        var fetchedData = {};
         var boxes = [];
         for(var i=0; i < NodeStatFields.length; i++){
             var field = NodeStatFields[i];

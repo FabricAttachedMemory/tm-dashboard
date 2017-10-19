@@ -51,15 +51,12 @@ class POverview extends Skeleton{
         var rackBox = document.getElementById("RackOverviewBox");
         if(rackBox != null){
             marginBottom = parseFloat(window.getComputedStyle(rackBox).marginBottom.split("px")[0]);
-            console.log(marginBottom);
             this.state.heightStack.push(parseFloat(rackBox.clientHeight) + marginBottom * 3);
         }
         if(this.state.heightStack.length == 2){
             this.setState({forceRender : true});
         }
     }//componentDidMount
-
-
 
 
     buildNodeStats(state){
