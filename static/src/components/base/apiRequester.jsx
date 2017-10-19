@@ -65,6 +65,7 @@ class ApiRequester extends React.Component {
             headers: {
                 "Accept" : "application/json; version=1.0",
                 "Content-Type": "application/json",
+                "Access-Control-Allow-Origin" : "*",
             }
         }//fetchParam
 

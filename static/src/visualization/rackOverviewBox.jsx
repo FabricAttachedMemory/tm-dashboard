@@ -13,7 +13,7 @@ var UPDATE_RACK=false;
 var TOPOLOGY=[];
 
 /* TODO: Documentation shall be here soon */
-class BRackOverview extends ApiRequester {
+class BRackOverview extends React.Component {
 
     constructor(props){
         super(props);
@@ -79,10 +79,7 @@ class BRackOverview extends ApiRequester {
 
     render() {
         var topology = TOPOLOGY;
-
-        // var numOfNodes = this.props.nodeCount;
         var tables = [];
-        // var topology = DataSpoofer.SystemTopology(); //FIXME: get topology from API call
         var countStart = 0;
 
         for(var i=0; i < topology.length; i++){
