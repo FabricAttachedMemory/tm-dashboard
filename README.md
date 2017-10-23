@@ -1,5 +1,5 @@
 # tm-dashboard
-A lightweight replacement for the "Face of The Machine" monitoring GUI.
+A replacement for the "Face of The Machine" monitoring GUI.
 
 Webpage hosted by github pages: https://fabricattachedmemory.github.io/tm-dashboard/
 
@@ -19,3 +19,11 @@ Project planning: https://github.com/FabricAttachedMemory/tm-dashboard/projects
  4. ./matryoshka_api.py
  5. In the different terminal open: 
     * chromium tm-dashboard/static/dashboard.html
+    
+ ###### (Optional)
+ If you need to re-compile dashboard.html or do any frontend development of this application, you need to install Nodejs and npm.
+ Follow this guide:
+  https://nodejs.org/en/download/package-manager/
+  
+ Then, to recompile dashboard.html run:
+  - tm-dashboard/static/compile
