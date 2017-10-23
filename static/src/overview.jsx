@@ -11,6 +11,7 @@ import NodeStats        from    './components/nodeStats';
 import * as DataSpoofer from    './components/spoofer';
 import * as DataSharing from    './components/dataSharing';
 import BRackOverview    from    './visualization/rackOverviewBox';
+import ChordShowcase    from    './visualization/chordShowcase';
 
 
 //P for Page.. -> PageOverview
@@ -125,6 +126,7 @@ class POverview extends Skeleton{
                     </ContentBox>
 
                     <ContentBox height={dscBtnBox}>
+                        <ChordShowcase/>
                     </ContentBox>
                 </div>
             </Skeleton>

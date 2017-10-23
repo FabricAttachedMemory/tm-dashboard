@@ -17,9 +17,9 @@ class Chords extends ApiRequester{
 
     constructor(props){
         super(props);
-        this.state.numberOfNodes = 0;
+        // this.state.numberOfNodes = 0;
         this.state.topology = [];
-        this.state.prevTopology = [];
+        // this.state.prevTopology = [];
 
         this.state.matrix = [[]];       //original data arrived from the server
         this.state.innerRadius = 0;
@@ -29,17 +29,17 @@ class Chords extends ApiRequester{
         this.state.renderMatrix = [[]]; //all inputs converted to 0 and 1 (only!)
         this.state.svg = undefined;
         this.state.chordLayout = undefined;
-        this.state.noReRender = false;
+        // this.state.noReRender = false;
 
-        this.state.selectedNode = -1;
+        // this.state.selectedNode = -1;
 
-       this.state.topology = DataSpoofer.SystemTopology(); // FIXME: Real data here
-       this.state.matrix   = DataSpoofer.ChordMatrix(this.state.topology); //FIXME: TRASH
+        this.state.topology = DataSpoofer.SystemTopology(); // FIXME: Real data here
+        this.state.matrix   = DataSpoofer.ChordMatrix(this.state.topology); //FIXME: TRASH
 
         // this.state.topology = undefined
         // this.state.matrix   = undefined
 
-       this.state.numberOfNodes    = this.state.matrix.length;
+    //    this.state.numberOfNodes    = this.state.matrix.length;
        this.state.renderMatrix     = this.constructRenderMatrix(this.state.matrix);
         // this.state.numberOfNodes    = undefined
         // this.state.renderMatrix     = undefined
@@ -76,7 +76,7 @@ class Chords extends ApiRequester{
         }
         if(svg === undefined)
             return;
-
+        MATRIX = renderMatrix;
         // --- Create a d3.chord() component to be used for the main drawing. ---
         var mainChord = this.createChord(svg, renderMatrix);
         var chord = mainChord.chord;
@@ -252,7 +252,7 @@ class Chords extends ApiRequester{
     onMouseOver(arcData){
         var enc = GetEncFromNode(this.state.topology, arcData.index);
 
-        RackOverview.SetActive(enc, arcData.index, true);
+        // RackOverview.SetActive(enc, arcData.index, true);
         ShowNodeActivity(arcData.index, true);
     }//onMouseOver
 
@@ -377,7 +377,8 @@ export function ShowNodeActivity(node, state){
     var pathObj = d3.selectAll("g.ribbons path");
 
     var connections = findArcsFromMatrix(node);
-
+    if(connections.length < 1)
+        return;
     pathObj.filter((d) =>{
         var pathIndex = d.source.index + "->" + d.source.subindex;
         return connections.includes(pathIndex);
@@ -399,6 +400,10 @@ export function ShowNodeActivity(node, state){
     setRectGroupStyle("#HightlightGroup_" + node, "systemLoadRect", state, filter_func)
 
     setRectGroupStyle("#innerRectCircle_" + node, "nodeNumberRect", state, filter_func);
+
+    var topology = DataSharing.Get("Topology").split(',');
+    var enc = GetEncFromNode(topology ,node)
+    RackOverview.SetActive(enc, node, state);
 }//ShowNodeActivity
 
 
@@ -412,6 +417,10 @@ export function ShowNodeActivity(node, state){
  */
 function findArcsFromMatrix(node){
     var list = [];
+    if(node >= MATRIX.length || node < 0){
+        console.warn("Cant show arcs for node [" + node + "]! Out of range");
+        return list;
+    }
 
     for(var i=0; i < MATRIX[node].length; i++){
         if(MATRIX[node][i] == 0)
@@ -456,10 +465,16 @@ export function GetEncFromNode(layout, node){
     var start = 0;
     var end = 0;
     for(var i=0; i < layout.length; i++){
-        end = start + layout[i] - 1;
+        var nodeCount = parseInt(layout[i]);
+        end = start + nodeCount - 1;
         if(node >= start && node <= end)
             return i;
-        start = start + layout[i];
+        start = start + nodeCount;
     }//for
     return -1;
 }//getEncFromNode
+
+
+export function GetMatrix(){
+    return MATRIX;
+}
