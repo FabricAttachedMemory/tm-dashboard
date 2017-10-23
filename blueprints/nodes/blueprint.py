@@ -162,15 +162,13 @@ def build_topology():
     # nodes_list has {coordinate, node_id} for converting coordinate path
     # from the active shelf data to the node number.
     node_dict = {}
-
     result = Journal.topology #json data to be returned
 
     url = mainapp.config['LMP_SERVER'] + 'nodes/'
     response = Journal.make_request(url)
 
     resp_json = response.json()
-
-    # FIXME: need to spoof topology data
+    result.update(resp_json)
     if Journal.is_spoofed is True:
         result['spoofed'] = True
         return result
@@ -178,7 +176,6 @@ def build_topology():
         result['spoofed'] = False
 
     nodes_list = resp_json['nodes']
-
     for node in nodes_list:
         for keys, values in node.items():
             node_full_name = node['coordinate'] + '/SocBoard/1/Soc/1'

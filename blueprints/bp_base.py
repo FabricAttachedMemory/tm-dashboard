@@ -113,7 +113,7 @@ class Journal():
             response.status_code = 303 #partial content - because spoofed.
             resp_json = self.spoofed
         else:
-            response.status_code = request.status_code
+            response.status_code = response.status_code
             resp_json = self.json_model
         '''
         resp_json['reason'] = '[%s] %s: %s' % (response.url,
