@@ -20,6 +20,7 @@ class ApiRequester extends React.Component {
             fetched : undefined,
             index: 0,
             spoofedData : this.props.spoofedData,
+            intervalId : -1,
         }
 
         this.spoofData              = this.spoofData.bind(this);
@@ -52,11 +53,13 @@ class ApiRequester extends React.Component {
      * identify that the call has been made. When server response back, fetched
      * will become a json object containing the response values. */
     GetData() {
+return;
         var url= this.props.url; //just shorter to use during debugging
         if(!url){
             if(!this.state.isSpoofed)
                 console.log("Empty url string! Name: " + this.props.name);
-            this.state.failedFetchCount += 1;
+                this.state.failedFetchCount += 1;
+            //this.setState({failedFetchCount : this.state.failedFetchCount + 1});
             return;
         }
 
@@ -81,27 +84,33 @@ class ApiRequester extends React.Component {
 
             return this.state.fetched;
         }).catch((error) => {
-            console.log("GetData() error fetching '" + this.props.url + "'! [" + error + "]");
+           // console.log("GetData() error fetching '" + this.props.url + "'! [" + error + "]");
         });
     }//GetData
 
 
     //One of the first functions in the React lifecicle to be called.
     componentWillMount(){
-        setInterval(() => {
+        this.state.intervalId = setInterval(() => {
             if (this.state.failedFetchCount >= this.props.spoofAfterFails){
                 //signal component to check for re-render
-                this.setState({isSpoofed : true});
-                // return;
-            }
-            // if(!this.state.fetched || this.state.fetched == null){
+                //this.setState({isSpoofed : true});
+                this.state.isSpoofed = true;
+            }else{
                 if(!this.state.isSpoofed){
                     this.GetData();
                 }
-            // }
-            this.setState({forceRender : true });
+                this.state.forceRerender = true;
+                //this.setState({forceRender : true });
+            }
         }, this.props.refreshRate);
     }//componentWillMount
+
+
+    componentWillUnmount(){
+        if(this.state.intervalId != -1)
+            clearInterval(this.state.intervalId);
+    }//componentWillUnmount
 
 
     /* This is called when this.setState() function is used.

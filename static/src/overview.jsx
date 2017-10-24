@@ -21,6 +21,7 @@ class POverview extends Skeleton{
         super(props);
         this.state.isFirstRender = true;
         this.state.heightStack = [];
+        this.state.intervalId = -1;
     }//ctor
 
 
@@ -33,12 +34,19 @@ class POverview extends Skeleton{
     componentWillMount(){
         window.addEventListener("resize", this.updateDimensions.bind(this));
 
-        setInterval(() => {
-            this.setState({isForceRender : true });
+        this.state.intervalId = setInterval(() => {
             this.calculateHeights();
         }, 1000);
 
     }//componentWillMount
+
+
+    componentWillUnmount(){
+        if(this.state.intervalId != -1){
+            clearInterval(this.state.intervalId);
+        }
+    }//componentWillUnmount
+
 
     calculateHeights(){
         this.state.heightStack = [];
@@ -56,6 +64,7 @@ class POverview extends Skeleton{
         }
         if(this.state.heightStack.length == 2){
             this.setState({forceRender : true});
+            //this.state.forceRender = true;
         }
     }//componentDidMount
 
