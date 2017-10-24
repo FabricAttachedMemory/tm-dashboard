@@ -48,7 +48,6 @@ class JPower(Journal):
         r = requests.get(url, headers=headers)
         data=r.json()
         self.book_size = data['book_size']
-        print("book_size", self.book_size)
         self.books = 0
 
     @property
