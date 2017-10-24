@@ -7,6 +7,9 @@ import * as ChordWheel from './chordWheel';
 import * as DataSharing  from '../components/dataSharing';
 
 var ACTIVE_NODE=-1;
+var REFRESH_RATE=2000;
+var IS_PLAYING=false;
+
 
 class ChordShowcase extends React.Component{
 
@@ -38,9 +41,9 @@ class ChordShowcase extends React.Component{
 
 
     componentDidMount(){
-        var isPlaying = DataSharing.Get("IsShowcasePlaying") == "true" ? true : false;
+        //var isPlaying = DataSharing.Get("IsShowcasePlaying") == "true" ? true : false;
         this.state.activeNode = ACTIVE_NODE;
-        if(isPlaying){
+        if(IS_PLAYING){
             this.showcaseNodes();
             this.state.isPlaying = true;
         }
@@ -71,6 +74,7 @@ class ChordShowcase extends React.Component{
 
         if(!isPlay){
             ChordWheel.ShowNodeActivity(prevNode, false);
+            this.clearTimeout();
             return;
         }//if no playing
 
@@ -81,7 +85,7 @@ class ChordShowcase extends React.Component{
 
         ChordWheel.ShowNodeActivity(activeNode, true);
         this.state.activeNode = activeNode;
-
+        console.log(this.state.isPlaying + " | " + IS_PLAYING);
         this.state.timeoutId = setTimeout(this.showcaseNodes.bind(this.state.isPlaying),
                                             this.state.refreshRate);
     }//showcaseNodes
@@ -90,17 +94,17 @@ class ChordShowcase extends React.Component{
     setRefreshRate(event){
         var rate = event.target.value;
         this.setState({refreshRate : rate});
-        DataSharing.Set("ChordRefreshRate", rate);
+        //DataSharing.Set("ChordRefreshRate", rate);
+        REFRESH_RATE = rate;
     }//setRefreshRate
 
 
     toggleShowcase(){
-        var isPlaying = DataSharing.Get("IsShowcasePlaying") == "true" ? true : false;
-        isPlaying = !isPlaying;
-        DataSharing.Set("IsShowcasePlaying", isPlaying.toString());
-        this.setState({ isPlaying : isPlaying});
-        if(!isPlaying)
-            this.clearTimeout();
+        this.clearTimeout();
+        //var isPlaying = DataSharing.Get("IsShowcasePlaying") == "true" ? true : false;
+        IS_PLAYING = !IS_PLAYING;
+        //DataSharing.Set("IsShowcasePlaying", isPlaying.toString());
+        this.setState({ isPlaying : IS_PLAYING});
     }//toggleShowcase
 
 
@@ -121,12 +125,15 @@ class ChordShowcase extends React.Component{
 
 
     render(){
-        var rate = DataSharing.Get("ChordRefreshRate");
-        var isPlaying = DataSharing.Get("IsShowcasePlaying") == "true" ? true : false;
+        //var rate = DataSharing.Get("ChordRefreshRate");
+        var rate = REFRESH_RATE;
+        //var isPlaying = DataSharing.Get("IsShowcasePlaying") == "true" ? true : false;
         if(rate == "")
             rate = this.state.refreshRate;
-        var toggleText = isPlaying ? "Stop" : "Play";
-        this.showcaseNodes(this.state.isPlaying);
+        var toggleText = IS_PLAYING ? "Stop" : "Play";
+        //this.showcaseNodes(this.state.isPlaying);
+        console.log(IS_PLAYING);
+        this.showcaseNodes(IS_PLAYING);
         return(
         <div id="ChordShowcase" style={{display: "hide"}}>
             <button className="btn btn-primary" onClick={this.toggleShowcase}>{toggleText}</button>
