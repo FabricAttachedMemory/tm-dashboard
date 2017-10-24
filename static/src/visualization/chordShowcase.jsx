@@ -4,7 +4,9 @@ import {render}  from 'react-dom';
 import PropTypes from 'prop-types';
 
 import * as ChordWheel from './chordWheel';
+import * as DataSharing  from '../components/dataSharing';
 
+var ACTIVE_NODE=-1;
 
 class ChordShowcase extends React.Component{
 
@@ -18,13 +20,38 @@ class ChordShowcase extends React.Component{
         this.setRefreshRate = this.setRefreshRate.bind(this);
         this.showcaseNodes = this.showcaseNodes.bind(this);
         this.toggleShowcase = this.toggleShowcase.bind(this);
+        this.state.timeoutId = -1;
     }//ctor
+
 
     shouldComponentUpdate(nextProps, nextState){
         var isShouldPlay = nextState.isPlaying != this.state.isPlaying;
-        var diffRateSelected = nextState.refreshRate != this.state.refreshRate;
-        return isShouldPlay;
+        var isNewRefreshRate = nextState.refreshRate != this.state.refreshRate;
+        return isShouldPlay || isNewRefreshRate;
+    }//shouldComponentUpdate
+
+
+    componentWillUnmount(){
+        this.clearTimeout();
+        ACTIVE_NODE=this.state.activeNode;
+    }//componentWillUnmount
+
+
+    componentDidMount(){
+        var isPlaying = DataSharing.Get("IsShowcasePlaying") == "true" ? true : false;
+        this.state.activeNode = ACTIVE_NODE;
+        if(isPlaying){
+            this.showcaseNodes();
+            this.state.isPlaying = true;
+        }
     }
+
+
+    clearTimeout(){
+        if(this.state.timeoutId != -1){
+            clearTimeout(this.state.timeoutId);
+        }
+    }//clearTimeout
 
 
     showcaseNodes(isPlay=true){
@@ -49,40 +76,65 @@ class ChordShowcase extends React.Component{
 
         //when state has changed, but setTimeout keep passing incorect isPlay state.
         if(!this.state.isPlaying){
-            return;
+            //return;
         }//if
 
         ChordWheel.ShowNodeActivity(activeNode, true);
-        this.setState({activeNode : activeNode});
+        this.state.activeNode = activeNode;
 
-        setTimeout(this.showcaseNodes.bind(this.state.isPlaying), this.state.refreshRate);
+        this.state.timeoutId = setTimeout(this.showcaseNodes.bind(this.state.isPlaying),
+                                            this.state.refreshRate);
     }//showcaseNodes
 
 
     setRefreshRate(event){
         var rate = event.target.value;
         this.setState({refreshRate : rate});
+        DataSharing.Set("ChordRefreshRate", rate);
     }//setRefreshRate
 
 
     toggleShowcase(){
-        this.setState({ isPlaying : !this.state.isPlaying });
+        var isPlaying = DataSharing.Get("IsShowcasePlaying") == "true" ? true : false;
+        isPlaying = !isPlaying;
+        DataSharing.Set("IsShowcasePlaying", isPlaying.toString());
+        this.setState({ isPlaying : isPlaying});
+        if(!isPlaying)
+            this.clearTimeout();
     }//toggleShowcase
 
 
+    createRefreshRateOptions(option_list, select_val){
+        var result = [];
+        for(var i=0; i < option_list.length; i++){
+            var val = option_list[i];
+            var selected = (val == select_val) ? "selected" : "";
+            var id = "OptRate_"+val;
+            result.push(
+                <option className="dropdown-up" key={id} id={id} value={val}>
+                {val}
+                </option>
+            );
+        }//for
+        return result;
+    }//createRefreshRateOptions
+
+
     render(){
+        var rate = DataSharing.Get("ChordRefreshRate");
+        var isPlaying = DataSharing.Get("IsShowcasePlaying") == "true" ? true : false;
+        if(rate == "")
+            rate = this.state.refreshRate;
+        var toggleText = isPlaying ? "Stop" : "Play";
         this.showcaseNodes(this.state.isPlaying);
-        var toggleText = this.state.isPlaying ? "Stop" : "Play";
         return(
         <div id="ChordShowcase" style={{display: "hide"}}>
-            <button onClick={this.toggleShowcase}>{toggleText}</button>
-            <select className="btn btn-primary" onChange={this.setRefreshRate}
-                >
-                <option value="500">500</option>
-                <option value="1000">1000</option>
-                <option value="2000">2000</option>
-                <option value="3000">3000</option>
-                <option value="4000">4000</option>
+            <button className="btn btn-primary" onClick={this.toggleShowcase}>{toggleText}</button>
+            <select className="btn btn-primary" value={rate} onChange={this.setRefreshRate}>
+                {this.createRefreshRateOptions(
+                    [500,1000,2000,3000,4000],
+                    rate
+                )}
             </select>
         </div>
         );
@@ -92,7 +144,7 @@ class ChordShowcase extends React.Component{
 
 
 ChordShowcase.defaultProps = {
-    refreshRate : 1000,
+    refreshRate : 2000,
 }//defaultProps
 
 

@@ -154,7 +154,7 @@ class Chords extends ApiRequester{
 
         DataSharing.Set("Enclosures", topology.length);
         DataSharing.Set("Topology", topology.toString());
-    }//componentDidUpdate
+    }//buildChordsDiagram
 
 
     // Create an outer circle arc line with the enclosure name for the group.
@@ -308,7 +308,7 @@ class Chords extends ApiRequester{
         var svgObj = d3.select("#abyss-circle");
         this.setState({svg : svgObj});
         this.buildChordsDiagram(svgObj, this.state.matrix, this.state.topology);
-    }
+    }//componentDidMount
 
     noNameFunc(){
         if(this.state.fetched === undefined)

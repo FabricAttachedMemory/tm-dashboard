@@ -1,9 +1,9 @@
 .smoothHeight{
-    -webkit-transition: max-height 1s; 
-    -moz-transition: max-height 1s; 
-    -ms-transition: max-height 1s; 
-    -o-transition: max-height 1s; 
-    transition: max-height 1s; 
+    -webkit-transition: max-height 1s;
+    -moz-transition: max-height 1s;
+    -ms-transition: max-height 1s;
+    -o-transition: max-height 1s;
+    transition: max-height 1s;
 }
 
 .smoothFadein{
@@ -19,4 +19,11 @@
 
 .smoothFadeout{
     opacity: 0;
+}
+
+dropdown-up{
+    position: absolute;
+    margin-top: 1px;
+    font: 10px;
+    bottom: 100%; /* added this attribute */
 }
