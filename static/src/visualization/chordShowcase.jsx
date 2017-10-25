@@ -11,11 +11,16 @@ var REFRESH_RATE=2000;
 var IS_PLAYING=false;
 
 
+//This component allows users to start\stop arcs looping demo, which will hightlight
+//each node every REFRESH_RATE seconds from first, to the last one.
+//This component needs to be added to the page (overview.jsx) that will create
+//a button and a dropdown list to control the Showcase loop.
 class ChordShowcase extends React.Component{
 
     constructor(props){
         super(props);
         this.state = {
+            //this triggers re-render when different refresh rate is selected.
             refreshRate : props.refreshRate,
             activeNode : -1,
             isPlaying : false,
@@ -23,10 +28,15 @@ class ChordShowcase extends React.Component{
         this.setRefreshRate = this.setRefreshRate.bind(this);
         this.showcaseNodes = this.showcaseNodes.bind(this);
         this.toggleShowcase = this.toggleShowcase.bind(this);
-        this.state.timeoutId = -1;
+        this.state.timeoutId = [];
     }//ctor
 
 
+    //When a Play button is pressed or different refresh rate selection is
+    //selected, it will set a new state that will trigger React to call this
+    //function. Here, we check if current state is different from what user is
+    //choosing, and if it is - re-render will be triggered, to allow dropdown
+    //value to be set and a loop process to be started(or stopped).
     shouldComponentUpdate(nextProps, nextState){
         var isShouldPlay = nextState.isPlaying != this.state.isPlaying;
         var isNewRefreshRate = nextState.refreshRate != this.state.refreshRate;
@@ -34,32 +44,52 @@ class ChordShowcase extends React.Component{
     }//shouldComponentUpdate
 
 
+    //When a different tab (e.g. Memory Management tab) is clicked, this function
+    //is called by React. At this point, we need to clear all of the running
+    //timeouts that makes up a "nodes looping process", so that it does not
+    //continue execution when Overview tab is not opened. Also, save currently
+    //selected node number, so that when user comes back, the loop picks up
+    //from where it left off.
     componentWillUnmount(){
         this.clearTimeout();
         ACTIVE_NODE=this.state.activeNode;
     }//componentWillUnmount
 
 
+    //When everything is loaded and in the DOM, it is time to start showcasing
+    //nodes, if Play button was already pressed. This usually happenes when
+    //switching between tabs. On the very first load of the page - showcasing
+    //is stopped.
     componentDidMount(){
-        //var isPlaying = DataSharing.Get("IsShowcasePlaying") == "true" ? true : false;
         this.state.activeNode = ACTIVE_NODE;
-        if(IS_PLAYING){
-            this.showcaseNodes();
-            this.state.isPlaying = true;
-        }
-    }
+        this.state.isPlaying = IS_PLAYING;
+    }//componentDidMount
 
 
+    //Here we are setting refresh rate value. It needs to be called before the
+    //render() function to make refreshrate dropdown menu to select the rigth
+    //value and also, to set state so that showcaseNodes() would have the right
+    //rate as well.
+    componentWillMount(){
+        this.state.refreshRate = REFRESH_RATE;
+    }//componentWillMount
+
+
+    //setTimeout() is called recursively in the showcaseNode() function. Thus,
+    //it creates many timeout IDs. We need to track all of them and clean timeouts
+    //when component is unmounted, switching between tabs or a Stop button is called.
     clearTimeout(){
-        if(this.state.timeoutId != -1){
-            clearTimeout(this.state.timeoutId);
-        }
+        for(var i=0; i<this.state.timeoutId.length; i++){
+            clearTimeout(this.state.timeoutId[i]);
+        }//for
     }//clearTimeout
 
 
+    //Run a Looping algorithm to showcase all of the nodes. It will call ChordWheel's
+    //ShowNodeActivity() function to highlight and de-highlight nodes.
     showcaseNodes(isPlay=true){
-        var activeNode = this.state.activeNode;
-        var prevNode = -1;
+        var activeNode = this.state.activeNode; //node that will be selected
+        var prevNode = -1;  //node that is currently selected (to be unselected)
         var matrixLength = ChordWheel.GetMatrix().length;
         if(activeNode >= matrixLength - 1){
             activeNode = 0;
@@ -78,36 +108,44 @@ class ChordShowcase extends React.Component{
             return;
         }//if no playing
 
-        //when state has changed, but setTimeout keep passing incorect isPlay state.
-        if(!this.state.isPlaying){
-            //return;
-        }//if
-
         ChordWheel.ShowNodeActivity(activeNode, true);
+        //can't use setState() here, but this still works as intended.
         this.state.activeNode = activeNode;
-        console.log(this.state.isPlaying + " | " + IS_PLAYING);
-        this.state.timeoutId = setTimeout(this.showcaseNodes.bind(this.state.isPlaying),
+
+        //helps to keep timeoutID array small. No need to track all ids, since
+        //setTimeout called in recursive loop, therefore, the last ID is the most
+        //relevant. However, things may get out of sync sometimes, and last ID
+        //is not the one that needs to be cleaned. That is one we keep track of
+        //all of them, and cleaning the stack before calling a new one.
+        this.clearTimeout();
+
+        var timeoutId = setTimeout(this.showcaseNodes.bind(this.state.isPlaying),
                                             this.state.refreshRate);
+
+        if(this.state.timeoutId.indexOf(timeoutId) == -1){
+            this.state.timeoutId.push(timeoutId);
+        }
     }//showcaseNodes
 
 
+    //Called by refresh rate dropdown <select> onChange event.
     setRefreshRate(event){
+        this.clearTimeout();
         var rate = event.target.value;
         this.setState({refreshRate : rate});
-        //DataSharing.Set("ChordRefreshRate", rate);
         REFRESH_RATE = rate;
     }//setRefreshRate
 
 
+    //Called by Play\Stop <button> onCick event
     toggleShowcase(){
         this.clearTimeout();
-        //var isPlaying = DataSharing.Get("IsShowcasePlaying") == "true" ? true : false;
         IS_PLAYING = !IS_PLAYING;
-        //DataSharing.Set("IsShowcasePlaying", isPlaying.toString());
         this.setState({ isPlaying : IS_PLAYING});
     }//toggleShowcase
 
 
+    //Create refresh rates dropdown list (<option>) of Refresh rates to be used.
     createRefreshRateOptions(option_list, select_val){
         var result = [];
         for(var i=0; i < option_list.length; i++){
@@ -125,21 +163,18 @@ class ChordShowcase extends React.Component{
 
 
     render(){
-        //var rate = DataSharing.Get("ChordRefreshRate");
         var rate = REFRESH_RATE;
-        //var isPlaying = DataSharing.Get("IsShowcasePlaying") == "true" ? true : false;
         if(rate == "")
             rate = this.state.refreshRate;
-        var toggleText = IS_PLAYING ? "Stop" : "Play";
-        //this.showcaseNodes(this.state.isPlaying);
-        console.log(IS_PLAYING);
+        var toggleText = IS_PLAYING ? "Stop" : "Start";
+
         this.showcaseNodes(IS_PLAYING);
         return(
         <div id="ChordShowcase" style={{display: "hide"}}>
             <button className="btn btn-primary" onClick={this.toggleShowcase}>{toggleText}</button>
             <select className="btn btn-primary" value={rate} onChange={this.setRefreshRate}>
                 {this.createRefreshRateOptions(
-                    [500,1000,2000,3000,4000],
+                    [500,1000,2000,3000,4000, 5000, 6000],
                     rate
                 )}
             </select>
