@@ -53,6 +53,7 @@ class ApiRequester extends React.Component {
      * identify that the call has been made. When server response back, fetched
      * will become a json object containing the response values. */
     GetData() {
+return;
         var url= this.props.url; //just shorter to use during debugging
         if(!url){
             if(!this.state.isSpoofed)
