@@ -45,7 +45,8 @@ class MainApp:
         return self.blueprints
 
 
-    def RegisterBlueprints(self):
+    # TODO: ignore_bp arg parser!
+    def RegisterBlueprints(self, ignore_bp=['pernode']):
         ''' Add all blueprint scripts found in the blueprints/ folder to the
         flask routine. '''
         bp_list = [] # list of all blueprints scripts (not importable yet)
@@ -58,9 +59,14 @@ class MainApp:
         try:
             for bp in bp_list:
                 module_name = bp.replace('/', '.')
+                bp_name = module_name.split('.')[-3]
+                if(bp_name in ignore_bp):
+                    print('!!!! Ignoring to load blueprint "%s" !!!!' % bp_name)
+                    continue
+
                 imported_bp = SourceFileLoader(module_name, bp).load_module()
-                #imported_bp = importlib.import_module(bp_module)
                 imported_bp.Journal.register(self)
+
 
                 self.app.register_blueprint(imported_bp.Journal.BP)
                 print('Regestring bluerpint "%s"...' % imported_bp.Journal.name)

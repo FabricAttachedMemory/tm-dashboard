@@ -5,6 +5,7 @@ import PropTypes    from 'prop-types';
 import * as d3      from 'd3'
 
 import * as RackOverview from './rackOverviewBox';
+import * as NodeStats    from '../components/nodeStats';
 import * as DataSpoofer  from '../components/spoofer';
 import * as DataSharing  from '../components/dataSharing';
 import ApiRequester      from '../components/base/apiRequester';
@@ -403,7 +404,12 @@ export function ShowNodeActivity(node, state){
 
     var topology = DataSharing.Get("Topology").split(',');
     var enc = GetEncFromNode(topology ,node)
+
     RackOverview.SetActive(enc, node, state);
+    if(state)
+        NodeStats.SetFields({"power" : "text");
+    else
+        NodeStats.SetFields({}); //remove all stats values on hoverout event
 }//ShowNodeActivity
 
 
