@@ -5,7 +5,7 @@ import {render}     from 'react-dom';
 
 import ApiRequester from './base/apiRequester';
 
-const NodeStatFields = [
+const STATS_FIELDS = [
                     ["Power State",     "power"],
                     ["DRAM Usage",      "dram"],
                     ["CPU Usage",       "cpu"],
@@ -17,7 +17,6 @@ const NodeStatFields = [
                     ["No. of Books",    "books"],
                   ];
 
-
 /* TODO: documentation will be here soon. */
 class NodeStats extends React.Component {
 
@@ -25,20 +24,8 @@ class NodeStats extends React.Component {
         super(props);
         this.state = { data : {} };
         //this.state.data = {};
-        this.state.data = this.ValidateAndDefault(this.state.data);
+        //this.state.data = this.ValidateAndDefault(this.state.data);
     }//ctor
-
-
-    ValidateAndDefault(data){
-        var expectedFields = NodeStatFields;
-        for(var i=0; i < expectedFields.length; i++){
-            var field = expectedFields[i];
-            if(field[1] in data)
-                continue;
-            data[field[1]] = "---";
-        }
-        return data;
-    }//ValidateAndDefault
 
 
     BuildDataBox(title, subtitle){
@@ -59,7 +46,7 @@ class NodeStats extends React.Component {
                 <div style={titleSt}>
                     {title}
                 </div>
-                <div style={titleSt}>
+                <div id={"NodeStat_" + title} style={titleSt}>
                     {subtitle}
                 </div>
             </div>
@@ -84,12 +71,13 @@ class NodeStats extends React.Component {
 
     render() {
         //var fetchedData = this.readFetchedValues();
-        var fetchedData = {};
         var boxes = [];
-        for(var i=0; i < NodeStatFields.length; i++){
-            var field = NodeStatFields[i];
+        var stats = _validateAndDefault({}); //empty value set of fields
+
+        for(var i=0; i < STATS_FIELDS.length; i++){
+            var field = STATS_FIELDS[i];
             var title = field[0];
-            var value = fetchedData[field[1]];
+            var value = stats[field[1]];
             value = (value === undefined) ? "---" : value;
             boxes.push(this.BuildDataBox(title, value));
         }//for
@@ -105,6 +93,30 @@ class NodeStats extends React.Component {
 export default NodeStats;
 
 
-export function SetFields(values){
-    //TODO: Implement this
+export function SetFields(fields){
+    var stats = _validateAndDefault(fields);
+    for(var i=0; i<STATS_FIELDS.length; i++){
+        var field = STATS_FIELDS[i];
+        var value = stats[field[1]];
+
+        var statValueId = "NodeStat_" + field[0];
+        var element = document.getElementById(statValueId);
+        if(element == null){
+            console.warn("Cant set nodestat value for ["+statValueId+"]");
+            continue;
+        }
+        element.innerHTML = value;
+    }//for
 }//SetFields
+
+
+function _validateAndDefault(data){
+    var expectedFields = STATS_FIELDS;
+    for(var i=0; i < expectedFields.length; i++){
+        var field = expectedFields[i];
+        if(field[1] in data)
+            continue;
+        data[field[1]] = "---";
+    }
+    return data;
+}//ValidateAndDefault
