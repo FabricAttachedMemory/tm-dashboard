@@ -20,15 +20,15 @@ __copyright__ = "Copyright 2017 Hewlett Packard Enterprise Development LP"
 __maintainer__ = "Betty Dall"
 __email__ = "betty.dall@hpe.com"
 
-import os
-import requests
-import random
 from flask import Blueprint, jsonify, render_template, make_response, url_for, request
 from pprint import pprint
-import time
-import threading
-import json
 from shlex import quote
+import json
+import os
+import random
+import requests
+import threading
+import time
 
 from pdb import set_trace
 
