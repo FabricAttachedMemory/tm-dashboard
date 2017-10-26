@@ -7,6 +7,7 @@ __copyright__ = "Copyright 2017 Hewlett Packard Enterprise Development LP"
 __maintainer__ = "Zakhar Volchak"
 __email__ = "zakhar.volchak@hpe.com"
 
+import argparse
 import flask
 import addons.flask_cors as flask_cors
 from importlib.machinery import SourceFileLoader # to import blueprints from path
@@ -21,7 +22,7 @@ class MainApp:
     STATIC = os.path.abspath(os.path.dirname(__file__) + "/static/")
     TEMPLATES = os.path.abspath(os.path.dirname(__file__) + "/templates/")
 
-    def __init__(self, bp_path):
+    def __init__(self, bp_path, **kwargs):
         # trip trailing slash from path
         self.path = bp_path.rstrip('/') if bp_path.endswith('/') else bp_path
         self.path = self.root_dir + '/' + self.path
@@ -34,7 +35,7 @@ class MainApp:
         self.app.url_map.strict_slashes = False
 
         self.RefreshBlueprints()
-        self.RegisterBlueprints()
+        self.RegisterBlueprints(kwargs.get('ignore', None))
 
 
     def RefreshBlueprints(self):
@@ -46,9 +47,11 @@ class MainApp:
 
 
     # TODO: ignore_bp arg parser!
-    def RegisterBlueprints(self, ignore_bp=['pernode']):
+    def RegisterBlueprints(self, ignore_bp=None):
         ''' Add all blueprint scripts found in the blueprints/ folder to the
         flask routine. '''
+        ignore_bp = ignore_bp if ignore_bp is not None else []
+
         bp_list = [] # list of all blueprints scripts (not importable yet)
         for bp_path in self.blueprints:
             bp_list.extend([path for path in glob.glob(bp_path + '/*.bp') ])
@@ -66,7 +69,6 @@ class MainApp:
 
                 imported_bp = SourceFileLoader(module_name, bp).load_module()
                 imported_bp.Journal.register(self)
-
 
                 self.app.register_blueprint(imported_bp.Journal.BP)
                 print('Regestring bluerpint "%s"...' % imported_bp.Journal.name)
@@ -90,9 +92,27 @@ class MainApp:
         return os.path.dirname(os.path.abspath(__file__)) + '/'
 
 
+
+def parse_cmd():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--ignore',
+                        help='blueprints to be ignored/not-loaded by server. ' +\
+                            '--ignore "bp1,bp2,bp2"', default=None)
+
+    parsed = parser.parse_args()
+    if parsed.ignore is not None:
+        parsed.ignore = parsed.ignore.replace(' ', '').split(',')
+    return vars(parsed)
+
+
+
+
 def main(args=None):
     args = {} if args is None else args
-    mainapp = MainApp('blueprints/')
+    cmd = parse_cmd()
+    args.update(cmd)
+
+    mainapp = MainApp('blueprints/', **args)
     mainapp.SetConfig('server.cfg')
     if not args.get('dont_run', False):
         mainapp.app.run(host=mainapp.config['HOST'],
