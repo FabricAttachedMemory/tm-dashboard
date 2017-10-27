@@ -51,6 +51,9 @@ from pprint import pprint
 import time
 import threading
 import json
+import subprocess
+import shlex
+import sys
 from shlex import quote
 
 
@@ -113,18 +116,14 @@ class JPower(Journal):
         for n in nodes_list:
             node = n['node_id']
             nodeindex = node - 1
-            epoch_time_cmd="date +%s"
-            net_in_out_cmd="ssh l4tm@" + self.nodeinfo[nodeindex]['hostname'] + " awk " + quote(quote('/IpExt: [0-9]+ / { print $8, $9 }')) + " /proc/net/netstat"
-            prevtime=os.popen(epoch_time_cmd).read()
-            prev_in_out_text=os.popen(net_in_out_cmd).read()
+            prev_in_out_text = self.get_network_in_out(node)
+            prevtime=self.get_curtime()
             prev_in_out = prev_in_out_text.split()
-            prev_in = int(prev_in_out[0])
-            prev_out = int(prev_in_out[1])
             self.nodeinfo[nodeindex]['network_in'] = int(prev_in_out[0])
             self.nodeinfo[nodeindex]['network_out'] = int(prev_in_out[1])
             self.nodeinfo[nodeindex]['network_timestamp'] = int(prevtime)
-            cpu_stat_cmd="ssh l4tm@" + self.nodeinfo[nodeindex]['hostname'] + " awk " + quote(quote('/cpu / { print ($2+$4), ($2+$4+$5) }')) + " /proc/stat"
-            cpu_stat_text=os.popen(cpu_stat_cmd).read()
+
+            cpu_stat_text=self.get_cpu_stat_list(node)
             cpu_stat = cpu_stat_text.split()
             self.nodeinfo[nodeindex]['cpu_busy_time'] = int(cpu_stat[0])
             self.nodeinfo[nodeindex]['cpu_total_time'] = int(cpu_stat[1])
@@ -134,6 +133,160 @@ class JPower(Journal):
         """ Refer to the base class (../bp_base.py) for documentation."""
         return "not implemented"
 
+    def get_network_in_out(self, node):
+        arg1="l4tm@" + self.nodeinfo[node-1]['hostname']
+        arg2=" awk " + quote('/IpExt: [0-9]+ / { print $8, $9 }') + " /proc/net/netstat"
+        r = subprocess.Popen(['ssh', arg1, arg2], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        netstat_list = r.stdout.readlines()
+        if netstat_list == []:
+            error = r.stderr.readlines()
+            print("Error: ", error, file=sys.stderr)
+            return "1.0 1.0"
+        else:
+            cur_in_out_text=netstat_list[0].decode("utf-8")
+        return cur_in_out_text
+
+
+    def get_curtime(self):
+        r = subprocess.Popen(['date', '+%s'], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        curtime_list=r.stdout.readlines()
+        if curtime_list == []:
+            error = r.stderr.readlines()
+            print("Error: ", error, file=sys.stderr)
+            return "0"
+        else:
+            curtime=curtime_list[0].decode("utf-8")
+        return curtime
+
+
+    def get_power_state(self, node):
+        # Get the powerstate of the node from the MFW service
+        mfwheaders = {
+            "Accept": "application/json; Content-Type: application/json; charset=utf-8",
+    }
+    
+        d_proxy = { "http" : None }
+        url = self.nodeinfo[node-1]['mfwApiUri'] + '/MgmtService/SoC'
+        r = requests.get(url, headers=mfwheaders, proxies=d_proxy)
+        if r.status_code != requests.codes.ok:
+            return "N/A"
+        data=r.json()
+        power = data['PowerState']
+        return power
+
+
+    def get_os_manifest(self, node):
+        # Get the os manifest for the node from the manifesting service
+        url = 'http://localhost:31178/manifesting/api/node/' + str(node)
+        r = requests.get(url, headers=self.headers)
+        if r.status_code != requests.codes.ok:
+            return "default"
+        data=r.json()
+        manifest=data['manifest']
+        return manifest
+
+
+    def get_books_and_shelves(self, node):
+        # Get the active books and shelves from LMP active data
+        coord = self.nodeinfo[node-1]['active_coordinate']
+        url = 'http://localhost:31179/lmp/active' + coord
+        r = requests.get(url, headers=self.headers)
+        if r.status_code != requests.codes.ok:
+            return [0, 0]
+        data=r.json()
+        active = data['active']
+        return active
+
+
+    def get_fabric_usage(self, node):
+        # Calculate the fabric usage from the LMP allocated data
+        coord = self.nodeinfo[node-1]['allocated_coordinate']
+        url = 'http://localhost:31179/lmp/allocated' + coord
+        r = requests.get(url, headers=self.headers)
+        if r.status_code != requests.codes.ok:
+            return 0
+        data=r.json()
+        mem = data['memory']
+        if mem['total'] == 0:
+            fam = 0
+        else:
+            fam = float(mem['allocated']) / mem['total']
+        return round(fam, 2)
+
+
+    def get_DRAM_usage(self, node):
+       # Get the DRAM percent used by calling ssh to the node
+        arg1="l4tm@" + self.nodeinfo[node-1]['hostname']
+        arg2=" head -2 /proc/meminfo | awk '{ print $2 }' | paste - - | awk '{print 100.00-(($2/$1)*100)}'"
+        r = subprocess.Popen(['ssh', arg1, arg2], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        dram_list = r.stdout.readlines()
+        if dram_list == []:
+            error = r.stderr.readlines()
+            print("Error: ", error, file=sys.stderr)
+            return 0.0
+        else:
+            dram=dram_list[0].decode("utf-8")
+        return round(float(dram), 2)
+    
+
+    def get_network_bps(self, node):
+        # Get the node's network traffic using ssh to the node
+        network = []
+    
+        cur_in_out_text = self.get_network_in_out(node)
+        curtime=self.get_curtime()
+        cur_in_out = cur_in_out_text.split()
+        cur_in = int(cur_in_out[0])
+        cur_out = int(cur_in_out[1])
+        bytes_in = cur_in - self.nodeinfo[node-1]['network_in']
+        bytes_out = cur_out - self.nodeinfo[node-1]['network_out']
+        secs = int(curtime) - self.nodeinfo[node-1]['network_timestamp']
+    
+        # Update the nodeinfo array with the latest network data
+        self.nodeinfo[node-1]['network_in']=bytes_in
+        self.nodeinfo[node-1]['network_out']=bytes_out
+        self.nodeinfo[node-1]['network_timestamp']=int(curtime)
+    
+        # It is possible for the time to be 0 seconds so avoid divide by 0
+        if secs == 0:
+            network.append(0)
+            network.append(0)
+        else:
+            network.append(round((bytes_in/secs), 1))
+            network.append(round((bytes_out/secs), 1))
+        return network
+    
+
+    def get_cpu_stat_list(self, node):
+        cpu_stat_cmd="ssh l4tm@" + self.nodeinfo[node-1]['hostname'] + " awk " + quote(quote('/cpu / { print ($2+$4), ($2+$4+$5) }')) + " /proc/stat"
+        arg1="l4tm@" + self.nodeinfo[node-1]['hostname']
+        arg2=" awk " + quote('/cpu / { print ($2+$4), ($2+$4+$5) }') + " /proc/stat"
+        r = subprocess.Popen(['ssh', arg1, arg2], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cpu_stat_list = r.stdout.readlines()
+        if cpu_stat_list == []:
+            error = r.stderr.readlines()
+            print("Error: ", error, file=sys.stderr)
+            return "0 0"
+        else:
+            cpu_stat_text=cpu_stat_list[0].decode("utf-8")
+            return cpu_stat_text
+
+
+    def get_cpu_usage(self, node):
+        # Calculate the CPU utilization from /proc/stat and previously saved
+        # values to get a recent timeslice rather than since boot.
+        cpu_stat_text=self.get_cpu_stat_list(node)
+        cpu_stat = cpu_stat_text.split()
+        busy_time = int(cpu_stat[0])
+        total_time = int(cpu_stat[1])
+        # Update the saved values in nodeinfo for next time
+        if total_time == self.nodeinfo[node-1]['cpu_total_time']:
+            cpu = 0
+        else:
+            cpu = round(100 * (busy_time - self.nodeinfo[node-1]['cpu_busy_time']) / (total_time - self.nodeinfo[node-1]['cpu_total_time']), 2)
+        self.nodeinfo[node-1]['cpu_busy_time'] = busy_time
+        self.nodeinfo[node-1]['cpu_total_time'] = total_time
+        return cpu
 
 Journal = JPower(__file__)
 
@@ -142,111 +295,6 @@ Journal = JPower(__file__)
 def validate_request(*args, **kwargs):
     global Journal
     return Journal.validate_request(request)
-
-def get_power_state(node):
-    # Get the powerstate of the node from the MFW service
-    mfwheaders = {
-        "Accept": "application/json; Content-Type: application/json; charset=utf-8",
-}
-
-    d_proxy = { "http" : None }
-    url = Journal.nodeinfo[node-1]['mfwApiUri'] + '/MgmtService/SoC'
-    r = requests.get(url, headers=mfwheaders, proxies=d_proxy)
-    if r.status_code != requests.codes.ok:
-        return "N/A"
-    data=r.json()
-    power = data['PowerState']
-    return power
-
-
-def get_os_manifest(node):
-    # Get the os manifest for the node from the manifesting service
-    url = 'http://localhost:31178/manifesting/api/node/' + str(node)
-    r = requests.get(url, headers=Journal.headers)
-    if r.status_code != requests.codes.ok:
-        return "default"
-    data=r.json()
-    manifest=data['manifest']
-    return manifest
-
-
-def get_books_and_shelves(node):
-    # Get the active books and shelves from LMP active data
-    coord = Journal.nodeinfo[node-1]['active_coordinate']
-    url = 'http://localhost:31179/lmp/active' + coord
-    r = requests.get(url, headers=Journal.headers)
-    if r.status_code != requests.codes.ok:
-        return [0, 0]
-    data=r.json()
-    active = data['active']
-    return active
-
-def get_fabric_usage(node):
-    # Calculate the fabric usage from the LMP allocated data
-    coord = Journal.nodeinfo[node-1]['allocated_coordinate']
-    url = 'http://localhost:31179/lmp/allocated' + coord
-    r = requests.get(url, headers=Journal.headers)
-    if r.status_code != requests.codes.ok:
-        return 0
-    data=r.json()
-    mem = data['memory']
-    if mem['total'] == 0:
-        fam = 0
-    else:
-        fam = float(mem['allocated']) / mem['total']
-    return round(fam, 2)
-
-def get_DRAM_usage(node):
-   # Get the DRAM percent used by calling ssh to the node
-    cmd="ssh l4tm@" + Journal.nodeinfo[node-1]['hostname'] + " head -2 /proc/meminfo | awk '{ print $2 }' | paste - - | awk '{print 100.00-(($2/$1)*100)}'"
-    dram = os.popen(cmd).read()
-    return round(float(dram[:-1]), 2)
-
-def get_network_bps(node):
-    # Get the node's network traffic using ssh to the node
-    net_in_out_cmd="ssh l4tm@" + Journal.nodeinfo[node-1]['hostname'] + " awk " + quote(quote('/IpExt: [0-9]+ / { print $8, $9 }')) + " /proc/net/netstat"
-    epoch_time_cmd="date +%s"
-    curtime=os.popen(epoch_time_cmd).read()
-    cur_in_out_text=os.popen(net_in_out_cmd).read()
-    cur_in_out = cur_in_out_text.split()
-    cur_in = int(cur_in_out[0])
-    cur_out = int(cur_in_out[1])
-    bytes_in = cur_in - Journal.nodeinfo[node-1]['network_in']
-    bytes_out = cur_out - Journal.nodeinfo[node-1]['network_out']
-    secs = int(curtime) - Journal.nodeinfo[node-1]['network_timestamp']
-
-    # Update the nodeinfo array with the latest network data
-    Journal.nodeinfo[node-1]['network_in']=bytes_in
-    Journal.nodeinfo[node-1]['network_out']=bytes_out
-    Journal.nodeinfo[node-1]['network_timestamp']=int(curtime)
-
-    network = []
-    # It is possible for the time to be 0 seconds so avoid divide by 0
-    if secs == 0:
-        network.append(0)
-        network.append(0)
-    else:
-        network.append(round((bytes_in/secs), 1))
-        network.append(round((bytes_out/secs), 1))
-    return network
-
-def get_cpu_usage(node):
-    # Calculate the CPU utilization from /proc/stat and previously saved
-    # values to get a recent timeslice rather than since boot.
-    cpu_stat_cmd="ssh l4tm@" + Journal.nodeinfo[node-1]['hostname'] + " awk " + quote(quote('/cpu / { print ($2+$4), ($2+$4+$5) }')) + " /proc/stat"
-    cpu_stat_text=os.popen(cpu_stat_cmd).read()
-    cpu_stat = cpu_stat_text.split()
-    busy_time = int(cpu_stat[0])
-    total_time = int(cpu_stat[1])
-    # Update the saved values in nodeinfo for next time
-    if total_time == Journal.nodeinfo[node-1]['cpu_total_time']:
-        cpu = 0
-    else:
-        cpu = round(100 * (busy_time - Journal.nodeinfo[node-1]['cpu_busy_time']) / (total_time - Journal.nodeinfo[node-1]['cpu_total_time']), 2)
-        print("cpu_usage: ", cpu)
-    Journal.nodeinfo[node-1]['cpu_busy_time'] = busy_time
-    Journal.nodeinfo[node-1]['cpu_total_time'] = total_time
-    return cpu
 
 
 """ ----------------- ROUTES ----------------- """
@@ -273,12 +321,12 @@ def pernode_api(nodestr=1):
         return make_response(jsonify({'results': nodedata}), 400)
 
     nodedata['Node'] = node
-    nodedata['Power State'] = get_power_state(node)
-    nodedata['OS Manifest'] = get_os_manifest(node)
-    active = get_books_and_shelves(node)
+    nodedata['Power State'] = Journal.get_power_state(node)
+    nodedata['OS Manifest'] = Journal.get_os_manifest(node)
+    active = Journal.get_books_and_shelves(node)
     nodedata['No. of Shelves'] = active['shelves']
     nodedata['No. of Books'] = active['books']
-    nodedata['Fabric Usage'] = get_fabric_usage(node) 
+    nodedata['Fabric Usage'] = Journal.get_fabric_usage(node) 
 
     # If the power to the node is off, then the remaining data is 0
     if nodedata['Power State'] == 'Off':
@@ -288,10 +336,10 @@ def pernode_api(nodestr=1):
         nodedata['Network Out'] = 0
         return make_response(jsonify({'results': nodedata}), 200)
 
-    nodedata['DRAM Usage'] = get_DRAM_usage(node)
-    network = get_network_bps(node)
+    nodedata['DRAM Usage'] = Journal.get_DRAM_usage(node)
+    network = Journal.get_network_bps(node)
     nodedata['Network In'] = network[0]
     nodedata['Network Out'] = network[1]
-    nodedata['CPU Usage'] = get_cpu_usage(node)
+    nodedata['CPU Usage'] = Journal.get_cpu_usage(node)
 
     return make_response(jsonify({'results': nodedata}), 200)
