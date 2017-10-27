@@ -171,8 +171,12 @@ class ChordShowcase extends React.Component{
         this.showcaseNodes(IS_PLAYING);
         return(
         <div id="ChordShowcase" style={{display: "hide"}}>
-            <button className="btn btn-primary" onClick={this.toggleShowcase}>{toggleText}</button>
-            <select className="btn btn-primary" value={rate} onChange={this.setRefreshRate}>
+            <div id="showcaseBtnSpacerTop" style={{marginTop: "3.3em"}}></div>
+            <button id="showcaseBtn" className="btn btn-hpe-default"
+                    onClick={this.toggleShowcase}>{toggleText}</button>
+            <select id="shocaseRateSelect" className="btn btn-hpe-default"
+                    value={rate} onChange={this.setRefreshRate}
+                    style={{borderLeft: "thin solid white"}}>
                 {this.createRefreshRateOptions(
                     [500,1000,2000,3000,4000, 5000, 6000],
                     rate

@@ -1,3 +1,6 @@
+@font-face { font-family: MetricHPE; src: url("./fonts/MetricHPE.otf"); }
+@font-face { font-family: MetricHPE-Semi; src: url("./fonts/MetricHPE-Semi.otf"); }
+
 .smoothHeight{
     -webkit-transition: max-height 1s;
     -moz-transition: max-height 1s;
@@ -21,9 +24,17 @@
     opacity: 0;
 }
 
-dropdown-up{
-    position: absolute;
-    margin-top: 1px;
-    font: 10px;
-    bottom: 100%; /* added this attribute */
+
+.btn-hpe-default{
+    background-color: #2AD2C9;
+
+    font-family: MetricHPE;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    font-size: 1.2em;
+
+    letter-spacing: 0.2em;
+    height: 30px;
+    border-radius: 0em;
 }
