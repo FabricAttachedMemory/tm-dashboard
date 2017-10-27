@@ -327,23 +327,31 @@ class Chords extends ApiRequester{
         var wRatio = 0.5;
         //FIXME: this is bs... need some "smarter" approach to dynamic positioning
         if(window.innerWidth > 1200)
-            wRatio = 0.55;
-        if(window.innerWidth > 1800)
             wRatio = 0.57;
+        if(window.innerWidth > 1800)
+            wRatio = 0.59;
         if(window.innerWidth > 2400)
-            wRatio = 0.6;
+            wRatio = 0.62;
 
         var w = window.innerWidth * wRatio;
         var h = window.innerHeight * 0.8;
         return(
             <div className="row">
-                <div className="col-md-1"></div>
-                <div className="col-md-10">
-                    <svg id="abyss-circle" className="chord"
-                        width={w} height={h}>
-                    </svg>
+                <div className="row">
+                    <div className="col-md-12 hpeFont"
+                        style={{textAlign: "center", marginTop: "2em", fontSize: "2em"}}>
+                    Fabric Attached Memory used by System-on-Chip
+                    </div>
                 </div>
-                <div className="col-md-1"></div>
+                <div className="row">
+                    <div className="col-md-1"></div>
+                    <div className="col-md-10">
+                        <svg id="abyss-circle" className="chord"
+                            width={w} height={h}>
+                        </svg>
+                    </div>
+                    <div className="col-md-1"></div>
+                </div>
             </div>
         );
     }//render
@@ -407,7 +415,7 @@ export function ShowNodeActivity(node, state){
 
     RackOverview.SetActive(enc, node, state);
     if(state)
-        NodeStats.SetFields({"power" : "text");
+        NodeStats.SetFields({"power" : "test"} );
     else
         NodeStats.SetFields({}); //remove all stats values on hoverout event
 }//ShowNodeActivity

@@ -105,7 +105,7 @@ class POverview extends Skeleton{
             nodeInfoHeight -= this.state.heightStack[0];
             nodeInfoHeight -= this.state.heightStack[1];
             nodeInfoHeight -= parseFloat(dscBtnBox.split("px")[0]);
-            // nodeInfoHeight -= 20;
+            nodeInfoHeight -= 2;
             nodeInfoHeight += "px";
         }
 
