@@ -407,7 +407,7 @@ export function ShowNodeActivity(node, state){
 
     RackOverview.SetActive(enc, node, state);
     if(state)
-        NodeStats.SetFields({"power" : "text");
+        NodeStats.SetFields({"power" : "test"} );
     else
         NodeStats.SetFields({}); //remove all stats values on hoverout event
 }//ShowNodeActivity
