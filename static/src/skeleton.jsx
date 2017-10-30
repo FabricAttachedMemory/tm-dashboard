@@ -2,6 +2,7 @@
 
 import React from 'react';
 import {render} from 'react-dom';
+import PropTypes from 'prop-types';
 
 import Header           from    './components/header';
 import PercentCircle    from    './components/percentcircle';
@@ -33,6 +34,7 @@ class Skeleton extends React.Component{
     getHeight(offset, divider){
         return ((window.innerHeight - offset) / divider) + "px";
     }
+
     getWidth(offset, divider){
         return ((window.innerWidth - offset) / divider) + "px";
     }
@@ -69,12 +71,19 @@ class Skeleton extends React.Component{
 
 
     shouldComponentUpdate(nextProps, nextState){
-        var isHeightChanged = (this.state.windowHeight != window.innerHeight);
-        var isWidthChanged = (this.state.widnowWidth != window.innerWidth);
-        var isForceRender = nextState.forceRender != this.state.forceRender;
-
-        return isHeightChanged || isWidthChanged || isPanelWidthChanged || isForceRender;
+        var willUpdate = this.isUpdate(nextProps, nextState);
+        return willUpdate;
     }//shouldComponentUpdate
+
+
+    isUpdate(nextProps, nextState){
+        var isHeightChanged = (this.state.windowHeight != window.innerHeight);
+        var isWidthChanged = (this.state.windowWidth != window.innerWidth);
+        var isForceRender = nextState.forceRender != this.state.forceRender;
+        //var isForceRender = nextState.forceRender;
+        var isUpdate = isHeightChanged || isForceRender || isWidthChanged;
+        return isUpdate;
+    }//isUpdate
 
 
     render() {
@@ -95,7 +104,6 @@ class Skeleton extends React.Component{
         }else if(openedTab == "mm"){
             tabContentToRender = <Flatgrids spoofedData={DataSpoofer.GridsData()}/>;
         }
-
 
         return (
             <div className="row">
@@ -144,5 +152,8 @@ class Skeleton extends React.Component{
 
 }//class
 
+Skeleton.propTypes  = {
+    id : PropTypes.string.isRequired,
+}
 
 export default Skeleton;

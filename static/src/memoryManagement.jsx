@@ -76,7 +76,7 @@ class PMemoryManagement extends Skeleton{
         }
 
         return (
-            <Skeleton>
+            <Skeleton id={this.props.id}>
                 <div className={panelClass}
                         style={{minWidth: this.state.panelMinWidth,
                                 maxWidth: this.state.panelMaxWidth}}>
@@ -136,5 +136,9 @@ class PMemoryManagement extends Skeleton{
 
 }//class
 
+
+PMemoryManagement.defaultProps = {
+    id : "PMemoryManagement"
+}
 
 export default PMemoryManagement;

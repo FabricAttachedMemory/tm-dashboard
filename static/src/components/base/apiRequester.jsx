@@ -12,7 +12,7 @@ class ApiRequester extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            displayData : "",
+            displayData : "", //DEPR
             percent : -1,
             failedFetchCount : 0, //count how many times a failed request to api was made.
             isSpoofed : false,
@@ -25,7 +25,7 @@ class ApiRequester extends React.Component {
 
         this.spoofData              = this.spoofData.bind(this);
         this.GetData                = this.GetData.bind(this);
-        this.readFetchedValues      = this.readFetchedValues.bind(this);
+ //       this.readFetchedValues      = this.readFetchedValues.bind(this);
         this.shouldComponentUpdate  = this.shouldComponentUpdate.bind(this)
         this.componentWillMount     = this.componentWillMount.bind(this);
     }//constructor
@@ -53,7 +53,6 @@ class ApiRequester extends React.Component {
      * identify that the call has been made. When server response back, fetched
      * will become a json object containing the response values. */
     GetData() {
-return;
         var url= this.props.url; //just shorter to use during debugging
         if(!url){
             if(!this.state.isSpoofed)
@@ -81,10 +80,9 @@ return;
             this.setState({
                 fetched : json
             });
-
             return this.state.fetched;
         }).catch((error) => {
-           // console.log("GetData() error fetching '" + this.props.url + "'! [" + error + "]");
+           console.log("GetData() error fetching '" + this.props.url + "'! [" + error + "]");
         });
     }//GetData
 
@@ -138,20 +136,19 @@ return;
         return isReady;
     }
 
-
     readFetchedValues(){
+        var result = { "value" : -1, "url" : undefined, "status" : undefined }
+
         if(!this.state.fetched){
             if(this.state.isSpoofed)
-                return this.spoofData();
-            return "";
+                result = this.spoofData();
+            return result;
+        }
+        if (this.state.fetched.value !== undefined){
+           result["value"] = this.state.fetched.value;
         }
 
-        if (this.state.fetched.value === undefined)
-            this.state.displayData = this.state.fetched;
-        else
-            this.state.displayData = this.state.fetched.value;
-
-        return this.state.displayData;
+        return result
     }//readFetchedValues
 
 }//class
@@ -160,9 +157,9 @@ return;
 ApiRequester.defaultProps = {
     height  : "300px",
     className : "",
-    name    : "",
+    name    : PropTypes.string.isRequired,
     url     : "",
-    refreshRate     : 2500,
+    refreshRate     : 5000,
     spoofAfterFails : 2,
     spoofedData     : []
 }

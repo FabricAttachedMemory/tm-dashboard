@@ -64,6 +64,18 @@ class JPower(Journal):
 
     def __init__(self, name, **args):
         super().__init__(name, **args)
+        self.defaults = {
+            'Noe' : 'n/a',
+            'Power State' : 'n/a',
+            'DRAM Usage' : 'n/a',
+            'CPU Usage' : 'n/a',
+            'Network In' : 'n/a',
+            'Network Out' : 'n/a',
+            'Fabric Usage' : 'n/a',
+            'No. of Books' : 'n/a',
+            'No. of Shelves' : 'n/a',
+            'OS Manifest' : 'n/a'
+        }
 
 
     def doThings(self):
@@ -90,12 +102,12 @@ class JPower(Journal):
         #      cpu_busy_time: used to calculate CPU Usage rate 
         #      cpu_total_time: used to calculate CPU Usage rate 
         #    }
-        self.nodeinfo = [dict() for x in range(self.num_nodes)]
+        self.nodeinfo = [dict() for x in range(40)]
 
         # from the active shelf data to the node number.
         self.node_dict = {}
         for n in nodes_list:
-            node = n['node_id']-1
+            node = n['node_id'] - 1
             soc = n['soc']
             coord = soc['coordinate']
             self.nodeinfo[node]['active_coordinate'] = coord
@@ -119,7 +131,7 @@ class JPower(Journal):
             node = n['node_id']
             nodeindex = node - 1
             prev_in_out_text = self.get_network_in_out(node)
-            prevtime=self.get_curtime()
+            prevtime = self.get_curtime()
             prev_in_out = prev_in_out_text.split()
             self.nodeinfo[nodeindex]['network_in'] = int(prev_in_out[0])
             self.nodeinfo[nodeindex]['network_out'] = int(prev_in_out[1])
@@ -151,7 +163,9 @@ class JPower(Journal):
 
 
     def get_curtime(self):
-        r = subprocess.Popen(['date', '+%s'], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        r = subprocess.Popen(['date', '+%s'], shell=False,
+                                stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
         curtime_list=r.stdout.readlines()
         if curtime_list == []:
             error = r.stderr.readlines()
@@ -166,15 +180,19 @@ class JPower(Journal):
         # Get the powerstate of the node from the MFW service
         mfwheaders = {
             "Accept": "application/json; Content-Type: application/json; charset=utf-8",
-    }
-    
+        }
+
         d_proxy = { "http" : None }
-        url = self.nodeinfo[node-1]['mfwApiUri'] + '/MgmtService/SoC'
-        r = requests.get(url, headers=mfwheaders, proxies=d_proxy)
-        if r.status_code != requests.codes.ok:
-            return "N/A"
-        data=r.json()
-        power = data['PowerState']
+        try:
+            url = self.nodeinfo[node-1]['mfwApiUri'] + '/MgmtService/SoC'
+            r = requests.get(url, headers=mfwheaders, proxies=d_proxy)
+            if r.status_code != requests.codes.ok:
+                return 'N/A'
+            data=r.json()
+            power = data['PowerState']
+        except Exception: #FIXME
+            power = 'N/A'
+
         return power
 
 
@@ -191,13 +209,17 @@ class JPower(Journal):
 
     def get_books_and_shelves(self, node):
         # Get the active books and shelves from LMP active data
-        coord = self.nodeinfo[node-1]['active_coordinate']
-        url = 'http://localhost:31179/lmp/active' + coord
-        r = requests.get(url, headers=self.headers)
-        if r.status_code != requests.codes.ok:
-            return [0, 0]
-        data=r.json()
-        active = data['active']
+        try:
+            coord = self.nodeinfo[node-1]['active_coordinate']
+            url = 'http://localhost:31179/lmp/active' + coord
+            r = requests.get(url, headers=self.headers)
+            if r.status_code != requests.codes.ok:
+                return [0, 0]
+            data=r.json()
+            active = data['active']
+        except Exception:
+            active = 'N/A'
+
         return active
 
 
@@ -303,34 +325,50 @@ def validate_request(*args, **kwargs):
 """ ----------------- ROUTES ----------------- """
 
 @Journal.BP.route('/api/pernode/<nodestr>', methods=['GET'])
-def pernode_api(nodestr=1):
-    """ Gather all data for the given node:  
-    Power State, CPU Usage, Fabric Usage, No. of Shelves, No. of Books, 
+@Journal.BP.route('/api/pernode', methods=['GET'])
+def pernode_api(nodestr=-1):
+    """ Gather all data for the given node:
+    Power State, CPU Usage, Fabric Usage, No. of Shelves, No. of Books,
     DRAM Usage, Network In, Networkout, and OS Manifest
 
-    Note: The node passed in is in base 0 and is the index into the 
+    Note: The node passed in is in base 0 and is the index into the
     Journal.nodedata array. E.g., hostname node01 is node 0.
     """
     global Journal
     mainapp = Journal.mainapp
-    Journal.self.doThings()
+    # Validate the node is within range. Return 0s if not.
+    nodeindex = int(nodestr)
+    node = nodeindex+1
+
+    allNodes = [ Journal.defaults for i in range(40)]
+
+    try:
+        Journal.doThings()
+    except Exception:
+        Journal.defaults['Node'] = node
+        if nodeindex != -1:
+            return make_response(jsonify(Journal.defaults), 302)
+        else:
+            return make_response(jsonify(allNodes), 302)
 
     # nodedata is the dictionary of data returned
     nodedata = {}
 
-    # Validate the node is within range. Return 0s if not.
-    nodeindex = int(nodestr)
-    node = nodeindex+1
-    if nodeindex < 0 or nodeindex > (Journal.num_nodes-1):
-        return make_response(jsonify({'results': nodedata}), 400)
 
-    nodedata['Node'] = node
+    if not Journal.nodeinfo[nodeindex]:
+        Journal.defaults['Node'] = node
+        return make_response(jsonify(Journal.defaults,), 302)
+
+    #if nodeindex < 0 or nodeindex > (Journal.num_nodes-1):
+    #    return make_response(jsonify({'results': nodedata}), 400)
+    '''
+    nodedata['node'] = node
     nodedata['Power State'] = Journal.get_power_state(node)
     nodedata['OS Manifest'] = Journal.get_os_manifest(node)
     active = Journal.get_books_and_shelves(node)
     nodedata['No. of Shelves'] = active['shelves']
     nodedata['No. of Books'] = active['books']
-    nodedata['Fabric Usage'] = Journal.get_fabric_usage(node) 
+    nodedata['Fabric Usage'] = Journal.get_fabric_usage(node)
 
     # If the power to the node is off, then the remaining data is 0
     if nodedata['Power State'] == 'Off':
@@ -345,5 +383,40 @@ def pernode_api(nodestr=1):
     nodedata['Network In'] = network[0]
     nodedata['Network Out'] = network[1]
     nodedata['CPU Usage'] = Journal.get_cpu_usage(node)
+    '''
+    try:
+        nodeData = getNodeStats(node)
+    except Exception as err:
+        print('Failed to get node stats! [%s]' % err)
+        nodeData = Journal.defaults
+        nodeData['err'] = err
 
-    return make_response(jsonify({'results': nodedata}), 200)
+    return make_response(jsonify(nodeData), 200)
+
+
+def getNodeStats(node):
+    global Journal
+
+    nodedata['node'] = node
+    nodedata['Power State'] = Journal.get_power_state(node)
+    nodedata['OS Manifest'] = Journal.get_os_manifest(node)
+    active = Journal.get_books_and_shelves(node)
+    nodedata['No. of Shelves'] = active['shelves']
+    nodedata['No. of Books'] = active['books']
+    nodedata['Fabric Usage'] = Journal.get_fabric_usage(node)
+
+    # If the power to the node is off, then the remaining data is 0
+    if nodedata['Power State'] == 'Off':
+        nodedata['CPU Usage'] = 0
+        nodedata['DRAM Usage'] = 0
+        nodedata['Network In'] = 0
+        nodedata['Network Out'] = 0
+        return nodedata
+
+    nodedata['DRAM Usage'] = Journal.get_DRAM_usage(node)
+    network = Journal.get_network_bps(node)
+    nodedata['Network In'] = network[0]
+    nodedata['Network Out'] = network[1]
+    nodedata['CPU Usage'] = Journal.get_cpu_usage(node)
+
+    return nodedata

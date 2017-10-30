@@ -5,10 +5,11 @@ import ApiRequester from './base/apiRequester'
 import StatsBox from './wrappers/statsBox'
 
 
-class ContentBox extends ApiRequester {
+class ContentBox extends React.Component {
 
     constructor(props){
         super(props);
+        this.state = {};
         this.state.id = (this.props.id === undefined) ? "" : this.props.id;
     }
 
@@ -34,15 +35,17 @@ class ContentBox extends ApiRequester {
         );
     }//defaultRender
 
-
+/*
     shouldComponentUpdate(nextProps, nextState){
         //Re-render component when props height changed from previous frame.
         //This happenes when overview.jsx script (for example) calls its own
         //render() method where it changes property of the ContenBox component.
         var heightChange = this.props.height != nextProps.height;
-        var isUpdate = this.getUpdateState(nextProps, nextState);
-        return heightChange || isUpdate;
+       // var isUpdate = this.getUpdateState(nextProps, nextState);
+        //return heightChange || isUpdate;
+        return true;
     }//shouldComponentUpdate
+*/
 
 
     render() {

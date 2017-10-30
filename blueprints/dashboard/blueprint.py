@@ -48,9 +48,13 @@ def index_api():
     mainapp = Journal.mainapp
     all_routes = []
     for route in mainapp.app.url_map.iter_rules():
-        if route.endpoint != 'static':
-            if url_for(route.endpoint) not in all_routes:
-                all_routes.append(url_for(route.endpoint))
+        try:
+            if route.endpoint != 'static':
+                if url_for(route.endpoint) not in all_routes:
+                    all_routes.append(url_for(route.endpoint))
+        except Exception as err:
+            print(err)
+            continue
 
     return make_response(jsonify({'routes' : sorted(all_routes)}), 200)
 
