@@ -65,6 +65,8 @@ class JPower(Journal):
     def __init__(self, name, **args):
         super().__init__(name, **args)
 
+
+    def doThings(self):
         self.headers = {
             "Accept": "application/json; Content-Type: application/json; charset=utf-8; version=1.0",
         }
@@ -106,11 +108,11 @@ class JPower(Journal):
             for r in rack_list:
                 for e in r['enclosures']:
                     for n in e['nodes']:
-                            hostname = n['soc']['hostname']
-                            mfwApiUri = n['nodeMp']['mfwApiUri']
-                            nodeindex = int(hostname[4:])-1
-                            self.nodeinfo[nodeindex]['hostname'] = hostname
-                            self.nodeinfo[nodeindex]['mfwApiUri'] = mfwApiUri
+                        hostname = n['soc']['hostname']
+                        mfwApiUri = n['nodeMp']['mfwApiUri']
+                        nodeindex = int(hostname[4:])-1
+                        self.nodeinfo[nodeindex]['hostname'] = hostname
+                        self.nodeinfo[nodeindex]['mfwApiUri'] = mfwApiUri
 
         # Use ssh to get initial values for CPU usage and Network In/Out
         for n in nodes_list:
@@ -127,6 +129,7 @@ class JPower(Journal):
             cpu_stat = cpu_stat_text.split()
             self.nodeinfo[nodeindex]['cpu_busy_time'] = int(cpu_stat[0])
             self.nodeinfo[nodeindex]['cpu_total_time'] = int(cpu_stat[1])
+
 
     @property
     def spoofed(self):
@@ -304,12 +307,13 @@ def pernode_api(nodestr=1):
     """ Gather all data for the given node:  
     Power State, CPU Usage, Fabric Usage, No. of Shelves, No. of Books, 
     DRAM Usage, Network In, Networkout, and OS Manifest
-    
+
     Note: The node passed in is in base 0 and is the index into the 
     Journal.nodedata array. E.g., hostname node01 is node 0.
     """
     global Journal
     mainapp = Journal.mainapp
+    Journal.self.doThings()
 
     # nodedata is the dictionary of data returned
     nodedata = {}
