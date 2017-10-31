@@ -80,7 +80,7 @@ def metrics_all(metric_type=None):
     resp_model = Journal.json_model
     status_code = 200
 
-    url = mainapp.config['LMP_SERVER'] + 'lmp/global/';
+    url = mainapp.config['LMP_SERVER'] + 'global/';
     response = Journal.make_request(url)
     resp_json = response.json()
 
@@ -126,7 +126,7 @@ def get_fab():
     request = None
     result = namedtuple('FabResponse', 'value response')
 
-    url = mainapp.config['LMP_SERVER'] + 'fab/'
+    url = mainapp.config['FAB_SERVER'] + 'fab/'
     response = Journal.make_request(url)
 
     fab_val = -1

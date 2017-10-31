@@ -35,7 +35,7 @@ class PercentCircle extends ApiRequester {
 
     render() {
         var fetchedJson = this.readFetchedValues();
-        var fetchedValue = fetchedJson["value"];
+        var fetchedValue = parseFloat(fetchedJson["value"]).toFixed(2);
 
         //Radius of the circle that was set in css/stats.css.
         var radius = 100;
