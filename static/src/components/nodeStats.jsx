@@ -17,13 +17,20 @@ const STATS_FIELDS = [
                     ["No. of Books",    "books"],
                   ];
 
+var NODES_DATA = [];
+//Predefine nodes stats with default(empty) values to be referenced and set
+//later by NodeStats' render() function using fetched data (http:://.../api/prenode).
+for(var i=0; i < 40; i++){
+    NODES_DATA.push(_validateAndDefault({}));
+}//for
+
+
 /* TODO: documentation will be here soon. */
-class NodeStats extends React.Component {
+class NodeStats extends ApiRequester {
 
     constructor(props){
         super(props);
-        this.state = { data : {} };
-        //this.state.data = {};
+        this.state.data = {};
         //this.state.data = this.ValidateAndDefault(this.state.data);
     }//ctor
 
@@ -53,7 +60,7 @@ class NodeStats extends React.Component {
         );
     }//BuildDataBox
 
-
+/*
     spoofData(){
         var displayData = {};
         for(var key in this.state.spoofedData){
@@ -67,10 +74,26 @@ class NodeStats extends React.Component {
         }
         return displayData;
     }//spoofData
+*/
+
+    normalizeNodeStats(data){
+        if(data === undefined)
+            return;
+        if(data.nodes === undefined)
+            return;
+
+        var nodes_stat = data.nodes
+        for(var i=0; i < nodes_stat.length; i++){
+            var node_id = nodes_stat[i].Node;
+            NODES_DATA[node_id] = nodes_stat[i];
+        }//for
+        return NODES_DATA
+    }//normalizeNodeStats
 
 
     render() {
-        //var fetchedData = this.readFetchedValues();
+        this.normalizeNodeStats(this.state.fetched);
+
         var boxes = [];
         var stats = _validateAndDefault({}); //empty value set of fields
 
@@ -93,11 +116,15 @@ class NodeStats extends React.Component {
 export default NodeStats;
 
 
-export function SetFields(fields){
+export function SetFields(node_num, enc){
+    var fields = {};
+    if(node_num < NODES_DATA.length && node_num >= 0)
+        fields = NODES_DATA[node_num];
+
     var stats = _validateAndDefault(fields);
     for(var i=0; i<STATS_FIELDS.length; i++){
         var field = STATS_FIELDS[i];
-        var value = stats[field[1]];
+        var value = stats[field[0]];
 
         var statValueId = "NodeStat_" + field[0];
         var element = document.getElementById(statValueId);
@@ -107,6 +134,14 @@ export function SetFields(fields){
         }
         element.innerHTML = value;
     }//for
+
+    enc += 1;
+    var nodeBoxTitle = document.getElementById("Nodebox_title");
+    if (node_num < 0){
+        node_num = "n/a";
+        enc = "n/a";
+    }
+    nodeBoxTitle.innerHTML = "Node " + node_num + " (Enclosure " + enc + ")";
 }//SetFields
 
 
@@ -114,9 +149,9 @@ function _validateAndDefault(data){
     var expectedFields = STATS_FIELDS;
     for(var i=0; i < expectedFields.length; i++){
         var field = expectedFields[i];
-        if(field[1] in data)
+        if(field[0] in data)
             continue;
-        data[field[1]] = "---";
+        data[field[0]] = "---";
     }
     return data;
 }//ValidateAndDefault

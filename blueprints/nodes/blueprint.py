@@ -108,7 +108,8 @@ def get_machine_topology(arg=None):
 
 
 @Journal.BP.route('/api/nodes', methods=['GET'])
-def nodes_api():
+@Journal.BP.route('/api/nodes/<node_num>', methods=['GET'])
+def nodes_api(node_num=-1):
     """ Make an API request to the LMP(?) server to get all Nodes relevant
     data: books, shelves, data flow between nodes and etc.
      To get the arcs matrix, loop through all shelves and look for active ones.
@@ -130,7 +131,7 @@ def nodes_api():
     arcs = [[0]*(num_nodes) for i in range(num_nodes)]
 
     # get the list of all shelves
-    url = mainapp.config['LMP_SERVER'] + "shelf/"
+    url = mainapp.config['LMP_SERVER'] + 'shelf/'
     response = Journal.make_request(url)
 
     data = response.json()
@@ -147,8 +148,8 @@ def nodes_api():
                 book_lza = Journal.topology['lza'][book]
                 uses_memory_from_node = Journal.book_dict[book] - 1
                 for coord in shelf_data['active']:
-                        source_node = Journal.node_dict[coord] - 1
-                        arcs[int(source_node)][int(uses_memory_from_node)] = 1
+                    source_node = Journal.node_dict[coord] - 1
+                    arcs[int(source_node)][int(uses_memory_from_node)] = 1
 
     Journal.json_model['data_flow'] = arcs
     Journal.json_model['topology'] = list(Journal.topology['enc'].values())
