@@ -42,6 +42,7 @@ __copyright__ = "Copyright 2017 Hewlett Packard Enterprise Development LP"
 __maintainer__ = "Betty Dall"
 __email__ = "betty.dall@hpe.com"
 
+import copy
 import os
 import requests
 import random
@@ -58,6 +59,7 @@ from shlex import quote
 
 
 from tm_dashboard.blueprints.bp_base import Journal
+from tm_dashboard.blueprints.pernode import utils
 
 
 class JPower(Journal):
@@ -65,7 +67,7 @@ class JPower(Journal):
     def __init__(self, name, **args):
         super().__init__(name, **args)
         self.defaults = {
-            'Noe' : 'n/a',
+            'Node' : 'n/a',
             'Power State' : 'n/a',
             'DRAM Usage' : 'n/a',
             'CPU Usage' : 'n/a',
@@ -76,16 +78,34 @@ class JPower(Journal):
             'No. of Shelves' : 'n/a',
             'OS Manifest' : 'n/a'
         }
+        self.hasDoneThings = False
+        self.nodeinfo = {}
+        self.num_nodes = 0
+
+
+    def __str__(self):
+        return 'Size: {0};\n'\
+                'Available Nodes: {1}'\
+                .format(self.num_nodes, self.available_nodes)
+
+    @property
+    def available_nodes(self):
+        result = []
+        for node_index in range(len(self.nodeinfo)):
+            if self.nodeinfo[node_index]:
+                result.append(node_index)
+        return result
 
 
     def doThings(self):
-        self.headers = {
-            "Accept": "application/json; Content-Type: application/json; charset=utf-8; version=1.0",
-        }
+        #if self.hasDoneThings is True:
+        #    return
+        self.hasDoneThings = True
+        response = None
 
-        url = 'http://localhost:31179/lmp/nodes/'
-        r = requests.get(url, headers=self.headers)
-        data=r.json()
+        url = self.mainapp.config['LMP_SERVER'] + 'nodes/'
+        response = requests.get(url, headers=self.mainapp.config['HTTP_HEADERS'])
+        data=response.json()
         nodes_list = data['nodes']
 
         # num_nodes is used to size/index into the nodeinfo array of dicts
@@ -106,25 +126,15 @@ class JPower(Journal):
 
         # from the active shelf data to the node number.
         self.node_dict = {}
-        for n in nodes_list:
-            node = n['node_id'] - 1
-            soc = n['soc']
+        for node_item in nodes_list:
+            node = node_item['node_id'] - 1
+            soc = node_item['soc']
             coord = soc['coordinate']
             self.nodeinfo[node]['active_coordinate'] = coord
             self.nodeinfo[node]['allocated_coordinate'] = coord[:-16]
 
-        # Use data from /etc/tmconfig to get hostname and mfwApiUri 
-        with open('/etc/tmconfig') as json_data:
-            c = json.load(json_data)
-            rack_list = c['racks']
-            for r in rack_list:
-                for e in r['enclosures']:
-                    for n in e['nodes']:
-                        hostname = n['soc']['hostname']
-                        mfwApiUri = n['nodeMp']['mfwApiUri']
-                        nodeindex = int(hostname[4:])-1
-                        self.nodeinfo[nodeindex]['hostname'] = hostname
-                        self.nodeinfo[nodeindex]['mfwApiUri'] = mfwApiUri
+        # Use data from /etc/tmconfig to get hostname and mfwApiUri
+        self.nodeinfo = utils.hostnameFromTmconfig('/etc/tmconfig', self.nodeinfo)
 
         # Use ssh to get initial values for CPU usage and Network In/Out
         for n in nodes_list:
@@ -147,6 +157,7 @@ class JPower(Journal):
     def spoofed(self):
         """ Refer to the base class (../bp_base.py) for documentation."""
         return "not implemented"
+
 
     def get_network_in_out(self, node):
         arg1="l4tm@" + self.nodeinfo[node-1]['hostname']
@@ -178,28 +189,26 @@ class JPower(Journal):
 
     def get_power_state(self, node):
         # Get the powerstate of the node from the MFW service
-        mfwheaders = {
-            "Accept": "application/json; Content-Type: application/json; charset=utf-8",
-        }
-
         d_proxy = { "http" : None }
         try:
+            header = self.mainapp.config['HTTP_HEADERS']
             url = self.nodeinfo[node-1]['mfwApiUri'] + '/MgmtService/SoC'
-            r = requests.get(url, headers=mfwheaders, proxies=d_proxy)
+            r = requests.get(url, headers=header, proxies=d_proxy)
             if r.status_code != requests.codes.ok:
                 return 'N/A'
             data=r.json()
             power = data['PowerState']
-        except Exception: #FIXME
-            power = 'N/A'
+        except Exception as err: #FIXME
+            print('Failed to get power state for node %s! [%s]' % (node, err))
+            power = 'n/a'
 
         return power
 
 
     def get_os_manifest(self, node):
         # Get the os manifest for the node from the manifesting service
-        url = 'http://localhost:31178/manifesting/api/node/' + str(node)
-        r = requests.get(url, headers=self.headers)
+        url = self.mainapp.config['MANIFESTING_SERVER'] + 'api/node/' + str(node)
+        r = requests.get(url, headers=self.mainapp.config['HTTP_HEADERS'])
         if r.status_code != requests.codes.ok:
             return "default"
         data=r.json()
@@ -209,55 +218,67 @@ class JPower(Journal):
 
     def get_books_and_shelves(self, node):
         # Get the active books and shelves from LMP active data
+        active = { 'shelves' : 'n/a', 'books' : 'n/a' }
         try:
             coord = self.nodeinfo[node-1]['active_coordinate']
             url = 'http://localhost:31179/lmp/active' + coord
-            r = requests.get(url, headers=self.headers)
+            r = requests.get(url, headers=self.mainapp.config['HTTP_HEADERS'])
             if r.status_code != requests.codes.ok:
                 return [0, 0]
             data=r.json()
             active = data['active']
-        except Exception:
-            active = 'N/A'
+        except Exception as err:
+            print('Failed to get books and shelves for node %s! [%s]' % (node, err))
+            active['shelves'] = 'n/a'
+            active['books'] = 'n/a'
 
         return active
 
 
     def get_fabric_usage(self, node):
         # Calculate the fabric usage from the LMP allocated data
-        coord = self.nodeinfo[node-1]['allocated_coordinate']
-        url = 'http://localhost:31179/lmp/allocated' + coord
-        r = requests.get(url, headers=self.headers)
-        if r.status_code != requests.codes.ok:
-            return 0
-        data=r.json()
-        mem = data['memory']
-        if mem['total'] == 0:
-            fam = 0
-        else:
-            fam = float(mem['allocated']) / mem['total']
+        try:
+            coord = self.nodeinfo[node-1]['allocated_coordinate']
+            url = self.mainapp.config['LMP_SERVER'] + 'lmp/allocated' + coord
+            r = requests.get(url, headers=self.mainapp.config['HTTP_HEADERS'])
+            if r.status_code != requests.codes.ok:
+                return 0
+            data=r.json()
+            mem = data['memory']
+            if mem['total'] == 0:
+                fam = 0
+            else:
+                fam = float(mem['allocated']) / mem['total']
+        except Exception as err:
+            print('Failed to get fabric for node %s! [%s]' % (node, err))
+            fam = -1
         return round(fam, 2)
 
 
     def get_DRAM_usage(self, node):
        # Get the DRAM percent used by calling ssh to the node
-        arg1="l4tm@" + self.nodeinfo[node-1]['hostname']
-        arg2=" head -2 /proc/meminfo | awk '{ print $2 }' | paste - - | awk '{print 100.00-(($2/$1)*100)}'"
-        r = subprocess.Popen(['ssh', arg1, arg2], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        dram_list = r.stdout.readlines()
-        if dram_list == []:
-            error = r.stderr.readlines()
-            print("Error: ", error, file=sys.stderr)
-            return 0.0
-        else:
-            dram=dram_list[0].decode("utf-8")
+        try:
+            arg1="l4tm@" + self.nodeinfo[node-1]['hostname']
+            arg2=" head -2 /proc/meminfo | awk '{ print $2 }' | paste - - | awk '{print 100.00-(($2/$1)*100)}'"
+            r = subprocess.Popen(['ssh', arg1, arg2], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            dram_list = r.stdout.readlines()
+            if dram_list == []:
+                error = r.stderr.readlines()
+                print("Error: ", error, file=sys.stderr)
+                return 0.0
+            else:
+                dram=dram_list[0].decode("utf-8")
+        except Exception as err:
+            print('Failed to get dram for node %s! [%s]' % (node, err))
+            dram = -1
+
         return round(float(dram), 2)
-    
+
 
     def get_network_bps(self, node):
         # Get the node's network traffic using ssh to the node
         network = []
-    
+
         cur_in_out_text = self.get_network_in_out(node)
         curtime=self.get_curtime()
         cur_in_out = cur_in_out_text.split()
@@ -266,12 +287,12 @@ class JPower(Journal):
         bytes_in = cur_in - self.nodeinfo[node-1]['network_in']
         bytes_out = cur_out - self.nodeinfo[node-1]['network_out']
         secs = int(curtime) - self.nodeinfo[node-1]['network_timestamp']
-    
+
         # Update the nodeinfo array with the latest network data
         self.nodeinfo[node-1]['network_in']=bytes_in
         self.nodeinfo[node-1]['network_out']=bytes_out
         self.nodeinfo[node-1]['network_timestamp']=int(curtime)
-    
+
         # It is possible for the time to be 0 seconds so avoid divide by 0
         if secs == 0:
             network.append(0)
@@ -280,21 +301,24 @@ class JPower(Journal):
             network.append(round((bytes_in/secs), 1))
             network.append(round((bytes_out/secs), 1))
         return network
-    
+
 
     def get_cpu_stat_list(self, node):
-        cpu_stat_cmd="ssh l4tm@" + self.nodeinfo[node-1]['hostname'] + " awk " + quote(quote('/cpu / { print ($2+$4), ($2+$4+$5) }')) + " /proc/stat"
-        arg1="l4tm@" + self.nodeinfo[node-1]['hostname']
-        arg2=" awk " + quote('/cpu / { print ($2+$4), ($2+$4+$5) }') + " /proc/stat"
-        r = subprocess.Popen(['ssh', arg1, arg2], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        cpu_stat_list = r.stdout.readlines()
-        if cpu_stat_list == []:
-            error = r.stderr.readlines()
-            print("Error: ", error, file=sys.stderr)
-            return "0 0"
-        else:
-            cpu_stat_text=cpu_stat_list[0].decode("utf-8")
+        try:
+            cpu_stat_cmd="ssh l4tm@" + self.nodeinfo[node-1]['hostname'] + " awk " + quote(quote('/cpu / { print ($2+$4), ($2+$4+$5) }')) + " /proc/stat"
+            arg1="l4tm@" + self.nodeinfo[node-1]['hostname']
+            arg2=" awk " + quote('/cpu / { print ($2+$4), ($2+$4+$5) }') + " /proc/stat"
+            r = subprocess.Popen(['ssh', arg1, arg2], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            cpu_stat_list = r.stdout.readlines()
+            if cpu_stat_list == []:
+                error = r.stderr.readlines()
+                print("Error: ", error, file=sys.stderr)
+                return "0 0"
+            else:
+                cpu_stat_text=cpu_stat_list[0].decode("utf-8")
             return cpu_stat_text
+        except Exception:
+            return "0 0"
 
 
     def get_cpu_usage(self, node):
@@ -337,14 +361,19 @@ def pernode_api(nodestr=-1):
     global Journal
     mainapp = Journal.mainapp
     # Validate the node is within range. Return 0s if not.
-    nodeindex = int(nodestr)
-    node = nodeindex+1
+    if nodestr != -1:
+        nodeindex = int(nodestr)
+        node = nodeindex+1
+    else:
+        nodeindex = -1
+        node = -1
 
-    allNodes = [ Journal.defaults for i in range(40)]
+    allNodes = [ { i : Journal.defaults } for i in range(40)]
 
     try:
         Journal.doThings()
-    except Exception:
+    except Exception as err:
+        print('Things went wrong! [%s]' % err)
         Journal.defaults['Node'] = node
         if nodeindex != -1:
             return make_response(jsonify(Journal.defaults), 302)
@@ -353,51 +382,42 @@ def pernode_api(nodestr=-1):
 
     # nodedata is the dictionary of data returned
     nodedata = {}
-
-
+    '''
     if not Journal.nodeinfo[nodeindex]:
         Journal.defaults['Node'] = node
-        return make_response(jsonify(Journal.defaults,), 302)
-
-    #if nodeindex < 0 or nodeindex > (Journal.num_nodes-1):
-    #    return make_response(jsonify({'results': nodedata}), 400)
+        return make_response(jsonify(Journal.defaults), 302)
     '''
-    nodedata['node'] = node
-    nodedata['Power State'] = Journal.get_power_state(node)
-    nodedata['OS Manifest'] = Journal.get_os_manifest(node)
-    active = Journal.get_books_and_shelves(node)
-    nodedata['No. of Shelves'] = active['shelves']
-    nodedata['No. of Books'] = active['books']
-    nodedata['Fabric Usage'] = Journal.get_fabric_usage(node)
 
-    # If the power to the node is off, then the remaining data is 0
-    if nodedata['Power State'] == 'Off':
-        nodedata['CPU Usage'] = 0
-        nodedata['DRAM Usage'] = 0
-        nodedata['Network In'] = 0
-        nodedata['Network Out'] = 0
-        return make_response(jsonify({'results': nodedata}), 200)
+    print(Journal)
 
-    nodedata['DRAM Usage'] = Journal.get_DRAM_usage(node)
-    network = Journal.get_network_bps(node)
-    nodedata['Network In'] = network[0]
-    nodedata['Network Out'] = network[1]
-    nodedata['CPU Usage'] = Journal.get_cpu_usage(node)
-    '''
-    try:
-        nodeData = getNodeStats(node)
-    except Exception as err:
-        print('Failed to get node stats! [%s]' % err)
+    if nodeindex != -1:
         nodeData = Journal.defaults
-        nodeData['err'] = err
+        try:
+            nodeData = getNodeStats(node)
+        except Exception as err:
+            print('Failed to get node stats! [%s]' % err)
+            nodeData = Journal.defaults
+            nodeData['err'] = err
 
-    return make_response(jsonify(nodeData), 200)
+        return make_response(jsonify(nodeData), 200)
+    else:
+        result = []
+        for node_index in Journal.available_nodes:
+            try:
+                nodeData = getNodeStats(node_index + 1)
+                result.append(copy.deepcopy(nodeData))
+            except Exception as err:
+                print('Failed to get node stats! [%s]' % err)
+        return make_response(jsonify( { 'nodes' : result }), 200)
+
 
 
 def getNodeStats(node):
+    #if nodeindex < 0 or nodeindex > (Journal.num_nodes-1):
+    #    return make_response(jsonify({'results': nodedata}), 400)
     global Journal
-
-    nodedata['node'] = node
+    nodedata = Journal.defaults
+    nodedata['Node'] = node
     nodedata['Power State'] = Journal.get_power_state(node)
     nodedata['OS Manifest'] = Journal.get_os_manifest(node)
     active = Journal.get_books_and_shelves(node)

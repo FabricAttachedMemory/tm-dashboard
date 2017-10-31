@@ -55,7 +55,7 @@ class MainApp:
         bp_list = [] # list of all blueprints scripts (not importable yet)
         for bp_path in self.blueprints:
             bp_list.extend([path for path in glob.glob(bp_path + '/*.bp') ])
-            bp_list.extend([path for path in glob.glob(bp_path + '/*.py') ])
+            bp_list.extend([path for path in glob.glob(bp_path + '/blueprint.py') ])
 
         #get rid of .py and .bp extension in the path name to make it importable
         #bp_list = [path.rstrip('.py') for path in bp_list]
