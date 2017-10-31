@@ -18,6 +18,11 @@ const STATS_FIELDS = [
                   ];
 
 var NODES_DATA = [];
+//Predefine nodes stats with default(empty) values to be referenced and set
+//later by NodeStats' render() function using fetched data (http:://.../api/prenode).
+for(var i=0; i < 40; i++){
+    NODES_DATA.push(_validateAndDefault({}));
+}//for
 
 
 /* TODO: documentation will be here soon. */
@@ -71,10 +76,23 @@ class NodeStats extends ApiRequester {
     }//spoofData
 */
 
+    normalizeNodeStats(data){
+        if(data === undefined)
+            return;
+        if(data.nodes === undefined)
+            return;
+
+        var nodes_stat = data.nodes
+        for(var i=0; i < nodes_stat.length; i++){
+            var node_id = nodes_stat[i].Node;
+            NODES_DATA[node_id] = nodes_stat[i];
+        }//for
+        return NODES_DATA
+    }//normalizeNodeStats
+
+
     render() {
-        if(Array.isArray(this.state.fetched)){
-            NODES_DATA = this.state.fetched;
-        }
+        this.normalizeNodeStats(this.state.fetched);
 
         var boxes = [];
         var stats = _validateAndDefault({}); //empty value set of fields

@@ -159,6 +159,21 @@ class JPower(Journal):
         return "not implemented"
 
 
+    def spoofStats(self, node):
+        result = self.defaults
+        result['CPU Usage'] = random.randint(0,100)
+        result['DRAM Usage'] = random.randint(0,100)
+        result['Fabric Usage'] = random.randint(0,100)
+        result['Network In'] = random.randint(500,2100)
+        result['Network Out'] = random.randint(500,2100)
+        result['No. of Books'] = random.randint(100,3100)
+        result['No. of Shelves'] = random.randint(0,100)
+        result['OS Manifest'] = "spoofed_manifest"
+        result['Node'] = node
+        result['Power State'] = 'on'
+        return result
+
+
     def get_network_in_out(self, node):
         arg1="l4tm@" + self.nodeinfo[node-1]['hostname']
         arg2=" awk " + quote('/IpExt: [0-9]+ / { print $8, $9 }') + " /proc/net/netstat"
@@ -376,9 +391,15 @@ def pernode_api(nodestr=-1):
         print('Things went wrong! [%s]' % err)
         Journal.defaults['Node'] = node
         if nodeindex != -1:
-            return make_response(jsonify(Journal.defaults), 302)
+            return make_response(jsonify(Journal.spoofStats(node)), 302)
         else:
-            return make_response(jsonify(allNodes), 302)
+            result = [ copy.deepcopy(Journal.defaults) for i in range(5)]
+            nodes_indecies = [0, 4, 8, 14, 20]
+            for i in range(len(nodes_indecies)):
+                result[i] = copy.deepcopy(Journal.spoofStats(nodes_indecies[i]))
+                result[i]['Node'] = nodes_indecies[i]
+
+            return make_response(jsonify( { 'nodes' : result } ), 302)
 
     # nodedata is the dictionary of data returned
     nodedata = {}
@@ -388,8 +409,6 @@ def pernode_api(nodestr=-1):
         return make_response(jsonify(Journal.defaults), 302)
     '''
 
-    print(Journal)
-
     if nodeindex != -1:
         nodeData = Journal.defaults
         try:
@@ -397,7 +416,6 @@ def pernode_api(nodestr=-1):
         except Exception as err:
             print('Failed to get node stats! [%s]' % err)
             nodeData = Journal.defaults
-            nodeData['err'] = err
 
         return make_response(jsonify(nodeData), 200)
     else:
