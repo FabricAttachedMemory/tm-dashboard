@@ -20,6 +20,7 @@ __copyright__ = "Copyright 2017 Hewlett Packard Enterprise Development LP"
 __maintainer__ = "Betty Dall"
 __email__ = "betty.dall@hpe.com"
 
+import copy
 from flask import Blueprint, jsonify, render_template, make_response, url_for, request
 from pprint import pprint
 from shlex import quote
@@ -29,6 +30,7 @@ import random
 import requests
 import threading
 import time
+import math
 
 from pdb import set_trace
 
@@ -42,8 +44,9 @@ class JPower(Journal):
         #json_model should match response from the real endpoint data. E.g.
         #'memory' and 'active' corresponds to lmp's global/ endpoint response.
         self.json_model = {
-            'book_size' : 0,
+            'book_size' : 0, #size of One book
             'books' : [], #list of { "lza" : 12345, "state" : "available" }
+            'books_amount' : 0, #how many books are there (squares for flatgrids)
             'memory' : {
                 'allocated' : 0,
                 'available' : 6597069766656,
@@ -59,14 +62,25 @@ class JPower(Journal):
             'error' : []
         } #json_model
 
-
     @property
     def book_size(self):
-        return len(self.books)
+        ''' Size of One book.'''
+        return self.json_model['book_size']
 
     @property
     def books(self):
+        ''' All books LZA. '''
         return self.json_model['books']
+
+    @property
+    def total(self):
+        return self.json_model['memory']['total']
+
+
+    @property
+    def books_amount(self):
+        ''' How many books (square for flatgrid) are available on the system '''
+        return len(self.books)
 
     @property
     def books_ratio(self):
@@ -90,35 +104,35 @@ class JPower(Journal):
     @property
     def spoofed(self):
         """ Refer to the base class (../bp_base.py) for documentation."""
-        result = self.json_model
-        result.update(self.spoof_books())
-        result['memory'].update(self.spoof_memory_alloc())
+        result = self.json_model # REFERENCE not a copy!
+        result.update(self.spoof_books(result))
+        result['memory'].update(self.spoof_memory_alloc(result['books_amount']))
         result['active'].update(self.spoof_active_prop())
 
         return result
 
 
-    def spoof_books(self):
-        result = self.json_model
-        for i in range(20):
+    def spoof_books(self, data):
+        data['books'] = []
+        for i in range(200):
             random_lza = random.randrange(1000000, 8000000, random.randrange(1, 5))
             lza = { "lza" : random_lza }
-            result['books'].append(lza)
-        result['book_size'] = len(result['books'])
-        return result
+            data['books'].append(lza)
+        data['book_size'] = 8 * math.pow(10, 8)
+        data['books_amount'] = len(data['books'])
+        return data
 
 
-    def spoof_memory_alloc(self):
-        result = self.json_model['memory']
-        result['total'] = 1500
-        allocated = random.randrange(0, result['total'])
+    def spoof_memory_alloc(self, books_amount):
+        result = {}
+        allocated = random.randrange(0, books_amount)
         notready = random.randrange(0, allocated + 1) #+1 so it is not 0
         offline = random.randrange(0, notready + 1)   #don't care about alloc accuracy
 
         result['allocated'] = allocated
         result['notready'] = notready
         result['offline'] = offline
-        result['available'] = result['total'] - (allocated + notready + offline)
+        result['available'] = books_amount - (allocated + notready + offline)
 
         return result
 
@@ -165,6 +179,7 @@ def get_books(total_memory=None):
     result = {}
     result['books'] = resp_model['books']
     result['book_size'] = resp_model['book_size']
+    result['books_amount'] = len(result['books_size'])
 
     if total_memory is not None:
         try:
@@ -228,10 +243,15 @@ def memory_api(opt=None):
         return make_response(jsonify(memdata), response.status_code)
 
     #Return active Books or Shelves
-    if opt in memdata:
-        value = memdata[opt]
+    if opt in Journal.json_model:
+        value = Journal.json_model[opt]
+        return make_response(jsonify({ 'value' : value}), response.status_code)
+    elif opt in Journal.json_model['memory']:
+        value = Journal.json_model['memory'][opt]
         return make_response(jsonify({ 'value' : value}), response.status_code)
     else:
-        err = 'Unknown option "%s"! Options: "%s"' % (opt, list(memdata.keys()))
+        options = list(Journal.json_model.keys())
+        options.append(list(Journal.json_model['memory'].keys()))
+        err = 'Unknown option [%s]! Options: %s' % (opt, options)
         memdata['error'] = err
-        return make_response(jsonify(memdata), response.status_code)
+        return make_response(jsonify(memdata), 206)
