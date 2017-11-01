@@ -76,6 +76,18 @@ class JPower(Journal):
     def total(self):
         return self.json_model['memory']['total']
 
+    @book_size.setter
+    def book_size(self, value):
+        self.json_model['book_size'] = value
+
+    @books.setter
+    def books(self, value):
+        self.json_model['books'] = value
+
+    @total.setter
+    def total(self, value):
+        self.json_model['memory']['value'] = value
+
 
     @property
     def books_amount(self):
@@ -179,7 +191,6 @@ def get_books(total_memory=None):
     result = {}
     result['books'] = resp_model['books']
     result['book_size'] = resp_model['book_size']
-    result['books_amount'] = len(result['books_size'])
 
     if total_memory is not None:
         try:
@@ -189,6 +200,9 @@ def get_books(total_memory=None):
             result['error'] = error_msg
             Journal.error = error_msg
             Journal.books_ratio = 0
+
+    Journal.book_size = result['book_size']
+    Journal.books = result['books']
 
     return make_response(jsonify(result), response.status_code)
 
@@ -237,6 +251,8 @@ def memory_api(opt=None):
 
     Journal.json_model['memory'].update(memdata)
     Journal.json_model['active'].update(active_data)
+    Journal.json_model['books_amount'] = Journal.books_amount
+    Journal.json_model['book_size'] = Journal.book_size
 
     #Return all memdata
     if opt is None:
