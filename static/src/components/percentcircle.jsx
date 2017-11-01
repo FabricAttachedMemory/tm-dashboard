@@ -30,6 +30,15 @@ class PercentCircle extends ApiRequester {
         //ID will be assigned to the div that wrapps <sv> element. I don't
         //remember what for...
         this.state.containerId = replacedSpaces + "_container";
+
+        var metrics = this.props.metricsType;
+        if (metrics === undefined)
+            metrics = "%";
+        if(metrics === "auto"){
+            metrics = "TB"; //TODO
+        }
+
+        this.state.metricsType = metrics;
     }//constructor
 
 
@@ -44,12 +53,15 @@ class PercentCircle extends ApiRequester {
         //of a circle.
         var progress_fill = radius * 2 * Math.PI;
         //How much filling to do of the circle based of desired precentage.
-        var percentVal = (fetchedValue < 0) ? 0 : fetchedValue;
+        var percentVal = (fetchedValue < 0) ? 0 : fetchedValue; //No negatives
+        percentVal = (fetchedValue > 100) ? 100 : fetchedValue; //no more than 100%
+
         var circle_fill_offset = ((100 - percentVal) / 100) * progress_fill;
 
-        var valueText = (fetchedValue < 0 || fetchedValue == "") ? "No Flow" : fetchedValue;
+        var valueText = (fetchedValue < 0 || fetchedValue == "") ?
+                                    "No Flow" : parseInt(fetchedValue);
         var metricsSymbol = parseInt(valueText);
-        metricsSymbol = (isNaN(metricsSymbol)) ? "" : "%";
+        metricsSymbol = (isNaN(metricsSymbol)) ? "" : this.state.metricsType;
 
         this.state.fetched = null; //Resetting fetched for the next circle\interval.
         var containerHeight = parseFloat(this.props.height.split("px")[0]) / 2;
@@ -64,8 +76,8 @@ class PercentCircle extends ApiRequester {
                                 strokeDasharray={progress_fill}
                                 strokeDashoffset={circle_fill_offset} />
 
-                        <text x="50%" y="50%" className="progress-value">{valueText}</text>
-                        <text x="45.5%" y="60%" className="data-metrics">{metricsSymbol}</text>
+                        <text x="48%" y="50%" className="progress-value">{valueText}</text>
+                        <text x="45%" y="60%" className="data-metrics">{metricsSymbol}</text>
                     </svg>
                 </div>
 

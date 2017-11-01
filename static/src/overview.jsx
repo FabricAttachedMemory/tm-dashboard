@@ -132,7 +132,8 @@ class POverview extends React.Component{
                                 minWidth: this.state.panelMinWidth,
                                 maxWidth: this.state.panelMaxWidth }}>
 
-                    <ContentBox id="RackOverviewBox" desc="Rack Overview"
+                    <ContentBox name="CB_RackOverview"
+                                id="RackOverviewBox" desc="Rack Overview"
                                 height={"auto"}>
                         <BoxHeader text="Rack Overview"
                                     textAlign="left"
@@ -142,14 +143,15 @@ class POverview extends React.Component{
                                         nodeCount={7}/>
                     </ContentBox>
 
-                    <ContentBox id="NodeStatsBox"
+                    <ContentBox name="CB_NodeStats"
+                                id="NodeStatsBox"
                                 paddingTop={nodeInfoPaddingTop}
                                 height={nodeInfoHeight}
                                 maxHeight={nodeInfoHeight}>
                         {this.buildNodeStats(nodeInfoHeight != "0px")}
                     </ContentBox>
 
-                    <ContentBox height={dscBtnBox}>
+                    <ContentBox name="CB_DemoBtnBox" height={dscBtnBox}>
                         <ChordShowcase/>
                     </ContentBox>
                 </div>

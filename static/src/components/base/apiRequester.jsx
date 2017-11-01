@@ -56,9 +56,8 @@ class ApiRequester extends React.Component {
         var url= this.props.url; //just shorter to use during debugging
         if(!url){
             if(!this.state.isSpoofed)
-                console.log("Empty url string! Name: " + this.props.name);
+                //console.log("Empty url string! Name: " + this.props.name);
                 this.state.failedFetchCount += 1;
-            //this.setState({failedFetchCount : this.state.failedFetchCount + 1});
             return;
         }
 

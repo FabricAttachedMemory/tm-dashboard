@@ -5,16 +5,17 @@ import ApiRequester from './base/apiRequester'
 import StatsBox from './wrappers/statsBox'
 
 
-class ContentBox extends React.Component {
+class ContentBox extends ApiRequester{
 
     constructor(props){
         super(props);
-        this.state = {};
         this.state.id = (this.props.id === undefined) ? "" : this.props.id;
+        this.state.value = this.props.number;
+        this.state.subvalue = this.props.desc;
     }
 
 
-    defaultRender(){
+    defaultRender(value, subvalue){
         var fontStyle = {};
         if(this.props.fontSize === undefined)
             fontStyle = {};
@@ -25,27 +26,15 @@ class ContentBox extends React.Component {
         return(
             <div>
                 <div className="data-display" style={fontStyle}>
-                    {this.props.number}
+                    {value}
                 </div>
                 <div className="data-container-name"
                                 style={{padding: "0 0 0 0"}}>
-                    <text>{this.props.desc}</text>
+                    <text>{subvalue}</text>
                 </div>
             </div>
         );
     }//defaultRender
-
-/*
-    shouldComponentUpdate(nextProps, nextState){
-        //Re-render component when props height changed from previous frame.
-        //This happenes when overview.jsx script (for example) calls its own
-        //render() method where it changes property of the ContenBox component.
-        var heightChange = this.props.height != nextProps.height;
-       // var isUpdate = this.getUpdateState(nextProps, nextState);
-        //return heightChange || isUpdate;
-        return true;
-    }//shouldComponentUpdate
-*/
 
 
     render() {
@@ -53,12 +42,24 @@ class ContentBox extends React.Component {
         if(this.props.className !== undefined){ //allow adding custom classes to this component.
             className = this.props.className;
         }
+
+        var value = "";
+        var subvalue = this.state.subvalue;
+
+        if(this.state.fetched !== undefined){
+            value = this.state.fetched.value;
+            this.state.value = value;
+        }else{
+            value = this.state.value;
+        }
+
         return (
             <StatsBox className={"statsboxContent " + className} id={this.props.id}
                             size={12} height={this.props.height}
                             maxHeight={this.props.maxHeight}
                             paddingTop={this.props.paddingTop}>
-            { this.props.children === undefined ? this.defaultRender() : this.props.children }
+            { this.props.children === undefined ?
+                            this.defaultRender(value, subvalue) : this.props.children }
             </StatsBox>
         );
     }
