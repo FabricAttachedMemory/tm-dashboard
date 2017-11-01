@@ -4,9 +4,6 @@ import {render} from 'react-dom';
 import {Navbar, Nav, NavItem} from 'react-bootstrap';
 import {LinkContainer}  from "react-router-bootstrap";
 
-import Flatgrids    from '../visualization/grids'
-import Chords       from '../visualization/chordWheel'
-
 
 class Middle extends React.Component {
 

@@ -110,13 +110,15 @@ class JPower(Journal):
 
     def spoof_memory_alloc(self):
         result = self.json_model['memory']
-        allocated = random.randrange(0, self.book_size)
+        result['total'] = 1500
+        allocated = random.randrange(0, result['total'])
         notready = random.randrange(0, allocated + 1) #+1 so it is not 0
         offline = random.randrange(0, notready + 1)   #don't care about alloc accuracy
 
         result['allocated'] = allocated
         result['notready'] = notready
         result['offline'] = offline
+        result['available'] = result['total'] - (allocated + notready + offline)
 
         return result
 
