@@ -142,8 +142,8 @@ def validate_request(*args, **kwargs):
     return Journal.validate_request(request)
 
 
-@Journal.BP.route('/api/memory/books/<total_memory>', methods=['GET'])
-@Journal.BP.route('/api/memory/books', methods=['GET'])
+@Journal.BP.route('/api/memory/lza/<total_memory>', methods=['GET'])
+@Journal.BP.route('/api/memory/lza', methods=['GET'])
 def get_books(total_memory=None):
     '''
         It is enough to call this function once per running server, since books/
@@ -179,9 +179,12 @@ def get_books(total_memory=None):
 
 
 @Journal.BP.route('/api/memory', methods=['GET'])
-def memory_api():
+@Journal.BP.route('/api/memory/<opt>', methods=['GET'])
+def memory_api(opt=None):
     """ Gather the memory breakdown info from LMP:
     Total, Allocated, Available, Not Ready, Offline, Active Shelves, Books
+
+    @param opt: option(keys of requested data) to return active Books or Shelves.
     """
     global Journal
     mainapp = Journal.mainapp
@@ -220,4 +223,15 @@ def memory_api():
     Journal.json_model['memory'].update(memdata)
     Journal.json_model['active'].update(active_data)
 
-    return make_response(jsonify(memdata), response.status_code)
+    #Return all memdata
+    if opt is None:
+        return make_response(jsonify(memdata), response.status_code)
+
+    #Return active Books or Shelves
+    if opt in memdata:
+        value = memdata[opt]
+        return make_response(jsonify({ 'value' : value}), response.status_code)
+    else:
+        err = 'Unknown option "%s"! Options: "%s"' % (opt, list(memdata.keys()))
+        memdata['error'] = err
+        return make_response(jsonify(memdata), response.status_code)

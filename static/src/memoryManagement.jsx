@@ -6,6 +6,8 @@ import {render} from 'react-dom';
 import Skeleton         from    './skeleton';
 import Middle           from    './components/middle';
 import ContentBox       from    './components/contentBox';
+import MMDataBox        from    './components/mmDataBox';
+import PercentCircle    from    './components/percentcircle';
 
 
 //P for Page.. -> PageOverview
@@ -81,25 +83,17 @@ class PMemoryManagement extends Skeleton{
                         style={{minWidth: this.state.panelMinWidth,
                                 maxWidth: this.state.panelMaxWidth}}>
 
-                    <ContentBox height={panelHeight}>
+                    <ContentBox name="CB_MemoryBreakdown" height={panelHeight}>
                         <div className="data-container-name"
                         style={{marginTop: "1.5em"}}>
                             Memory breakdown
                         </div>
-                        <div className="data-display"
-                                        style={{fontSize:"5em",
-                                                paddingTop:memValPadT}}>
-                            14
-                        </div>
-                        <div className="data-container-name"
-                                        style={{fontSize:"2em",
-                                            marginTop: "-1em",
-                                            marginBottom: memValMarginB,
-                                            fontWeight: "normal",
-                                            color: "#A5AEB5",
-                                            }}>
-                            TB
-                        </div>
+
+                        <PercentCircle name="TOTAL"
+                                        url="http://localhost:9099/api/memory/total"
+                                        metricsType="auto"
+                            mgBottom="0px" mgTop="0px"
+                        />
                         <div className="row" style={{margin:"0px",
                                                     padding: "0px",
                                                     height:"20px",
@@ -118,14 +112,19 @@ class PMemoryManagement extends Skeleton{
                         </div>
                     </ContentBox>
 
-                    <ContentBox number='14'
-                                desc="ACTIVE SHELVES"
+                    <ContentBox  name="CB_ActiveShelves"
+                                url="http://localhost:9099/api/memory/active_shelves"
+                                number={0}
+                                desc="SHELVES"
                                 height={panelHeight}
-                                fontSize={"5em"}
-                                paddingTop={"0em"}/>
-                    <ContentBox number="1,792"
+                                fontSize={"4em"}
+                                paddingTop={"0em"}
+                    />
+                    <ContentBox name="CB_ActiveBooks"
+                                url="http://localhost:9099/api/memory/active_books"
+                                number={0}
                                 desc="BOOKS"
-                                fontSize={"5em"}
+                                fontSize={"4em"}
                                 paddingTop={"0em"}
                                 height={panelHeight}/>
                 </div>

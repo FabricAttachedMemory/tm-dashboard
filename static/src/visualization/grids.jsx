@@ -219,7 +219,7 @@ class Flatgrids extends ApiRequester{
             ColsToDraw.push(<div key={book_index} className={classNames}
                                     style={gridBoxOverride}></div>);
         }//for
-
+        console.log(ColsToDraw.length);
         return (
         <div className="gridCanvas"  onKeyDown={this.onKeyPress}>
             {ColsToDraw}
