@@ -31,16 +31,18 @@ class Flatgrids extends ApiRequester{
 
         this.state.isRerender       = false;
         this.state.isZoomInPressed  = false;
-        this.state.booksMap         = [];
-        this.state.numberOfBooks    = 1200;
         this.state.isZoomOutPressed = false;
+
+        this.state.booksMap         = new Array(154).fill(0);
+        this.state.numberOfBooks    = 1200;
+        this.state.maxBooksToRender = 2000;
 
         //Have to register class methods to be reference with "this" during Runtime.
         this.onKeyDown  = this.onKeyDown.bind(this);
         this.onKeyUp    = this.onKeyUp.bind(this);
     }//constructor
 
-
+/*
     spoofData(){
         super.spoofData();
 
@@ -67,6 +69,24 @@ class Flatgrids extends ApiRequester{
         }
         return { dataSet : list, colorSet : newColors};
     }//spoofData
+*/
+
+
+
+    /** Source: https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+     * Randomize array element order in-place.
+     * Using Durstenfeld shuffle algorithm.
+     */
+    shuffleArray(array) {
+        for (var i = array.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+        return array;
+    }//shuffleArray
+
 
 
     onKeyDown(event){
@@ -113,7 +133,6 @@ class Flatgrids extends ApiRequester{
 
     }//onKeyUp
 
-
     componentDidMount() {
         document.addEventListener('keydown', this.onKeyDown);
         document.addEventListener('keyup', this.onKeyUp);
@@ -129,30 +148,76 @@ class Flatgrids extends ApiRequester{
     }//componentWillUpdate
 
 
+    make_alloc_set(data_set){
+        if(data_set === undefined)
+            return {};
+        if(data_set.active_books === undefined) //data_set is not a valid data
+            return {};
+
+        var numOfBooks = data_set.total;
+        if (numOfBooks > this.state.maxBooksToRender)
+            numOfBooks = this.state.maxBooksToRender
+
+        var alloc_state = [];
+
+        var allocated   = new Array(data_set.allocated).fill(1);
+        var offline     = new Array(data_set.offline).fill(-1);
+        var notReady    = new Array(data_set.notready).fill(2);
+        var available   = [];
+
+        var totalSize = allocated.length + offline.length + notReady.length;
+        if (totalSize < numOfBooks)
+            available = new Array(numOfBooks - totalSize).fill(0);
+
+        alloc_state = alloc_state.concat(allocated);
+        alloc_state = alloc_state.concat(offline);
+        alloc_state = alloc_state.concat(notReady);
+        alloc_state = alloc_state.concat(available);
+
+        alloc_state = this.shuffleArray(alloc_state);
+
+        var alloc_colors = {};
+        for (var i=0; i < alloc_state.length; i++) {
+            var bookState = alloc_state[i];
+            if (bookState == -1)
+              alloc_colors[i] = "boxOffline";
+
+            if (bookState == 1)
+              alloc_colors[i] = "boxAllocated";
+
+            if (bookState == 0)
+              alloc_colors[i] = "boxAvailable";
+
+            if (bookState == 2)
+              alloc_colors[i] = "boxNotReady";
+        }//for
+        return alloc_colors;
+    }//make_alloc_set
+
+
     render() {
         //doesn't do anyhthing for this component yet.
-        var fetched = this.readFetchedValues();
+        var allocs = this.make_alloc_set(this.state.fetched);
 
-        var spoofed = this.spoofData();
-        this.state.booksMap = spoofed.dataSet;
-        var colorClasses = spoofed.colorSet;
-        var numOfBricks = this.state.booksMap.length;
+        if(Object.keys(allocs).length === 0)
+            allocs = this.state.booksMap;
+        else
+            this.state.booksMap = allocs;
 
-        var ColsToDraw = []
         var colGap = this.state.colGap;
         var rowGap = this.state.rowGap;
-        var index = 0
-
+        var ColsToDraw = []
         //Building boxes list to be rendered
-        for(var col=0; col < colorClasses.length; col++){
+        //for(var col=0; col < colorClasses.length; col++){
+        for(var book_index in allocs){
             var gridBoxOverride = {
                 "margin" : colGap + "px " + rowGap + "px " + colGap + "px " + rowGap,
                 "width" : this.state.size,
                 "height" : this.state.size,
             };
-            var classNames = "gridBox " + colorClasses[index];
-            ColsToDraw.push(<div key={col} className={classNames} style={gridBoxOverride}></div>);
-            index = index + 1;
+            var classNames = "gridBox " + allocs[book_index];
+            ColsToDraw.push(<div key={book_index} className={classNames}
+                                    style={gridBoxOverride}></div>);
         }//for
 
         return (

@@ -72,9 +72,12 @@ class ApiRequester extends React.Component {
         }//fetchParam
 
         return fetch (url, fetchParam).then((data) => {
+            /*
             this.setState({
                 fetched : data
             });
+            */
+            this.state.fetched = data;
             return data.json();
         }).then((json) => {
             this.setState({
@@ -157,12 +160,15 @@ class ApiRequester extends React.Component {
 ApiRequester.defaultProps = {
     height  : "300px",
     className : "",
-    name    : PropTypes.string.isRequired,
     url     : "",
     refreshRate     : 5000,
     spoofAfterFails : 2,
     spoofedData     : []
 }
 
+
+ApiRequester.propTypes = {
+    name : PropTypes.string.isRequired,
+}
 
 export default ApiRequester;
