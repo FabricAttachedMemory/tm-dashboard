@@ -15,6 +15,11 @@ class ContentBox extends ApiRequester{
     }
 
 
+    componentWillReceiveProps(nextProps){
+        console.log(nextProps);
+    }
+
+
     defaultRender(value, subvalue){
         var fontStyle = {};
         if(this.props.fontSize === undefined)

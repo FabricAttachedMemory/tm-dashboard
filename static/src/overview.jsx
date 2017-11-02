@@ -22,9 +22,11 @@ class POverview extends React.Component{
         this.state = {
             panelMaxWidth : "300px",
             panelMinWidth : "250px",
+            forceRender : false,
         };
         this.state.heightStack = [];
         this.state.intervalId = -1;
+        this.state.nodeInfoHeight = "500px";
     }//ctor
 
 
@@ -38,7 +40,18 @@ class POverview extends React.Component{
         //window.addEventListener("resize", this.updateDimensions.bind(this));
 
         this.state.intervalId = setInterval(() => {
-            this.calculateHeights();
+            var isHeightChange = this.calculateHeights();
+            var heightDiff = this.adjustHeight(this.state.heightStack);
+            var currHeight = parseFloat(this.state.nodeInfoHeight.split("px")[0]);
+            if(currHeight != heightDiff){
+                console.log("here");
+                this.setState( { nodeInfoHeight : heightDiff + "px" });
+            }
+
+            if(isHeightChange)
+                this.setState( { forceRender : true } );
+            else
+                this.state.forceRender = false;
         }, 1000);
 
     }//componentWillMount
@@ -50,11 +63,19 @@ class POverview extends React.Component{
         }
     }//componentWillUnmount
 
-/*
     shouldComponentUpdate(nextProps, nextState){
         return true;
     }
-*/
+
+    adjustHeight(heightStack){
+        var total = 0;
+        for(var i = 0; i < heightStack.length; i++){
+            total += heightStack[i];
+        }//for
+        var diff = window.innerHeight - total;
+        console.log(total + " vs " + window.innerHeight + " = " + diff);
+        return diff;
+    }
 
 
     calculateHeights(){
@@ -73,16 +94,23 @@ class POverview extends React.Component{
             heightStack.push(parseFloat(rackBox.clientHeight) + marginBottom * 3);
         }
 
+        var demoBox = document.getElementById("DemoControlsBox");
+        if(demoBox != null){
+            marginBottom = parseFloat(window.getComputedStyle(demoBox)
+                                                .marginBottom.split("px")[0]);
+            heightStack.push(parseFloat(demoBox.clientHeight) + marginBottom * 3);
+        }
+
+        this.state.heightStack = heightStack;
         if(heightStack.length == 2){
             if(heightStack.toString() !== this.state.heightStack.toString()){
-                this.setState ( { heightStack : heightStack });
-                //this.setState( { forceRender : true } );
+                //this.setState ( { heightStack : heightStack, forceRender : true });
+                return true;
             }else{
                 //this.setState( { forceRender : false } );
-
+                return false;
             }
         }
-        this.state.heightStack = heightStack;
     }//componentDidMount
 
 
@@ -108,10 +136,11 @@ class POverview extends React.Component{
     render() {
         var panelClass = "col-md-2";
 
-        var nodeInfoHeight  = "0px";
+        var nodeInfoHeight  = this.state.nodeInfoHeight;
         //var dscBtnBox       = this.getHeightRatio(0.08);
         var dscBtnBox = "200px";
 
+/*
         if(this.state.heightStack.length == 2){
             nodeInfoHeight = window.innerHeight;
             nodeInfoHeight -= this.state.heightStack[0];
@@ -122,7 +151,14 @@ class POverview extends React.Component{
         }else{
             nodeInfoHeight = "500px";
         }
-
+*/
+/*
+        var statsBox = document.getElementById("NodeStatsBox");
+        if(statsBox){
+            console.log("Set " + nodeInfoHeight);
+            statsBox.style.height = nodeInfoHeight;
+        }
+*/
         var nodeInfoPaddingTop  = (nodeInfoHeight.split("px")[0] / 5) + "px";
 
         return (
@@ -151,7 +187,9 @@ class POverview extends React.Component{
                         {this.buildNodeStats(nodeInfoHeight != "0px")}
                     </ContentBox>
 
-                    <ContentBox name="CB_DemoBtnBox" height={dscBtnBox}>
+                    <ContentBox id="DemoControlsBox"
+                                name="CB_DemoContolBox"
+                                height={dscBtnBox}>
                         <ChordShowcase/>
                     </ContentBox>
                 </div>
