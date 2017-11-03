@@ -247,7 +247,6 @@ def memory_api(opt=None):
     # memdata is the dictionary of data returned
     memdata = {}
 
-
     # Get the LMP global data
     url = mainapp.config['LMP_SERVER'] + 'global/'
     #r = requests.get(url, headers=headers)
@@ -266,16 +265,16 @@ def memory_api(opt=None):
     '''
     memdata['total'] = resp_model['memory']['total']
 
+    # Calculate number of books from total memory
+    # Only calculate number of books once because it doesn't change
+    if Journal.books_ratio <= 0:
+        get_books(memdata['total'])
+
     memdata['allocated'] = int(resp_model['memory']['allocated'] / Journal.book_size)
     memdata['available'] = int(resp_model['memory']['available'] / Journal.book_size)
     memdata['notready'] = int(resp_model['memory']['notready'] / Journal.book_size)
     memdata['offline'] = int(resp_model['memory']['offline'] / Journal.book_size)
     memdata['active_shelves'] = resp_model['active']['shelves']
-
-    # Calculate number of books from total memory
-    # Only calculate number of books once because it doesn't change
-    if Journal.books_ratio == 0:
-        get_books(memdata['total'])
 
     memdata['active_books'] = Journal.books_ratio
     active_data = { 'books' : memdata['active_books'],
