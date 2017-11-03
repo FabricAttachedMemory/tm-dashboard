@@ -44,20 +44,20 @@ class JPower(Journal):
         #json_model should match response from the real endpoint data. E.g.
         #'memory' and 'active' corresponds to lmp's global/ endpoint response.
         self.json_model = {
-            'book_size' : 0, #size of One book
+            'book_size' : -1, #size of One book
             'books' : [], #list of { "lza" : 12345, "state" : "available" }
-            'books_amount' : 0, #how many books are there (squares for flatgrids)
+            'books_amount' : -1, #how many books are there (squares for flatgrids)
             'memory' : {
-                'allocated' : 0,
-                'available' : 6597069766656,
-                'notready' : 0,
-                'offline' : 0,
-                'total' : 6597069766656,
+                'allocated' : -1,
+                'available' : -1,
+                'notready' : -1,
+                'offline' : -1,
+                'total' : -1,
             },
 
             'active' : {
-                'books' : 0,
-                'shelves' : 0
+                'books' : -1,
+                'shelves' : -1
             },
             'error' : []
         } #json_model
@@ -74,7 +74,7 @@ class JPower(Journal):
 
     @property
     def total(self):
-        return self.json_model['memory']['total']
+        return self.books_amount * self.book_size
 
     @book_size.setter
     def book_size(self, value):
@@ -118,7 +118,8 @@ class JPower(Journal):
         """ Refer to the base class (../bp_base.py) for documentation."""
         result = self.json_model # REFERENCE not a copy!
         result.update(self.spoof_books(result))
-        result['memory'].update(self.spoof_memory_alloc(result['books_amount']))
+        total = result['book_size'] * result['books_amount']
+        result['memory'].update(self.spoof_memory_alloc(total))
         result['active'].update(self.spoof_active_prop())
 
         return result
@@ -126,33 +127,56 @@ class JPower(Journal):
 
     def spoof_books(self, data):
         data['books'] = []
-        for i in range(200):
+        for i in range(18944):
             random_lza = random.randrange(1000000, 8000000, random.randrange(1, 5))
             lza = { "lza" : random_lza }
             data['books'].append(lza)
-        data['book_size'] = 8 * math.pow(10, 8)
+        data['book_size'] = 8589934592
         data['books_amount'] = len(data['books'])
+        data['total'] = data['books_amount'] * data['book_size']
         return data
 
-
-    def spoof_memory_alloc(self, books_amount):
+    '''
+    {
+      "active_books": 18944,
+        "active_shelves": 1088,
+          "allocated": 335007449088,
+            "available": 161568079740928,
+              "notready": 824633720832,
+                "offline": 0,
+                  "total": 162727720910848
+                  }
+    '''
+    def spoof_memory_alloc(self, total_size):
         result = {}
-        allocated = random.randrange(0, books_amount)
-        notready = random.randrange(0, allocated + 1) #+1 so it is not 0
-        offline = random.randrange(0, notready + 1)   #don't care about alloc accuracy
+        allocated = random.randrange(int(total_size * 0.1), int(total_size * 0.2))
+
+        books_left = total_size - allocated
+        if books_left < 0 or books_left == 0:   # dont allow randrange to be (0, 0)
+            notready = 0
+        else:
+            notready = random.randrange(0, int(books_left * 0.1))
+
+        books_left -= notready
+        if books_left < 0 or books_left == 0:
+            offline = 0
+        else:
+            offline = random.randrange(0, int(books_left * 0.2))
 
         result['allocated'] = allocated
         result['notready'] = notready
         result['offline'] = offline
-        result['available'] = books_amount - (allocated + notready + offline)
+        subtotal = allocated + notready + offline
+        result['available'] = total_size - (allocated + notready + offline)
+        result['total'] = total_size
 
         return result
 
 
     def spoof_active_prop(self):
         result = self.json_model['active']
-        result['books'] = random.randrange(100, 2000)
-        result['shelves'] = random.randrange(5, 30)
+        result['books'] = 18944
+        result['shelves'] = random.randrange(500, 1088)
 
         return result
 
@@ -223,7 +247,6 @@ def memory_api(opt=None):
     # memdata is the dictionary of data returned
     memdata = {}
 
-
     # Get the LMP global data
     url = mainapp.config['LMP_SERVER'] + 'global/'
     #r = requests.get(url, headers=headers)
@@ -232,18 +255,26 @@ def memory_api(opt=None):
     #data=r.json()
     resp_model = response.json()
 
+    '''
     memdata['total'] = resp_model['memory']['total']
     memdata['allocated'] = resp_model['memory']['allocated']
     memdata['available'] = resp_model['memory']['available']
     memdata['notready'] = resp_model['memory']['notready']
     memdata['offline'] = resp_model['memory']['offline']
-
     memdata['active_shelves'] = resp_model['active']['shelves']
+    '''
+    memdata['total'] = resp_model['memory']['total']
 
     # Calculate number of books from total memory
     # Only calculate number of books once because it doesn't change
-    if Journal.books_ratio == 0:
+    if Journal.books_ratio <= 0:
         get_books(memdata['total'])
+
+    memdata['allocated'] = int(resp_model['memory']['allocated'] / Journal.book_size)
+    memdata['available'] = int(resp_model['memory']['available'] / Journal.book_size)
+    memdata['notready'] = int(resp_model['memory']['notready'] / Journal.book_size)
+    memdata['offline'] = int(resp_model['memory']['offline'] / Journal.book_size)
+    memdata['active_shelves'] = resp_model['active']['shelves']
 
     memdata['active_books'] = Journal.books_ratio
     active_data = { 'books' : memdata['active_books'],
@@ -253,6 +284,8 @@ def memory_api(opt=None):
     Journal.json_model['active'].update(active_data)
     Journal.json_model['books_amount'] = Journal.books_amount
     Journal.json_model['book_size'] = Journal.book_size
+
+    memdata['book_size'] = Journal.book_size
 
     #Return all memdata
     if opt is None:

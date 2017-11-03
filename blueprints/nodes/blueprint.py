@@ -145,10 +145,10 @@ def nodes_api(node_num=-1):
         # If it is active then add to the arc matrix
         if len(shelf_data['active']) > 0:
             for book in shelf_data['books']:
-                book_lza = Journal.topology['lza'][book]
-                uses_memory_from_node = Journal.book_dict[book] - 1
+                #book_lza = Journal.topology['lza'][book]
+                uses_memory_from_node = Journal.topology['lza'][book] - 1
                 for coord in shelf_data['active']:
-                    source_node = Journal.node_dict[coord] - 1
+                    source_node = Journal.topology['nodes'][coord] - 1
                     arcs[int(source_node)][int(uses_memory_from_node)] = 1
 
     Journal.json_model['data_flow'] = arcs

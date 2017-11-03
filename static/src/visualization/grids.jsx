@@ -35,42 +35,12 @@ class Flatgrids extends ApiRequester{
 
         this.state.booksMap         = new Array(154).fill(0);
         this.state.numberOfBooks    = 1200;
-        this.state.maxBooksToRender = 2000;
+        this.state.maxBooksToRender = 12000;
 
         //Have to register class methods to be reference with "this" during Runtime.
         this.onKeyDown  = this.onKeyDown.bind(this);
         this.onKeyUp    = this.onKeyUp.bind(this);
     }//constructor
-
-/*
-    spoofData(){
-        super.spoofData();
-
-        var newColors = [];
-        var list = []
-        for(var i=0; i < this.state.numberOfBooks; i++){
-            var min = Math.ceil(-1);
-            var max = Math.floor(4); //max is exclusive
-            var randState = Math.floor(Math.random() * (max - min) + min);
-            list.push(randState);
-        }//for
-
-        for (var i=0; i < list.length; i++) {
-            var bookState = list[i];
-            if (bookState == -1){
-              newColors.push("boxOffline");
-            }else if (bookState == 1){
-              newColors.push("boxAllocated");
-            }else if (bookState == 0){
-              newColors.push("boxAvailable");
-            }else if (bookState == 2){
-              newColors.push("boxNotReady");
-            }
-        }
-        return { dataSet : list, colorSet : newColors};
-    }//spoofData
-*/
-
 
 
     /** Source: https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
@@ -154,7 +124,7 @@ class Flatgrids extends ApiRequester{
         if(data_set.active_books === undefined) //data_set is not a valid data
             return {};
 
-        var numOfBooks = data_set.total;
+        var numOfBooks = data_set.active_books;
         if (numOfBooks > this.state.maxBooksToRender)
             numOfBooks = this.state.maxBooksToRender
 
@@ -163,11 +133,7 @@ class Flatgrids extends ApiRequester{
         var allocated   = new Array(data_set.allocated).fill(1);
         var offline     = new Array(data_set.offline).fill(-1);
         var notReady    = new Array(data_set.notready).fill(2);
-        var available   = [];
-
-        var totalSize = allocated.length + offline.length + notReady.length;
-        if (totalSize < numOfBooks)
-            available = new Array(numOfBooks - totalSize).fill(0);
+        var available   = new Array(data_set.available).fill(0);
 
         alloc_state = alloc_state.concat(allocated);
         alloc_state = alloc_state.concat(offline);
@@ -175,6 +141,10 @@ class Flatgrids extends ApiRequester{
         alloc_state = alloc_state.concat(available);
 
         alloc_state = this.shuffleArray(alloc_state);
+        //Limit number of grids to be rendered, to reduce lag and to fit it all
+        //on the screen properly.
+        if(alloc_state.length > this.state.maxBooksToRender)
+            alloc_state = alloc_state.slice(0, this.state.maxBooksToRender);
 
         var alloc_colors = {};
         for (var i=0; i < alloc_state.length; i++) {
@@ -219,7 +189,7 @@ class Flatgrids extends ApiRequester{
             ColsToDraw.push(<div key={book_index} className={classNames}
                                     style={gridBoxOverride}></div>);
         }//for
-        console.log(ColsToDraw.length);
+
         return (
         <div className="gridCanvas"  onKeyDown={this.onKeyPress}>
             {ColsToDraw}
