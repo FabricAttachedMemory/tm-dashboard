@@ -270,32 +270,36 @@ class Chords extends ApiRequester{
 
     shouldComponentUpdate(nextProps, nextState){
         var shouldUpdate = this.getUpdateState(nextProps, nextState);
-
+        var fetched = nextState.fetched;
         //if (!shouldUpdate)
         //    return false;
-        var isNo = this.noNameFunc();
+        var isNo = this.validateFetchedData(fetched);
         if(!isNo)
             return shouldUpdate;
 
-        if(this.state.topology.toString() !== this.state.fetched["topology"].toString()){
-            RackOverview.Update(this.state.fetched["topology"])
-        }
+        // if(nextState.topology.toString() !== fetched["topology"].toString()){
+            // RackOverview.Update(fetched["topology"])
+        // }
 
-        var matrix = this.state.fetched["data_flow"];
+        var matrix = fetched["data_flow"];
         var renderMatrix = this.constructRenderMatrix(matrix);
+        // this.state.matrix = matrix;
+        // this.state.renderMatrix = renderMatrix;
         this.setState({ matrix : matrix });
         this.setState({ renderMatrix : renderMatrix});
 
-        var newTopology = this.state.fetched["topology"];
+        var newTopology = fetched["topology"];
+        // this.state.topology = newTopology;
+        // this.state.isRetop = false;
         this.setState({ topology : newTopology });
         this.setState({ isRetop : false });
 
-        MATRIX = this.state.fetched["data_flow"];
+        MATRIX = fetched["data_flow"];
         var svgObj = d3.select("#abyss-circle");
         svgObj.selectAll("g").remove();
 
         this.setState({svg : svgObj});
-        this.buildChordsDiagram(svgObj, renderMatrix, this.state.fetched["topology"]);
+        this.buildChordsDiagram(svgObj, renderMatrix, fetched["topology"]);
 
         if(ACTIVE_NODE != -1){
             ShowNodeActivity(ACTIVE_NODE, true);
@@ -311,17 +315,18 @@ class Chords extends ApiRequester{
         this.buildChordsDiagram(svgObj, this.state.matrix, this.state.topology);
     }//componentDidMount
 
-    noNameFunc(){
-        if(this.state.fetched === undefined)
+
+    validateFetchedData(fetched){
+        if(fetched === undefined)
             return false;
-        if (this.state.fetched instanceof Response)
+        if (fetched instanceof Response)
             return false;
 
-        var fetched = this.state.fetched;
         if(fetched["data_flow"] == this.state.matrix)
             return false;
         return true;
-    }
+    }//noNameFunc
+
 
     render(){
         var wRatio = 0.5;
@@ -414,6 +419,7 @@ export function ShowNodeActivity(node, state){
     var enc = GetEncFromNode(topology ,node)
 
     RackOverview.SetActive(enc, node, state);
+
     if(state)
         NodeStats.SetFields(node, enc);
     else

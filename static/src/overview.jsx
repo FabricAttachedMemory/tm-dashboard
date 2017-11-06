@@ -44,7 +44,6 @@ class POverview extends React.Component{
             var heightDiff = this.adjustHeight(this.state.heightStack);
             var currHeight = parseFloat(this.state.nodeInfoHeight.split("px")[0]);
             if(currHeight != heightDiff){
-                console.log("here");
                 this.setState( { nodeInfoHeight : heightDiff + "px" });
             }
 
@@ -73,7 +72,6 @@ class POverview extends React.Component{
             total += heightStack[i];
         }//for
         var diff = window.innerHeight - total;
-        console.log(total + " vs " + window.innerHeight + " = " + diff);
         return diff;
     }
 
@@ -140,25 +138,6 @@ class POverview extends React.Component{
         //var dscBtnBox       = this.getHeightRatio(0.08);
         var dscBtnBox = "200px";
 
-/*
-        if(this.state.heightStack.length == 2){
-            nodeInfoHeight = window.innerHeight;
-            nodeInfoHeight -= this.state.heightStack[0];
-            nodeInfoHeight -= this.state.heightStack[1];
-            nodeInfoHeight -= parseFloat(dscBtnBox.split("px")[0]);
-            nodeInfoHeight -= 2;
-            nodeInfoHeight += "px";
-        }else{
-            nodeInfoHeight = "500px";
-        }
-*/
-/*
-        var statsBox = document.getElementById("NodeStatsBox");
-        if(statsBox){
-            console.log("Set " + nodeInfoHeight);
-            statsBox.style.height = nodeInfoHeight;
-        }
-*/
         var nodeInfoPaddingTop  = (nodeInfoHeight.split("px")[0] / 5) + "px";
 
         return (

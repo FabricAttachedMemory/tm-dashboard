@@ -18,7 +18,8 @@ class BRackOverview extends React.Component {
     constructor(props){
         super(props);
 
-        TOPOLOGY = DataSpoofer.SystemTopology();
+        // TOPOLOGY = DataSpoofer.SystemTopology();
+        TOPOLOGY = [10, 10, 10, 10];
     }//ctor
 
 
@@ -123,8 +124,10 @@ export function SetActive(enc, node, state){
 }//SetActive
 
 
+/*
 export function Update(topology){
     UPDATE_RACK=true;
-    TOPOLOGY=topology;
+    // TOPOLOGY=topology;
     DataSharing.Set("Enclosures", TOPOLOGY.length);
 }
+*/

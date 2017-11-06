@@ -82,7 +82,8 @@ class ApiRequester extends React.Component {
             this.setState({
                 fetched : json
             });
-            return this.state.fetched;
+            this.setState({forceRender : true });
+            return json;
         }).catch((error) => {
            console.log("GetData() error fetching '" + this.props.url + "'! [" + error + "]");
         });
@@ -91,6 +92,7 @@ class ApiRequester extends React.Component {
 
     //One of the first functions in the React lifecicle to be called.
     componentWillMount(){
+        this.GetData();
         this.state.intervalId = setInterval(() => {
             if (this.state.failedFetchCount >= this.props.spoofAfterFails){
                 //signal component to check for re-render
@@ -100,8 +102,8 @@ class ApiRequester extends React.Component {
                 if(!this.state.isSpoofed){
                     this.GetData();
                 }
-                this.state.forceRerender = true;
-                //this.setState({forceRender : true });
+                // this.state.forceRerender = true;
+                // this.setState({forceRender : true });
             }
         }, this.props.refreshRate);
     }//componentWillMount
@@ -117,7 +119,8 @@ class ApiRequester extends React.Component {
      * Re-render the page only when fetch() request is finished and returned
      * object that is not of a "Response" type.*/
     shouldComponentUpdate(nextProps, nextState){
-        return this.getUpdateState(nextProps, nextState);
+        var willUpdate = this.getUpdateState(nextProps, nextState);
+        return willUpdate;
     }//shouldComponentUpdate
 
 
@@ -135,6 +138,7 @@ class ApiRequester extends React.Component {
             this.state.forceRerender = false;
             return true;
         }//if
+
         return isReady;
     }
 
