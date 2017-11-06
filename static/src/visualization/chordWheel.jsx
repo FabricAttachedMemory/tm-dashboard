@@ -18,9 +18,7 @@ class Chords extends ApiRequester{
 
     constructor(props){
         super(props);
-        // this.state.numberOfNodes = 0;
         this.state.topology = [];
-        // this.state.prevTopology = [];
 
         this.state.matrix = [[]];       //original data arrived from the server
         this.state.innerRadius = 0;
@@ -30,20 +28,11 @@ class Chords extends ApiRequester{
         this.state.renderMatrix = [[]]; //all inputs converted to 0 and 1 (only!)
         this.state.svg = undefined;
         this.state.chordLayout = undefined;
-        // this.state.noReRender = false;
-
-        // this.state.selectedNode = -1;
 
         this.state.topology = DataSpoofer.SystemTopology(); // FIXME: Real data here
         this.state.matrix   = DataSpoofer.ChordMatrix(this.state.topology); //FIXME: TRASH
 
-        // this.state.topology = undefined
-        // this.state.matrix   = undefined
-
-    //    this.state.numberOfNodes    = this.state.matrix.length;
-       this.state.renderMatrix     = this.constructRenderMatrix(this.state.matrix);
-        // this.state.numberOfNodes    = undefined
-        // this.state.renderMatrix     = undefined
+        this.state.renderMatrix     = this.constructRenderMatrix(this.state.matrix);
 
         MATRIX = this.state.matrix;
     }//constructor
@@ -61,9 +50,16 @@ class Chords extends ApiRequester{
 
         for(var i=0; i<length; i++){
             var flow = [];
-            for(var j=0; j<length; j++)
-                flow.push(1)
-            flow[i] = 0; //removing self lopping arc
+            for(var j=0; j<length; j++){
+                if(matrix[i][j] > 0)
+                    flow.push(1);
+                else
+                    flow.push(0);
+            }
+            //when matrix is all 0, chrods will not render at all. To avoid this,
+            //make sure at least a self-looping arc is non zero. However, it will
+            //not be rendered on node selection.
+            flow[i] = 1;
             renderMatrix.push(flow);
         }//for
 
@@ -270,32 +266,29 @@ class Chords extends ApiRequester{
 
     shouldComponentUpdate(nextProps, nextState){
         var shouldUpdate = this.getUpdateState(nextProps, nextState);
+        var fetched = nextState.fetched;
 
-        //if (!shouldUpdate)
-        //    return false;
-        var isNo = this.noNameFunc();
+        var isNo = this.validateFetchedData(fetched);
         if(!isNo)
             return shouldUpdate;
 
-        if(this.state.topology.toString() !== this.state.fetched["topology"].toString()){
-            RackOverview.Update(this.state.fetched["topology"])
-        }
-
-        var matrix = this.state.fetched["data_flow"];
+        var matrix = fetched["data_flow"];
         var renderMatrix = this.constructRenderMatrix(matrix);
+
         this.setState({ matrix : matrix });
         this.setState({ renderMatrix : renderMatrix});
 
-        var newTopology = this.state.fetched["topology"];
+        var newTopology = fetched["topology"];
+
         this.setState({ topology : newTopology });
         this.setState({ isRetop : false });
 
-        MATRIX = this.state.fetched["data_flow"];
+        MATRIX = fetched["data_flow"];
         var svgObj = d3.select("#abyss-circle");
         svgObj.selectAll("g").remove();
 
         this.setState({svg : svgObj});
-        this.buildChordsDiagram(svgObj, renderMatrix, this.state.fetched["topology"]);
+        this.buildChordsDiagram(svgObj, renderMatrix, fetched["topology"]);
 
         if(ACTIVE_NODE != -1){
             ShowNodeActivity(ACTIVE_NODE, true);
@@ -311,17 +304,18 @@ class Chords extends ApiRequester{
         this.buildChordsDiagram(svgObj, this.state.matrix, this.state.topology);
     }//componentDidMount
 
-    noNameFunc(){
-        if(this.state.fetched === undefined)
+
+    validateFetchedData(fetched){
+        if(fetched === undefined)
             return false;
-        if (this.state.fetched instanceof Response)
+        if (fetched instanceof Response)
             return false;
 
-        var fetched = this.state.fetched;
         if(fetched["data_flow"] == this.state.matrix)
             return false;
         return true;
-    }
+    }//noNameFunc
+
 
     render(){
         var wRatio = 0.5;
@@ -388,9 +382,12 @@ export function ShowNodeActivity(node, state){
     var connections = findArcsFromMatrix(node);
     if(connections.length < 1)
         return;
+
     pathObj.filter((d) =>{
         var pathIndex = d.source.index + "->" + d.source.subindex;
-        return connections.includes(pathIndex);
+        //Don't render selflooping arc
+        var itself = d.source.index === node && d.source.subindex == node;
+        return connections.includes(pathIndex) && !itself;
         })
         .transition()
             .style("opacity", function(d) {
@@ -414,6 +411,7 @@ export function ShowNodeActivity(node, state){
     var enc = GetEncFromNode(topology ,node)
 
     RackOverview.SetActive(enc, node, state);
+
     if(state)
         NodeStats.SetFields(node, enc);
     else
