@@ -41,7 +41,7 @@ class Chords extends ApiRequester{
         // this.state.matrix   = undefined
 
     //    this.state.numberOfNodes    = this.state.matrix.length;
-       this.state.renderMatrix     = this.constructRenderMatrix(this.state.matrix);
+        this.state.renderMatrix     = this.constructRenderMatrix(this.state.matrix);
         // this.state.numberOfNodes    = undefined
         // this.state.renderMatrix     = undefined
 
@@ -61,8 +61,12 @@ class Chords extends ApiRequester{
 
         for(var i=0; i<length; i++){
             var flow = [];
-            for(var j=0; j<length; j++)
-                flow.push(1)
+            for(var j=0; j<length; j++){
+                if(matrix[i][j] > 0)
+                    flow.push(1);
+                else
+                    flow.push(0);
+            }
             flow[i] = 0; //removing self lopping arc
             renderMatrix.push(flow);
         }//for
@@ -283,6 +287,7 @@ class Chords extends ApiRequester{
 
         var matrix = fetched["data_flow"];
         var renderMatrix = this.constructRenderMatrix(matrix);
+
         // this.state.matrix = matrix;
         // this.state.renderMatrix = renderMatrix;
         this.setState({ matrix : matrix });

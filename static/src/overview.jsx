@@ -26,7 +26,7 @@ class POverview extends React.Component{
         };
         this.state.heightStack = [];
         this.state.intervalId = -1;
-        this.state.nodeInfoHeight = "500px";
+        this.state.nodeInfoHeight = "772px";
     }//ctor
 
 
