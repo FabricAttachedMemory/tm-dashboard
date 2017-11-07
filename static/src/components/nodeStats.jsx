@@ -6,6 +6,18 @@ import {render}     from 'react-dom';
 import ApiRequester from './base/apiRequester';
 
 const STATS_FIELDS = [
+                    ["Power State",     ""],
+                    ["DRAM Usage",      "%"],
+                    ["CPU Usage",       "%"],
+                    ["Network In",      ""],
+                    ["Fabric Usage",    ""],
+                    ["Network Out",     ""],
+                    ["No. of Shelves",  ""],
+                    ["OS Manifest",     ""],
+                    ["No. of Books",    ""],
+                  ];
+/*
+const STATS_FIELDS = [
                     ["Power State",     "power"],
                     ["DRAM Usage",      "dram"],
                     ["CPU Usage",       "cpu"],
@@ -16,6 +28,7 @@ const STATS_FIELDS = [
                     ["OS Manifest",     "manifestName"],
                     ["No. of Books",    "books"],
                   ];
+*/
 
 var NODES_DATA = [];
 //Predefine nodes stats with default(empty) values to be referenced and set
@@ -100,7 +113,7 @@ class NodeStats extends ApiRequester {
         for(var i=0; i < STATS_FIELDS.length; i++){
             var field = STATS_FIELDS[i];
             var title = field[0];
-            var value = stats[field[1]];
+            var value = stats[field[0]];
             value = (value === undefined) ? "---" : value;
             boxes.push(this.BuildDataBox(title, value));
         }//for
