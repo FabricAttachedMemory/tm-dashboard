@@ -145,7 +145,8 @@ class POverview extends React.Component{
                 <div className={panelClass}
                         style={{
                                 minWidth: this.state.panelMinWidth,
-                                maxWidth: this.state.panelMaxWidth }}>
+                                maxWidth: this.state.panelMaxWidth
+                                }}>
 
                     <ContentBox name="CB_RackOverview"
                                 id="RackOverviewBox" desc="Rack Overview"

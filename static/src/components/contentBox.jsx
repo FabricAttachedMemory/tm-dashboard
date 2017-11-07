@@ -57,7 +57,8 @@ class ContentBox extends ApiRequester{
             <StatsBox className={"statsboxContent " + className} id={this.props.id}
                             size={12} height={this.props.height}
                             maxHeight={this.props.maxHeight}
-                            paddingTop={this.props.paddingTop}>
+                            paddingTop={this.props.paddingTop}
+                            >
             { this.props.children === undefined ?
                             this.defaultRender(value, subvalue) : this.props.children }
             </StatsBox>

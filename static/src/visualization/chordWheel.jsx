@@ -51,10 +51,9 @@ class Chords extends ApiRequester{
         for(var i=0; i<length; i++){
             var flow = [];
             for(var j=0; j<length; j++){
-                if(matrix[i][j] > 0)
-                    flow.push(1);
-                else
-                    flow.push(0);
+                //to keep arcs' base width consistant, add 1 to every node flow
+                //filter what show and not to show later, on node select.
+                flow.push(1);
             }
             //when matrix is all 0, chrods will not render at all. To avoid this,
             //make sure at least a self-looping arc is non zero. However, it will
@@ -62,7 +61,6 @@ class Chords extends ApiRequester{
             flow[i] = 1;
             renderMatrix.push(flow);
         }//for
-
         return renderMatrix;
     }//constructRenderMatrix
 
@@ -73,14 +71,17 @@ class Chords extends ApiRequester{
         }
         if(svg === undefined)
             return;
-        MATRIX = renderMatrix;
+
+        var innerRadius = this.state.innerRadius;
+        var outerRadius = this.state.outerRadius;
+
         // --- Create a d3.chord() component to be used for the main drawing. ---
         var mainChord = this.createChord(svg, renderMatrix);
         var chord = mainChord.chord;
         var g = mainChord.g;
         var arc = d3.arc()
-            .innerRadius(this.state.innerRadius)
-            .outerRadius(this.state.outerRadius);
+            .innerRadius(innerRadius)
+            .outerRadius(outerRadius);
 
         // --- Creating first Inner "circle" rectangle group with the node names in it. ---
         var innerRectGroups = this.createRectCircle(g, arc);
@@ -103,8 +104,8 @@ class Chords extends ApiRequester{
 
         //Outer Rect Circle Group
         //IR is short for Inner Radius. OR = Outer Radius
-        var outerRectIR = this.state.innerRadius + 40;
-        var outerRectOR = this.state.outerRadius + 35;
+        var outerRectIR = innerRadius + 40;
+        var outerRectOR = outerRadius + 35;
         var outerRect = d3.arc()
             .innerRadius(outerRectIR)
             .outerRadius(outerRectOR);
@@ -163,10 +164,14 @@ class Chords extends ApiRequester{
 
         this.state.svgWidth = svg.attr("width");
         this.state.svgHeight = svg.attr("height");
+        var radiusRatio = 0.415;
+
+        if(window.innerWidth < 1600)
+            radiusRatio = 0.38;
         //circle's overall radius
         this.state.outerRadius = Math.min(
                                 this.state.svgWidth,
-                                this.state.svgHeight)*0.415;
+                                this.state.svgHeight)*radiusRatio; //overall chord Radius
         //radius of where arcs are growing from
         this.state.innerRadius = this.state.outerRadius - 35;
         var chord = undefined;
@@ -266,6 +271,7 @@ class Chords extends ApiRequester{
 
     shouldComponentUpdate(nextProps, nextState){
         var shouldUpdate = this.getUpdateState(nextProps, nextState);
+
         var fetched = nextState.fetched;
 
         var isNo = this.validateFetchedData(fetched);
@@ -292,6 +298,7 @@ class Chords extends ApiRequester{
 
         if(ACTIVE_NODE != -1){
             ShowNodeActivity(ACTIVE_NODE, true);
+            return false;
         }
 
         return shouldUpdate;
@@ -321,7 +328,7 @@ class Chords extends ApiRequester{
         var wRatio = 0.5;
         //FIXME: this is bs... need some "smarter" approach to dynamic positioning
         if(window.innerWidth > 1200)
-            wRatio = 0.57;
+            wRatio = 0.5;
         if(window.innerWidth > 1800)
             wRatio = 0.59;
         if(window.innerWidth > 2400)
@@ -377,6 +384,7 @@ const COLORS = {
 //  @param state: bool state to show(true) or hide(false) node activity.
 export function ShowNodeActivity(node, state){
     ACTIVE_NODE = state == true ? node : -1;
+
     var pathObj = d3.selectAll("g.ribbons path");
 
     var connections = findArcsFromMatrix(node);
