@@ -57,8 +57,12 @@ class Skeleton extends React.Component{
 
     componentDidMount(){
         window.removeEventListener("resize", this.updateDimensions.bind(this));
-        this.state.panelWidth = this.getElementDimensions("leftPanel")[0];
-        this.state.headerPanel = this.getElementDimensions("headerPanel")[1]
+        var newWidth = this.getElementDimensions("leftPanel")[0];
+        if(newWidth != this.state.panelWidth)
+            this.setState({panelWidth : newWidth});
+        var newHeight = this.getElementDimensions("headerPanel")[1]
+        if(newHeight != this.state.headerPanel)
+            this.setState({headerPanel : newHeight});
     }//componentDidMount
 
 
@@ -77,11 +81,12 @@ class Skeleton extends React.Component{
 
 
     isUpdate(nextProps, nextState){
-        var isHeightChanged = (this.state.windowHeight != window.innerHeight);
-        var isWidthChanged = (this.state.windowWidth != window.innerWidth);
+        var isHeightChanged = (this.state.windowHeight != nextState.windowHeight);
+        var isWidthChanged = (this.state.windowWidth != nextState.windowWidth);
+        var isPanelWidthChanged = this.state.panelWidth != nextState.panelWidth;
         var isForceRender = nextState.forceRender != this.state.forceRender;
-        //var isForceRender = nextState.forceRender;
-        var isUpdate = isHeightChanged || isForceRender || isWidthChanged;
+
+        var isUpdate = isHeightChanged || isForceRender || isWidthChanged || isPanelWidthChanged;
         return isUpdate;
     }//isUpdate
 
@@ -94,7 +99,7 @@ class Skeleton extends React.Component{
 
         var boxMarginVal = parseFloat(this.state.boxMargin.split("px")[0]);
         var middleWidth  = window.innerWidth -
-                                (this.state.panelWidth * 2)+9 - boxMarginVal * 3;
+                                (this.state.panelWidth * 2) - boxMarginVal * 3;
         var middleHeight = this.getHeight(this.state.headerHeight + 50, 1);
 
         var openedTab       = window.location.href.split("#/")[1];
@@ -144,7 +149,6 @@ class Skeleton extends React.Component{
                         {tabContentToRender}
                     </Middle>
                 </div>
-
 
                 {this.props.children}
 
