@@ -78,6 +78,7 @@ class JPower(Journal):
             'No. of Shelves' : 'n/a',
             'OS Manifest' : 'n/a'
         }
+
         self.hasDoneThings = False
         self.nodeinfo = {}
         self.num_nodes = 0
@@ -161,11 +162,11 @@ class JPower(Journal):
 
     def spoofStats(self, node):
         result = self.defaults
-        result['CPU Usage'] = random.randint(0,100)
-        result['DRAM Usage'] = random.randint(0,100)
-        result['Fabric Usage'] = random.randint(0,100)
-        result['Network In'] = random.randint(500,2100)
-        result['Network Out'] = random.randint(500,2100)
+        result['CPU Usage'] = '%s%%' % random.randint(0,100)
+        result['DRAM Usage'] = '%s%%' % random.randint(0,100)
+        result['Fabric Usage'] = '%s%%' % random.randint(0,100)
+        result['Network In'] = '%s b/sec' % random.randint(500,2100)
+        result['Network Out'] = '%s b/sec' % random.randint(500,2100)
         result['No. of Books'] = random.randint(100,3100)
         result['No. of Shelves'] = random.randint(0,100)
         result['OS Manifest'] = "spoofed_manifest"
@@ -431,8 +432,6 @@ def pernode_api(nodestr=-1):
 
 
 def getNodeStats(node):
-    #if nodeindex < 0 or nodeindex > (Journal.num_nodes-1):
-    #    return make_response(jsonify({'results': nodedata}), 400)
     global Journal
     nodedata = Journal.defaults
     nodedata['Node'] = node
@@ -441,20 +440,20 @@ def getNodeStats(node):
     active = Journal.get_books_and_shelves(node)
     nodedata['No. of Shelves'] = active['shelves']
     nodedata['No. of Books'] = active['books']
-    nodedata['Fabric Usage'] = Journal.get_fabric_usage(node)
+    nodedata['Fabric Usage'] = '%s%' % Journal.get_fabric_usage(node)
 
     # If the power to the node is off, then the remaining data is 0
     if nodedata['Power State'] == 'Off':
-        nodedata['CPU Usage'] = 0
-        nodedata['DRAM Usage'] = 0
-        nodedata['Network In'] = 0
-        nodedata['Network Out'] = 0
+        nodedata['CPU Usage'] = '0%'
+        nodedata['DRAM Usage'] = '0%'
+        nodedata['Network In'] = '0 b/sec'
+        nodedata['Network Out'] = '0 b/sec'
         return nodedata
 
-    nodedata['DRAM Usage'] = Journal.get_DRAM_usage(node)
+    nodedata['DRAM Usage'] = '%s%%' % Journal.get_DRAM_usage(node)
+    nodedata['CPU Usage'] = '%s%%' % Journal.get_cpu_usage(node)
     network = Journal.get_network_bps(node)
-    nodedata['Network In'] = network[0]
-    nodedata['Network Out'] = network[1]
-    nodedata['CPU Usage'] = Journal.get_cpu_usage(node)
+    nodedata['Network In'] = '%s b/sec' % network[0]
+    nodedata['Network Out'] = '%s b/sec' % network[1]
 
     return nodedata
