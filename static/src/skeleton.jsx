@@ -9,6 +9,7 @@ import PercentCircle    from    './components/percentcircle';
 import Flatgrids        from    './visualization/grids'
 import Chords           from    './visualization/chordWheel';
 import Middle           from    './components/middle';
+import POverview         from    './overview';
 import * as DataSpoofer from    './components/spoofer';
 
 
@@ -114,7 +115,7 @@ class Skeleton extends React.Component{
         }
 
         return (
-            <div className="row">
+            <div className="row" style={{padding: "0px"}}>
 
                 <div id="headerPanel" className={headerClasses}
                     style={{marginBottom: this.state.boxMargin}}>
@@ -124,6 +125,7 @@ class Skeleton extends React.Component{
 
                 <div id="leftPanel" className={sidesClasses}
                         style={{ paddingLeft : this.state.boxMargin,
+                        marginLeft:"5px",
                                 maxWidth : this.state.panelMaxWidth,
                                 minWidth : this.state.panelMinWidth}}>
                     <PercentCircle name="CPU" height={panelHeight}
