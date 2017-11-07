@@ -26,7 +26,7 @@ class POverview extends React.Component{
         };
         this.state.heightStack = [];
         this.state.intervalId = -1;
-        this.state.nodeInfoHeight = "772px";
+        this.state.nodeInfoHeight = "742px";
     }//ctor
 
 
@@ -38,7 +38,7 @@ class POverview extends React.Component{
 
     componentWillMount(){
         //window.addEventListener("resize", this.updateDimensions.bind(this));
-
+        /*
         this.state.intervalId = setInterval(() => {
             var isHeightChange = this.calculateHeights();
             var heightDiff = this.adjustHeight(this.state.heightStack);
@@ -52,7 +52,7 @@ class POverview extends React.Component{
             else
                 this.state.forceRender = false;
         }, 1000);
-
+        */
     }//componentWillMount
 
 
@@ -62,9 +62,21 @@ class POverview extends React.Component{
         }
     }//componentWillUnmount
 
+
+    componentDidMount(){
+        var heights = this.calculateHeights();
+        var whatLeft = this.adjustHeight(heights) + "px";
+        if(whatLeft !== this.state.nodeInfoHeight){
+            this.setState({nodeInfoHeight : whatLeft, heightStack : heights});
+        }
+    }//componentDidMount
+
+
     shouldComponentUpdate(nextProps, nextState){
-        return true;
-    }
+        var newNodeInfoHeight = this.state.nodeInfoHeight !== nextState.nodeInfoHeight;
+        return newNodeInfoHeight;
+    }//shouldComponentUpdate
+
 
     adjustHeight(heightStack){
         var total = 0;
@@ -89,26 +101,27 @@ class POverview extends React.Component{
         if(rackBox != null){
             marginBottom = parseFloat(window.getComputedStyle(rackBox)
                                                 .marginBottom.split("px")[0]);
-            heightStack.push(parseFloat(rackBox.clientHeight) + marginBottom * 3);
+            heightStack.push(parseFloat(rackBox.clientHeight) + marginBottom);
         }
 
         var demoBox = document.getElementById("DemoControlsBox");
         if(demoBox != null){
             marginBottom = parseFloat(window.getComputedStyle(demoBox)
                                                 .marginBottom.split("px")[0]);
-            heightStack.push(parseFloat(demoBox.clientHeight) + marginBottom * 3);
+            heightStack.push(parseFloat(demoBox.clientHeight) + marginBottom);
         }
 
-        this.state.heightStack = heightStack;
+        // this.state.heightStack = heightStack;
         if(heightStack.length == 2){
             if(heightStack.toString() !== this.state.heightStack.toString()){
                 //this.setState ( { heightStack : heightStack, forceRender : true });
-                return true;
+                return heightStack;
             }else{
                 //this.setState( { forceRender : false } );
-                return false;
+                return [];
             }
         }
+        return heightStack;
     }//componentDidMount
 
 
@@ -134,10 +147,10 @@ class POverview extends React.Component{
     render() {
         var panelClass = "col-md-2";
 
-        var nodeInfoHeight  = this.state.nodeInfoHeight;
-        //var dscBtnBox       = this.getHeightRatio(0.08);
-        var dscBtnBox = "200px";
+        // var nodeInfoHeight  = this.state.nodeInfoHeight;
 
+        var dscBtnBox = "200px";
+        var nodeInfoHeight = (window.innerHeight - 200 - 453 - 8 - 51) + "px";
         var nodeInfoPaddingTop  = (nodeInfoHeight.split("px")[0] / 5) + "px";
 
         return (
