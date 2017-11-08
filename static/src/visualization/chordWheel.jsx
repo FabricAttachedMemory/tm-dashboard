@@ -23,6 +23,7 @@ class Chords extends ApiRequester{
         this.state.matrix = [[]];       //original data arrived from the server
         this.state.innerRadius = 0;
         this.state.outerRadius = 0;
+        this.state.outerRectOR = 0;
         this.state.svgWidth = 0;
         this.state.svgHeight = 0;
         this.state.renderMatrix = [[]]; //all inputs converted to 0 and 1 (only!)
@@ -117,9 +118,11 @@ class Chords extends ApiRequester{
         var arc3Outer = outerRectOR - 26;
         var arc3 = d3.arc()
             .innerRadius(outerRectIR)
-            .outerRadius(arc3Outer);
+            .outerRadius( (d,i) => { return this.cpuBarChartValue(d, i, outerRectOR); } );
+
         var highlightGroup = this.createRectCircle(g, arc3, d3.rgb("#35444F"));
         this.setGroupId(highlightGroup, "HightlightGroup_", "cpuRectangle");
+
 
         // --- Create an arc line group with the Enclosure names. ---
         var sectionSpace = 0.1; //To add more space between Enclosure # arcs
@@ -153,6 +156,20 @@ class Chords extends ApiRequester{
         DataSharing.Set("Enclosures", topology.length);
         DataSharing.Set("Topology", topology.toString());
     }//buildChordsDiagram
+
+
+    cpuBarChartValue(d, i, outer){
+        var nodesData = NodeStats.GetNodesData();
+        var maxToAdd = 28; //max value to add to fill the whole rectangle
+        var ratio = maxToAdd;
+        var cpuValue = nodesData[d.index]['CPU Usage'];
+        if(cpuValue.split("%").length > 1){
+            cpuValue = parseFloat(cpuValue.split("%")[0]);
+            ratio = (cpuValue / 100) * maxToAdd
+            ratio = maxToAdd - ratio;
+        }
+        return outer - ratio;
+    }
 
 
     // Create an outer circle arc line with the enclosure name for the group.
