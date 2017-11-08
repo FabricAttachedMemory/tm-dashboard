@@ -38,6 +38,11 @@ for(var i=0; i < 40; i++){
 }//for
 
 
+export function GetNodesData(){
+    return NODES_DATA;
+}
+
+
 /* TODO: documentation will be here soon. */
 class NodeStats extends ApiRequester {
 
@@ -154,7 +159,7 @@ export function SetFields(node_num, enc){
         node_num = "n/a";
         enc = "n/a";
     }
-    nodeBoxTitle.innerHTML = "Node " + node_num + " (Enclosure " + enc + ")";
+    nodeBoxTitle.innerHTML = "Node " + (node_num + 1) + " (Enclosure " + enc + ")";
 }//SetFields
 
 

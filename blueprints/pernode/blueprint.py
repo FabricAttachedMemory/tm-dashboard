@@ -100,8 +100,8 @@ class JPower(Journal):
 
 
     def doThings(self):
-        if self.hasDoneThings is True:
-            return
+ #       if self.hasDoneThings is True:
+            #return
         self.hasDoneThings = True
         response = None
 
@@ -277,6 +277,7 @@ def pernode_api(nodestr=-1):
     """
     global Journal
     mainapp = Journal.mainapp
+
     # Validate the node is within range. Return 0s if not.
     if nodestr != -1:
         nodeindex = int(nodestr)
