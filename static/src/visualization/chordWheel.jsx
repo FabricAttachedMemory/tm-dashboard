@@ -460,8 +460,11 @@ function findArcsFromMatrix(node){
     }
 
     for(var i=0; i < MATRIX[node].length; i++){
-        if(MATRIX[node][i] == 0)
+        if(MATRIX[node][i] == 0){
+            list.push(i + "!->" + node);
+            list.push(node + "!->" +i);
             continue;
+        }
         list.push(i + "->" + node);
         list.push(node + "->" +i);
     }//for
