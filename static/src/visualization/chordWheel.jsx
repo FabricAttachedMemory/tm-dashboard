@@ -21,13 +21,11 @@ class Chords extends ApiRequester{
         this.state.topology = [];
 
         this.state.matrix = [[]];       //original data arrived from the server
-        this.state.innerRadius = 0;
-        this.state.outerRadius = 0;
-        this.state.outerRectOR = 0;
-        this.state.svgWidth = 0;
-        this.state.svgHeight = 0;
+
+        this.state.radius = 35;
+        this.state.rectGroupSpace = 8;
+
         this.state.renderMatrix = [[]]; //all inputs converted to 0 and 1 (only!)
-        this.state.svg = undefined;
         this.state.chordLayout = undefined;
 
         this.state.topology = DataSpoofer.SystemTopology(); // FIXME: Real data here
@@ -59,7 +57,7 @@ class Chords extends ApiRequester{
             //when matrix is all 0, chrods will not render at all. To avoid this,
             //make sure at least a self-looping arc is non zero. However, it will
             //not be rendered on node selection.
-            flow[i] = 1;
+            //flow[i] = 1;
             renderMatrix.push(flow);
         }//for
         return renderMatrix;
@@ -67,19 +65,25 @@ class Chords extends ApiRequester{
 
 
     buildChordsDiagram(svg, renderMatrix, topology){
-        if(this.state.matrix === undefined){
+        if(renderMatrix === undefined){
+            console.warn("Render matrix is undefined while trying to buildChordsDiagram!");
             return;
-        }
-        if(svg === undefined)
+        }//if not matrix
+        if(svg === undefined){
+            console.warn("SVG component is undefined while trying to buildChordsDiagram!");
             return;
+        }//if not svg
 
-        var innerRadius = this.state.innerRadius;
-        var outerRadius = this.state.outerRadius;
+        //var innerRadius = this.state.innerRadius;
+        //var outerRadius = this.state.outerRadius;
 
         // --- Create a d3.chord() component to be used for the main drawing. ---
         var mainChord = this.createChord(svg, renderMatrix);
         var chord = mainChord.chord;
         var g = mainChord.g;
+        var innerRadius = mainChord["innerRadius"];
+        var outerRadius = mainChord["outerRadius"];
+
         var arc = d3.arc()
             .innerRadius(innerRadius)
             .outerRadius(outerRadius);
@@ -101,12 +105,12 @@ class Chords extends ApiRequester{
             .style("fill", "white");
 
         // --- Creating Arcs(path) flow between nodes(rects) ---
-        this.createRibbonArcs(g);
+        this.createRibbonArcs(g, innerRadius);
 
         //Outer Rect Circle Group
         //IR is short for Inner Radius. OR = Outer Radius
-        var outerRectIR = innerRadius + 40;
-        var outerRectOR = outerRadius + 35;
+        var outerRectIR = outerRadius + this.state.rectGroupSpace;
+        var outerRectOR = outerRectIR + this.state.radius;
         var outerRect = d3.arc()
             .innerRadius(outerRectIR)
             .outerRadius(outerRectOR);
@@ -114,15 +118,14 @@ class Chords extends ApiRequester{
         var outerRectGroup = this.createRectCircle(g, outerRect);
         this.setGroupId(outerRectGroup, "outerRect_");
 
-        // --- filling percent relative to the arc2 (outer rect group). ---
-        var arc3Outer = outerRectOR - 26;
-        var arc3 = d3.arc()
+        // --- CPU bar chart rendered inside the outer rect group
+        var cpuBarChartRect = d3.arc()
             .innerRadius(outerRectIR)
-            .outerRadius( (d,i) => { return this.cpuBarChartValue(d, i, outerRectOR); } );
+            //calculate CPU bar radius based of CPU % usage on that node
+            .outerRadius( (d,i) => { return this.cpuBarChartValue(d, i, outerRectIR, outerRectOR); } );
 
-        var highlightGroup = this.createRectCircle(g, arc3, d3.rgb("#35444F"));
+        var highlightGroup = this.createRectCircle(g, cpuBarChartRect, d3.rgb("#35444F"));
         this.setGroupId(highlightGroup, "HightlightGroup_", "cpuRectangle");
-
 
         // --- Create an arc line group with the Enclosure names. ---
         var sectionSpace = 0.1; //To add more space between Enclosure # arcs
@@ -158,9 +161,14 @@ class Chords extends ApiRequester{
     }//buildChordsDiagram
 
 
-    cpuBarChartValue(d, i, outer){
+    //Calculate radius to be used for the CPU bar chart rectangle based of the
+    //node's CPU usage.
+    // @param d, i: those comes from d3.arc().outerRadius( (d,i) ) function
+    // @param outer: outer coords of the rectangle in which cpu bar is rendered.
+    cpuBarChartValue(d, i, inner, outer){
         var nodesData = NodeStats.GetNodesData();
-        var maxToAdd = 28; //max value to add to fill the whole rectangle
+        var maxToAdd = outer - inner; //max value to add to fill the whole rectangle
+        maxToAdd += 2; //add a slight width, so that 0% shows just a little something
         var ratio = maxToAdd;
         var cpuValue = nodesData[d.index]['CPU Usage'];
         if(cpuValue.split("%").length > 1){
@@ -169,7 +177,7 @@ class Chords extends ApiRequester{
             ratio = maxToAdd - ratio;
         }
         return outer - ratio;
-    }
+    }//cpuBarChartValue
 
 
     // Create an outer circle arc line with the enclosure name for the group.
@@ -179,18 +187,18 @@ class Chords extends ApiRequester{
         if(matrix === undefined)
             return;
 
-        this.state.svgWidth = svg.attr("width");
-        this.state.svgHeight = svg.attr("height");
+        var svgWidth = svg.attr("width");
+        var svgHeight = svg.attr("height");
         var radiusRatio = 0.415;
 
         if(window.innerWidth < 1600)
             radiusRatio = 0.38;
         //circle's overall radius
-        this.state.outerRadius = Math.min(
-                                this.state.svgWidth,
-                                this.state.svgHeight)*radiusRatio; //overall chord Radius
+        var outerRadius = Math.min(
+                                svgWidth,
+                                svgHeight)*radiusRatio; //overall chord Radius
         //radius of where arcs are growing from
-        this.state.innerRadius = this.state.outerRadius - 35;
+        var innerRadius = outerRadius - this.state.radius;
         var chord = undefined;
             chord = d3.chord()
                 .padAngle(sectionSpace) //space between rectangles
@@ -199,10 +207,15 @@ class Chords extends ApiRequester{
 
         var g = svg.append("g")
             .attr("transform",
-                    "translate(" + this.state.svgWidth / 1.95 + "," +
-                                   this.state.svgHeight / 2 + ")")
+                    "translate(" + svgWidth / 1.95 + "," +
+                                   svgHeight / 2 + ")")
             .datum(chord(matrix));
-        return {"chord": chord, "g": g};
+        var result = {};
+        result["chord"] = chord;
+        result["g"] = g;
+        result["innerRadius"] = innerRadius;
+        result["outerRadius"] = outerRadius;
+        return result;
     }//createEnclosureArc
 
 
@@ -216,12 +229,12 @@ class Chords extends ApiRequester{
     // Arcs representing data flow will be created. Arc path is calculated by
     // d3.datum(matrix) object called before this function is executed.
     //  @param parentObj : element on the page to append created arcs into.
-    createRibbonArcs(parentObj){
+    createRibbonArcs(parentObj, innerRadius){
         //used to save StartAngle for each ribbon subgroup.
         var startAng = {};
         var ribbon = d3.ribbon()
         // offset value defines where arcs start and ends
-            .radius(this.state.innerRadius - 5);
+            .radius(innerRadius - 5);
 
         ribbon.startAngle(function(d) {
             if(!(d.index in startAng))
