@@ -5,6 +5,7 @@ import {render} from 'react-dom';
 import StatsBox     from './wrappers/statsBox';
 import BoxHeader    from './infoBoxHeader';
 import ApiRequester from './base/apiRequester';
+import * as DataSharing  from './dataSharing';
 
 
 /* Using <svg> and <circle> html elements, create a "load circle" (with the
@@ -24,7 +25,8 @@ class PercentCircle extends ApiRequester {
         super(props);
         //Replacing Spaces with underscore.
         var nameSplit       = this.props.name.split(" ");
-        //This seems simpler than using Regex...
+        //Need to replace all spaces with '_' to use as element's ID.
+        //Using split + join seems simpler than using Regex...
         var replacedSpaces  = nameSplit.join("_");
 
         //ID will be assigned to the div that wrapps <sv> element. I don't
@@ -34,17 +36,45 @@ class PercentCircle extends ApiRequester {
         var metrics = this.props.metricsType;
         if (metrics === undefined)
             metrics = "%";
-        if(metrics === "auto"){
-            metrics = "TB"; //TODO
-        }
 
         this.state.metricsType = metrics;
     }//constructor
 
 
+    //Convert large number to smaller power.
+    //Source: https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
+    formatBytes(bytes,decimals) {
+        bytes = parseFloat(bytes);
+        if(bytes == 0 || isNaN(bytes))
+            return [0, 'B'];
+
+        var rate = 1024;
+        var dm = decimals || 2;
+        var sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+        var index = Math.floor(Math.log(bytes) / Math.log(rate));
+
+        var convertedValue = parseFloat((bytes / Math.pow(rate, index)).toFixed(dm));
+        var valuePower = sizes[index];
+        return [convertedValue, valuePower];
+    }//formatBytes
+
+
     render() {
         var fetchedJson = this.readFetchedValues();
         var fetchedValue = parseFloat(fetchedJson["value"]).toFixed(2);
+        var savedValue = DataSharing.Get(this.props.name + "_persist");
+        //To keep circles showing its data between tab switch, values before
+        //switch needs to be saved. Changing tabs means that fetched data
+        //will become "-1", while saved value will have previously shown one.
+        //That is an opportunity to check state and set value to render.
+        if (fetchedValue == -1){
+            if(savedValue != null){
+                if(savedValue != -1){
+                    fetchedValue = savedValue;
+                }//if saved value
+            }//if saved not null
+        }//if
+        DataSharing.Set(this.props.name + "_persist", fetchedValue);
 
         //Radius of the circle that was set in css/stats.css.
         var radius = 100;
@@ -66,6 +96,13 @@ class PercentCircle extends ApiRequester {
         this.state.fetched = null; //Resetting fetched for the next circle\interval.
         var containerHeight = parseFloat(this.props.height.split("px")[0]) / 2;
 
+        //Use smaller metrics to display large values
+        if(this.props.metricsType == "auto"){
+            var converted = this.formatBytes(savedValue, 0);
+            valueText = converted[0];
+            metricsSymbol = converted[1];
+        }//if auto metrics
+
         return (
         <StatsBox size={12} height={this.props.height}>
             <div className="statsboxContent" style={{height: this.props.height}}>
@@ -76,8 +113,9 @@ class PercentCircle extends ApiRequester {
                                 strokeDasharray={progress_fill}
                                 strokeDashoffset={circle_fill_offset} />
 
-                        <text x="48%" y="50%" className="progress-value">{valueText}</text>
-                        <text x="45%" y="60%" className="data-metrics">{metricsSymbol}</text>
+                        <text x="48%" y="50%" textAnchor="middle" className="progress-value">{valueText}</text>
+                        <text x="48%" y="60%" textAnchor="middle" className="data-metrics">{metricsSymbol}</text>
+
                     </svg>
                 </div>
 

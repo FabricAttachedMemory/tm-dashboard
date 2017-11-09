@@ -23,7 +23,11 @@ class BoxHeader extends React.Component {
             lineHeight   : this.props.lineHeight,
             textAlign    : this.props.textAlign,
             paddingLeft  : this.props.paddingLeft,
-            paddingRight : this.props.paddingRight
+            paddingRight : this.props.paddingRight,
+            marginTop : this.props.marginTop,
+            marginBottom : this.props.marginBottom,
+            marginLeft : this.props.marginLeft,
+            marginRight : this.props.marginRight,
         };
         return (
             <div className={"data-container-name " + this.props.className}
@@ -44,7 +48,11 @@ BoxHeader.defaultProps = {
     lineHeight: "60px", // verticle alignment of the header relative to wrapped <div>
     textAlign : "center", //horizontal allignment of the header text.
     paddingLeft : "0x",
-    paddingRight : "0px"
+    paddingRight : "0px",
+    marginTop : "0px",
+    marginBottom : "0px",
+    marginLeft : "0px",
+    marginRight : "0px"
 }
 
 
