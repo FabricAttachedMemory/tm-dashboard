@@ -37,6 +37,9 @@ class Flatgrids extends ApiRequester{
         this.state.numberOfBooks    = 1200;
         this.state.maxBooksToRender = 12000;
 
+        this.state.midHeight = -1;
+        this.state.midWidth = -1;
+
         //Have to register class methods to be reference with "this" during Runtime.
         this.onKeyDown  = this.onKeyDown.bind(this);
         this.onKeyUp    = this.onKeyUp.bind(this);
@@ -106,6 +109,10 @@ class Flatgrids extends ApiRequester{
     componentDidMount() {
         document.addEventListener('keydown', this.onKeyDown);
         document.addEventListener('keyup', this.onKeyUp);
+
+        var midContainer = document.getElementById("MiddleContainer");
+        this.state.midHeight = parseFloat(window.getComputedStyle(midContainer).height.split("px")[0]);
+        this.state.midWidth = parseFloat(window.getComputedStyle(midContainer).width.split("px")[0]);
     }//componentDidMount
 
 
@@ -176,14 +183,24 @@ class Flatgrids extends ApiRequester{
 
         var colGap = this.state.colGap;
         var rowGap = this.state.rowGap;
+        var boxSize = this.state.size;
+
+        /*
+        if(this.state.midHeight != -1){
+            var boxesToRender = Object.keys(allocs).length;
+            var totalScreen = this.state.midHeight + this.state.midWidth;
+            boxSize = boxesToRender / totalScreen;
+        }
+        */
+
         var ColsToDraw = []
         //Building boxes list to be rendered
         //for(var col=0; col < colorClasses.length; col++){
         for(var book_index in allocs){
             var gridBoxOverride = {
                 "margin" : colGap + "px " + rowGap + "px " + colGap + "px " + rowGap,
-                "width" : this.state.size,
-                "height" : this.state.size,
+                "width" : boxSize,
+                "height" : boxSize,
             };
             var classNames = "gridBox " + allocs[book_index];
             ColsToDraw.push(<div key={book_index} className={classNames}

@@ -24,6 +24,7 @@ class Chords extends ApiRequester{
 
         this.state.radius = 35;
         this.state.rectGroupSpace = 8;
+        this.state.ribbonWidth = 0.025;
 
         this.state.renderMatrix = [[]]; //all inputs converted to 0 and 1 (only!)
         this.state.chordLayout = undefined;
@@ -242,7 +243,8 @@ class Chords extends ApiRequester{
             return startAng[d.index];
         });
 
-        ribbon.endAngle(function(d){ return startAng[d.index] + 0.02;});
+        //set ribbon's width
+        ribbon.endAngle((d) => { return startAng[d.index] + this.state.ribbonWidth;});
 
         var color = d3.scaleOrdinal()
             .domain(d3.range(1));
