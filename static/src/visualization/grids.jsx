@@ -33,9 +33,9 @@ class Flatgrids extends ApiRequester{
         this.state.isZoomInPressed  = false;
         this.state.isZoomOutPressed = false;
 
-        this.state.booksMap         = new Array(154).fill(0);
+        this.state.booksMap         = [];
         this.state.numberOfBooks    = 1200;
-        this.state.maxBooksToRender = 12000;
+        this.state.maxBooksToRender = 5000;
 
         this.state.midHeight = -1;
         this.state.midWidth = -1;
@@ -132,8 +132,8 @@ class Flatgrids extends ApiRequester{
             return {};
 
         var numOfBooks = data_set.active_books;
-        if (numOfBooks > this.state.maxBooksToRender)
-            numOfBooks = this.state.maxBooksToRender
+        // if (numOfBooks > this.state.maxBooksToRender)
+            // numOfBooks = this.state.maxBooksToRender
 
         var alloc_state = [];
 
@@ -184,14 +184,6 @@ class Flatgrids extends ApiRequester{
         var colGap = this.state.colGap;
         var rowGap = this.state.rowGap;
         var boxSize = this.state.size;
-
-        /*
-        if(this.state.midHeight != -1){
-            var boxesToRender = Object.keys(allocs).length;
-            var totalScreen = this.state.midHeight + this.state.midWidth;
-            boxSize = boxesToRender / totalScreen;
-        }
-        */
 
         var ColsToDraw = []
         //Building boxes list to be rendered
