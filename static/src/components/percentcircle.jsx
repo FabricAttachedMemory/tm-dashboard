@@ -23,6 +23,10 @@ class PercentCircle extends ApiRequester {
 
     constructor(props){
         super(props);
+        this.state.circleRatio = this.props.radiusRatio === undefined ?
+                                                    0.5 : this.props.radiusRatio;
+        this.state.boxHeight = this.props.boxHeight === undefined ?
+                                        this.props.height : this.props.boxHeight;
         //Replacing Spaces with underscore.
         var nameSplit       = this.props.name.split(" ");
         //Need to replace all spaces with '_' to use as element's ID.
@@ -94,7 +98,8 @@ class PercentCircle extends ApiRequester {
         metricsSymbol = (isNaN(metricsSymbol)) ? "" : this.state.metricsType;
 
         this.state.fetched = null; //Resetting fetched for the next circle\interval.
-        var containerHeight = parseFloat(this.props.height.split("px")[0]) / 2;
+        var containerHeight = parseFloat(this.props.height.split("px")[0]) *
+                                            this.state.circleRatio;
 
         //Use smaller metrics to display large values
         if(this.props.metricsType == "auto"){
@@ -104,8 +109,14 @@ class PercentCircle extends ApiRequester {
         }//if auto metrics
 
         return (
-        <StatsBox size={12} height={this.props.height}>
-            <div className="statsboxContent" style={{height: this.props.height}}>
+        <StatsBox size={12} height={this.props.height}
+            marginTop={this.props.marginTop}
+            marginBottom={this.props.marginBottom}
+        >
+            <div className="statsboxContent" style={{
+                height: this.state.boxHeight,
+                paddingTop: this.props.paddingTop
+                }}>
                 <div id={this.state.containerId} style={{ height : containerHeight}}>
                     <svg viewBox="0 0 150 210" className="svg-progress-circle">
                         <circle r={radius} className="progress-inactive progress-circle"/>
@@ -113,7 +124,12 @@ class PercentCircle extends ApiRequester {
                                 strokeDasharray={progress_fill}
                                 strokeDashoffset={circle_fill_offset} />
 
-                        <text x="48%" y="50%" textAnchor="middle" className="progress-value">{valueText}</text>
+                        <text x="48%" y="50%" textAnchor="middle"
+                        className="progress-value"
+                        style={this.props.valueStyle}
+                        >
+                        {valueText}
+                        </text>
                         <text x="48%" y="60%" textAnchor="middle" className="data-metrics">{metricsSymbol}</text>
 
                     </svg>

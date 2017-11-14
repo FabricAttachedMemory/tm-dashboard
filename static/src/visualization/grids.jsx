@@ -33,9 +33,12 @@ class Flatgrids extends ApiRequester{
         this.state.isZoomInPressed  = false;
         this.state.isZoomOutPressed = false;
 
-        this.state.booksMap         = new Array(154).fill(0);
+        this.state.booksMap         = [];
         this.state.numberOfBooks    = 1200;
-        this.state.maxBooksToRender = 12000;
+        this.state.maxBooksToRender = 5000;
+
+        this.state.midHeight = -1;
+        this.state.midWidth = -1;
 
         //Have to register class methods to be reference with "this" during Runtime.
         this.onKeyDown  = this.onKeyDown.bind(this);
@@ -106,6 +109,10 @@ class Flatgrids extends ApiRequester{
     componentDidMount() {
         document.addEventListener('keydown', this.onKeyDown);
         document.addEventListener('keyup', this.onKeyUp);
+
+        var midContainer = document.getElementById("MiddleContainer");
+        this.state.midHeight = parseFloat(window.getComputedStyle(midContainer).height.split("px")[0]);
+        this.state.midWidth = parseFloat(window.getComputedStyle(midContainer).width.split("px")[0]);
     }//componentDidMount
 
 
@@ -125,8 +132,8 @@ class Flatgrids extends ApiRequester{
             return {};
 
         var numOfBooks = data_set.active_books;
-        if (numOfBooks > this.state.maxBooksToRender)
-            numOfBooks = this.state.maxBooksToRender
+        // if (numOfBooks > this.state.maxBooksToRender)
+            // numOfBooks = this.state.maxBooksToRender
 
         var alloc_state = [];
 
@@ -176,14 +183,16 @@ class Flatgrids extends ApiRequester{
 
         var colGap = this.state.colGap;
         var rowGap = this.state.rowGap;
+        var boxSize = this.state.size;
+
         var ColsToDraw = []
         //Building boxes list to be rendered
         //for(var col=0; col < colorClasses.length; col++){
         for(var book_index in allocs){
             var gridBoxOverride = {
                 "margin" : colGap + "px " + rowGap + "px " + colGap + "px " + rowGap,
-                "width" : this.state.size,
-                "height" : this.state.size,
+                "width" : boxSize,
+                "height" : boxSize,
             };
             var classNames = "gridBox " + allocs[book_index];
             ColsToDraw.push(<div key={book_index} className={classNames}

@@ -125,20 +125,23 @@ class Skeleton extends React.Component{
 
                 <div id="leftPanel" className={sidesClasses}
                         style={{ paddingLeft : this.state.boxMargin,
-                        marginLeft:"5px",
+                                marginLeft:"5px",
                                 maxWidth : this.state.panelMaxWidth,
                                 minWidth : this.state.panelMinWidth}}>
-                    <PercentCircle name="CPU" height={panelHeight}
+                    <PercentCircle name="CPU"
+                                    height={panelHeight}
                                     url={"http://localhost:9099/api/metrics/cpu"}
-                                    mbBottom={this.state.boxMargin}
+                                    marginBottom={this.state.boxMargin}
                                     spoofedData={DataSpoofer.cpuData()}/>
-                    <PercentCircle name="Fabric Attached Memory"  height={panelHeight}
+                    <PercentCircle name="Fabric Attached Memory"
+                                    height={panelHeight}
                                     url={"http://localhost:9099/api/metrics/fam"}
-                                    mbBottom={this.state.boxMargin}
+                                    marginBottom={this.state.boxMargin}
                                     spoofedData={DataSpoofer.famData()}/>
-                    <PercentCircle name="Fabric" height={panelHeight}
+                    <PercentCircle name="Fabric"
+                                    height={panelHeight}
                                     url={"http://localhost:9099/api/metrics/fabric"}
-                                    mgBottom={"0px"}
+                                    marginBottom={"0px"}
                                     spoofedData={DataSpoofer.fabData()}/>
                 </div>
 

@@ -301,7 +301,6 @@ def pernode_api(nodestr=-1):
             for i in range(len(nodes_indecies)):
                 result[i] = copy.deepcopy(Journal.spoofStats(nodes_indecies[i]))
                 result[i]['Node'] = nodes_indecies[i]
-
             return make_response(jsonify( { 'nodes' : result } ), 302)
 
     # nodedata is the dictionary of data returned
@@ -315,7 +314,7 @@ def pernode_api(nodestr=-1):
     if nodeindex != -1:
         nodeData = Journal.defaults
         try:
-            nodeData = getNodeStats(node)
+            nodeData = getNodeStats(node-1)
         except Exception as err:
             print('Failed to get node stats! [%s]' % err)
             nodeData = Journal.defaults
@@ -326,6 +325,7 @@ def pernode_api(nodestr=-1):
         for node_index in Journal.available_nodes:
             try:
                 nodeData = getNodeStats(node_index + 1)
+                nodeData['Node'] = node_index
                 result.append(copy.deepcopy(nodeData))
             except Exception as err:
                 print('Failed to get node stats! [%s]' % err)

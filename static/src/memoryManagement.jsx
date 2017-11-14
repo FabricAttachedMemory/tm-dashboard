@@ -64,6 +64,7 @@ class PMemoryManagement extends Skeleton{
     render() {
         var panelClass = "col-md-2";
         var panelHeight = this.getHeight(65, 3);
+        var memCircleHeight = parseFloat(panelHeight.split("px")[0]) * 0.4 + "px";
         //extract value from string of the form "8px".
         var boxMarginVal    = parseFloat(this.state.boxMargin.split("px")[0]);
         var middleWidth     = window.innerWidth - (this.state.panelWidth * 2) - boxMarginVal * 3;
@@ -85,14 +86,20 @@ class PMemoryManagement extends Skeleton{
 
                     <ContentBox name="CB_MemoryBreakdown" height={panelHeight}>
                         <div className="data-container-name"
-                        style={{marginTop: "1.5em"}}>
+                        style={{marginTop: "1.5em", marginBottom: "0px"}}>
                             Memory breakdown
                         </div>
 
                         <PercentCircle name="TOTAL"
                                         url="http://localhost:9099/api/memory/total"
                                         metricsType="auto"
-                            mgBottom="0px" mgTop="0px"
+                                        radiusRatio={1.1}
+                                        boxHeight="auto"
+                                        height={memCircleHeight}
+                                        paddingTop="2em"
+                                        valueStyle={{fontSize:"2.5em"}}
+                            marginBottom="8em"
+                            marginTop="0px"
                         />
                         <div className="row" style={{margin:"0px",
                                                     padding: "0px",
@@ -118,14 +125,14 @@ class PMemoryManagement extends Skeleton{
                                 desc="SHELVES"
                                 height={panelHeight}
                                 fontSize={"4em"}
-                                paddingTop={"0em"}
+                                paddingTop={"5em"}
                     />
                     <ContentBox name="CB_ActiveBooks"
                                 url="http://localhost:9099/api/memory/active_books"
                                 number={0}
                                 desc="BOOKS"
                                 fontSize={"4em"}
-                                paddingTop={"0em"}
+                                paddingTop={"5em"}
                                 height={panelHeight}/>
                 </div>
             </Skeleton>

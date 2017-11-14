@@ -23,8 +23,8 @@ class StatsBox extends React.Component {
 
 
     render() {
-        var cmpMargin = [this.props.mgTop, this.props.mgRight,
-                            this.props.mgBottom, this.props.mgLeft ];
+        var cmpMargin = [this.props.marginTop, this.props.mgRight,
+                            this.props.marginBottom, this.props.mgLeft ];
         var classNames = ["col-md-" + this.props.size, "smoothHeight",
                             "statsbox", this.props.className].join(' ');
         var boxSt = {
@@ -33,6 +33,7 @@ class StatsBox extends React.Component {
             paddingTop: this.props.paddingTop,
             height: this.props.height,
             maxHeight : this.props.maxHeight,
+            wordWrap: "break-word",
         };
 
         return (
@@ -52,9 +53,9 @@ StatsBox.defaultProps = {
     size : 12,
     height : "300px",
     maxHeight : "auto",
-    mgTop : "0px",
+    marginTop : "0px",
     mgRight : "0px",
-    mgBottom : "5px",
+    marginBottom : "5px",
     mgLeft : "0px",
     paddingTop : "0px",
     id : ""

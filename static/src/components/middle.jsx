@@ -27,7 +27,7 @@ class Middle extends React.Component {
                 </Nav>
             </Navbar>
 
-            <div className="middle-content" style={{height: this.props.height}}>
+            <div className="middle-content" id="MiddleContainer" style={{height: this.props.height}}>
                 {this.props.children}
             </div>
 

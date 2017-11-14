@@ -171,7 +171,7 @@ class ChordShowcase extends React.Component{
         this.showcaseNodes(IS_PLAYING);
         return(
         <div id="ChordShowcase" style={{display: "hide"}}>
-            <div id="showcaseBtnSpacerTop" style={{marginTop: "3.3em"}}></div>
+            <div id="showcaseBtnSpacerTop" style={{marginTop: "2.2em"}}></div>
             <button id="showcaseBtn" className="btn btn-hpe-default"
                     onClick={this.toggleShowcase}>{toggleText}</button>
             <select id="shocaseRateSelect" className="btn btn-hpe-default"

@@ -149,9 +149,14 @@ class POverview extends React.Component{
 
         // var nodeInfoHeight  = this.state.nodeInfoHeight;
 
-        var dscBtnBox = "200px";
-        var nodeInfoHeight = (window.innerHeight - 200 - 453 - 8 - 51) + "px";
-        var nodeInfoPaddingTop  = (nodeInfoHeight.split("px")[0] / 5) + "px";
+        var dscBtnBox = 100;
+        var nodeInfoHeight = (window.innerHeight - dscBtnBox - 453 - 8 - 51) + "px";
+
+        var heightRatio = 0.5;
+        if(window.innerHeight < 1000)
+            heightRatio = 0.05;
+
+        var nodeInfoPaddingTop  = (nodeInfoHeight.split("px")[0] * heightRatio) + "px";
 
         return (
             <Skeleton id={this.props.id}>
@@ -182,7 +187,7 @@ class POverview extends React.Component{
 
                     <ContentBox id="DemoControlsBox"
                                 name="CB_DemoContolBox"
-                                height={dscBtnBox}>
+                                height={dscBtnBox + "px"}>
                         <ChordShowcase/>
                     </ContentBox>
                 </div>
