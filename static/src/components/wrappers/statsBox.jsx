@@ -33,6 +33,7 @@ class StatsBox extends React.Component {
             paddingTop: this.props.paddingTop,
             height: this.props.height,
             maxHeight : this.props.maxHeight,
+            wordWrap: "break-word",
         };
 
         return (
