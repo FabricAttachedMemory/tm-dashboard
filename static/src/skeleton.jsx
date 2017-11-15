@@ -18,13 +18,13 @@ class Skeleton extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
-            panelMaxWidth : "300px",
-            panelMinWidth : "250px",
+            panelMaxWidth : "280px",
+            panelMinWidth : "230px",
             panelWidth : 300, //tracks current width of the side panels
             headerHeight : 55, //current header's panel height
             midWidth : "fill",
             boxMargin : "8px",
-            panelPadding : ["5px", "5px", "5px", "5px"],
+            panelPadding : ["5px", "5px", "5px", "5px"], //DEPR?
             windowHeight : window.innerHeight,
             windowWidth : window.innerWidth,
             forceRender : false,
@@ -96,7 +96,7 @@ class Skeleton extends React.Component{
         var headerClasses   = "col-md-12 header";
         var sidesClasses    = "col-md-2";
 
-        var panelHeight = this.getHeight(this.state.headerHeight + 10, 3);
+        var panelHeight = this.getHeight(this.state.headerHeight + 16, 3);
 
         var boxMarginVal = parseFloat(this.state.boxMargin.split("px")[0]);
         var middleWidth  = window.innerWidth -
@@ -125,7 +125,7 @@ class Skeleton extends React.Component{
 
                 <div id="leftPanel" className={sidesClasses}
                         style={{ paddingLeft : this.state.boxMargin,
-                                marginLeft:"5px",
+                                marginLeft:"0px",
                                 maxWidth : this.state.panelMaxWidth,
                                 minWidth : this.state.panelMinWidth}}>
                     <PercentCircle name="CPU"
