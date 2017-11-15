@@ -38,7 +38,7 @@ class Flatgrids extends ApiRequester{
 
         this.state.booksMap         = [];
         this.state.numberOfBooks    = 1200;
-        this.state.maxBooksToRender = 20480;
+        this.state.maxBooksToRender = 25000;
 
         this.state.midHeight = -1;
         this.state.midWidth = -1;
