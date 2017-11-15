@@ -127,7 +127,7 @@ class JPower(Journal):
 
     def spoof_books(self, data):
         data['books'] = []
-        for i in range(18944):
+        for i in range(21000):
             random_lza = random.randrange(1000000, 8000000, random.randrange(1, 5))
             lza = { "lza" : random_lza }
             data['books'].append(lza)
@@ -175,7 +175,6 @@ class JPower(Journal):
 
     def spoof_active_prop(self):
         result = self.json_model['active']
-        result['books'] = 18944
         result['shelves'] = random.randrange(500, 1088)
 
         return result

@@ -78,21 +78,6 @@ class NodeStats extends ApiRequester {
         );
     }//BuildDataBox
 
-/*
-    spoofData(){
-        var displayData = {};
-        for(var key in this.state.spoofedData){
-            var value = this.state.spoofedData[key];
-            if(Array.isArray(value)){
-                var max = value.length;
-                var randomIndex = Math.floor(Math.random() * (max));
-                value = value[randomIndex];
-            }
-            displayData[key] = value;
-        }
-        return displayData;
-    }//spoofData
-*/
 
     normalizeNodeStats(data){
         if(data === undefined)

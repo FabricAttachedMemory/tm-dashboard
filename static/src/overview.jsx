@@ -20,8 +20,8 @@ class POverview extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
-            panelMaxWidth : "300px",
-            panelMinWidth : "250px",
+            panelMaxWidth : "280px",
+            panelMinWidth : "230px",
             forceRender : false,
         };
         this.state.heightStack = [];

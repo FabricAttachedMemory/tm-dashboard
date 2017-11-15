@@ -64,6 +64,9 @@ class PMemoryManagement extends Skeleton{
     render() {
         var panelClass = "col-md-2";
         var panelHeight = this.getHeight(65, 3);
+        var memPanelHeight = panelHeight;
+
+        //var panelHeight = this.getHeightRatio(0.2);
         var memCircleHeight = parseFloat(panelHeight.split("px")[0]) * 0.4 + "px";
         //extract value from string of the form "8px".
         var boxMarginVal    = parseFloat(this.state.boxMargin.split("px")[0]);
@@ -73,7 +76,10 @@ class PMemoryManagement extends Skeleton{
         //Adjust margins for the smaller screen size.
         var memValPadT = "0.8em";
         var memValMarginB = "3.0em";
+
         if(window.innerHeight < 1000){
+            memPanelHeight = this.getHeightRatio(0.35);
+            panelHeight = this.getHeight(parseFloat(memPanelHeight.split("px")[0]) + 65, 2);
             memValPadT = "0.5em";
             memValMarginB = "0.0em";
         }
@@ -84,7 +90,7 @@ class PMemoryManagement extends Skeleton{
                         style={{minWidth: this.state.panelMinWidth,
                                 maxWidth: this.state.panelMaxWidth}}>
 
-                    <ContentBox name="CB_MemoryBreakdown" height={panelHeight}>
+                    <ContentBox name="CB_MemoryBreakdown" height={memPanelHeight}>
                         <div className="data-container-name"
                         style={{marginTop: "1.5em", marginBottom: "0px"}}>
                             Memory breakdown
@@ -125,14 +131,14 @@ class PMemoryManagement extends Skeleton{
                                 desc="SHELVES"
                                 height={panelHeight}
                                 fontSize={"4em"}
-                                paddingTop={"5em"}
+                                paddingTop={"0em"}
                     />
                     <ContentBox name="CB_ActiveBooks"
                                 url="http://localhost:9099/api/memory/active_books"
                                 number={0}
                                 desc="BOOKS"
                                 fontSize={"4em"}
-                                paddingTop={"5em"}
+                                paddingTop={"0em"}
                                 height={panelHeight}/>
                 </div>
             </Skeleton>

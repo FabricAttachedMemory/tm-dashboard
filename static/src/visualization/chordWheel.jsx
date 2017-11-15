@@ -384,7 +384,7 @@ class Chords extends ApiRequester{
                                 marginBottom: "1.0em",
                                 fontSize: "2em"
                                 }}>
-                    Fabric Attached Memory used by System-on-Chip
+                    Fabric Attached Memory access by Node
                     </div>
                 </div>
                 <div className="row">

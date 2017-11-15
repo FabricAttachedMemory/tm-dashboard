@@ -22,12 +22,15 @@ class Flatgrids extends ApiRequester{
 
     constructor(props) {
         super(props);
-
         /* !!! Do not set state using "this.state = {}", or this will override
             parent's this.state. !!!*/
-        this.state.size     = (this.props.Size === undefined) ? 8 : props.Size;
-        this.state.rowGap   = (this.props.RowGap === undefined) ? 10 : props.RowGap;
-        this.state.colGap   = (this.props.ColGap === undefined) ? 10 : props.ColGap;
+
+        this.state.maxSize  = (this.props.MaxSize === undefined) ?
+                                7 : this.props.MaxSize;
+        this.state.size     = (this.props.Size === undefined) ?
+                                this.state.maxSize : this.props.Size;
+        this.state.gridGap  = (this.props.gridGap === undefined) ?
+                                1 : this.props.gridGap;
 
         this.state.isRerender       = false;
         this.state.isZoomInPressed  = false;
@@ -35,7 +38,7 @@ class Flatgrids extends ApiRequester{
 
         this.state.booksMap         = [];
         this.state.numberOfBooks    = 1200;
-        this.state.maxBooksToRender = 5000;
+        this.state.maxBooksToRender = 20480;
 
         this.state.midHeight = -1;
         this.state.midWidth = -1;
@@ -110,13 +113,15 @@ class Flatgrids extends ApiRequester{
         document.addEventListener('keydown', this.onKeyDown);
         document.addEventListener('keyup', this.onKeyUp);
 
-        var midContainer = document.getElementById("MiddleContainer");
-        this.state.midHeight = parseFloat(window.getComputedStyle(midContainer).height.split("px")[0]);
-        this.state.midWidth = parseFloat(window.getComputedStyle(midContainer).width.split("px")[0]);
+        this.state.midHeight = document.getElementById('MiddleContainer').offsetHeight;
+        this.state.midWidth = document.getElementById('MiddleContainer').offsetWidth;
     }//componentDidMount
 
 
     shouldComponentUpdate(nextProps, nextState){
+        this.state.midHeight = document.getElementById('MiddleContainer').offsetHeight;
+        this.state.midWidth = document.getElementById('MiddleContainer').offsetWidth;
+
         var isParentFetched = super.shouldComponentUpdate(nextProps, nextState);
         return this.state.isZoomInPressed ||
                 this.state.isZoomOutPressed ||
@@ -132,8 +137,8 @@ class Flatgrids extends ApiRequester{
             return {};
 
         var numOfBooks = data_set.active_books;
-        // if (numOfBooks > this.state.maxBooksToRender)
-            // numOfBooks = this.state.maxBooksToRender
+         if (numOfBooks > this.state.maxBooksToRender)
+             numOfBooks = this.state.maxBooksToRender
 
         var alloc_state = [];
 
@@ -147,7 +152,7 @@ class Flatgrids extends ApiRequester{
         alloc_state = alloc_state.concat(notReady);
         alloc_state = alloc_state.concat(available);
 
-        alloc_state = this.shuffleArray(alloc_state);
+        // alloc_state = this.shuffleArray(alloc_state);
         //Limit number of grids to be rendered, to reduce lag and to fit it all
         //on the screen properly.
         if(alloc_state.length > this.state.maxBooksToRender)
@@ -175,22 +180,30 @@ class Flatgrids extends ApiRequester{
     render() {
         //doesn't do anyhthing for this component yet.
         var allocs = this.make_alloc_set(this.state.fetched);
+        var booksAmount = Object.keys(allocs).length;
 
-        if(Object.keys(allocs).length === 0)
+        if(booksAmount === 0)
             allocs = this.state.booksMap;
         else
             this.state.booksMap = allocs;
 
-        var colGap = this.state.colGap;
-        var rowGap = this.state.rowGap;
+        var gridGap = this.state.gridGap;
         var boxSize = this.state.size;
+        var totalPixels = this.state.midWidth * this.state.midHeight;
+        totalPixels -= totalPixels * 0.02; //account for error
+
+        boxSize = Math.sqrt(totalPixels / booksAmount) - 2 * gridGap;
+        if(boxSize > this.state.maxSize)
+            boxSize = this.state.maxSize;
 
         var ColsToDraw = []
         //Building boxes list to be rendered
         //for(var col=0; col < colorClasses.length; col++){
         for(var book_index in allocs){
             var gridBoxOverride = {
-                "margin" : colGap + "px " + rowGap + "px " + colGap + "px " + rowGap,
+                //"margin" : colGap + "px " + rowGap + "px " + colGap + "px " + rowGap,
+                margin : gridGap + "px",
+                // padding : "1px",
                 "width" : boxSize,
                 "height" : boxSize,
             };
