@@ -152,7 +152,7 @@ class Flatgrids extends ApiRequester{
         alloc_state = alloc_state.concat(notReady);
         alloc_state = alloc_state.concat(available);
 
-        // alloc_state = this.shuffleArray(alloc_state);
+        alloc_state = this.shuffleArray(alloc_state);
         //Limit number of grids to be rendered, to reduce lag and to fit it all
         //on the screen properly.
         if(alloc_state.length > this.state.maxBooksToRender)
