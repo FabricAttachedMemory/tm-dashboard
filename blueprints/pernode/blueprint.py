@@ -14,14 +14,14 @@
     > Host: localhost:9099
     > Accept:application/json;version=1.0;
     > Accept-encoding:gzip
-    > 
+    >
     * HTTP 1.0, assume close after body
     < HTTP/1.0 200 OK
     < Content-Type: application/json
     < Content-Length: 267
     < Server: Werkzeug/0.9.6 Python/3.4.2
     < Date: Mon, 23 Oct 2017 19:59:53 GMT
-    < 
+    <
     {
       "results": {
         "CPU Usage": 53.64,
@@ -291,7 +291,7 @@ def pernode_api(nodestr=-1):
     try:
         Journal.doThings()
     except Exception as err:
-        print('Things went wrong! [%s]' % err)
+        print('Things went wrong in "nodes" bp! [%s]' % err)
         Journal.defaults['Node'] = node
         if nodeindex != -1:
             return make_response(jsonify(Journal.spoofStats(node)), 302)
