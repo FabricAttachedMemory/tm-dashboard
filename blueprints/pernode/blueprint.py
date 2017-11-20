@@ -80,7 +80,7 @@ class JPower(Journal):
         }
 
         self.hasDoneThings = False
-        self.nodes_list = {}
+        self.nodes_list = [ [] for i in range(40)]
         self.nodeinfo = {}
         self.num_nodes = 0
 
@@ -109,7 +109,9 @@ class JPower(Journal):
         response = requests.get(url, headers=self.mainapp.config['HTTP_HEADERS'])
         data=response.json()
         nodes_list = data['nodes']
-        self.nodes_list = nodes_list
+        for node in nodes_list:
+            node_index = node['node_id'] - 1
+            self.nodes_list[node_index] = node
 
         # num_nodes is used to size/index into the nodeinfo array of dicts
         self.num_nodes = len(nodes_list)
@@ -172,6 +174,7 @@ class JPower(Journal):
     def get_power_state(self, node):
         # Get the powerstate of the node from the MFW service
         d_proxy = { "http" : None }
+
         try:
             header = self.mainapp.config['HTTP_HEADERS']
             url = self.nodeinfo[node-1]['mfwApiUri'] + '/MgmtService/SoC'
@@ -310,7 +313,6 @@ def pernode_api(nodestr=-1):
         Journal.defaults['Node'] = node
         return make_response(jsonify(Journal.defaults), 302)
     '''
-
     if nodeindex != -1:
         nodeData = Journal.defaults
         try:
@@ -357,7 +359,7 @@ def getNodeStats(node):
     response = requests.get(url, headers=Journal.mainapp.config['HTTP_HEADERS'])
     data=response.json()
     nodes_list = data['nodes']
-    Journal.nodes_list = nodes_list
+    #Journal.nodes_list = nodes_list
 
     nodedata['DRAM Usage'] = '%s%%' % str(Journal.get_DRAM_usage(node))
     nodedata['CPU Usage'] = '%s%%' % str(Journal.get_cpu_usage(node))
