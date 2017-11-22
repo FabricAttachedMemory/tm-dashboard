@@ -68,11 +68,14 @@ class Journal():
         error = None
         all_headers={}
         all_headers.update(self.mainapp.config['HTTP_HEADERS'])
-        if custom_headers is not None:      #add/update headers passed by caller
+        #add/update headers passed by caller
+        if custom_headers is not None:
             all_headers.update(custom_headers)
 
         try:
-            response = requests.get(url, headers=all_headers) #API call to the URL
+            #API call to the URL
+            timeout_cfg = self.mainapp.config['TIMEOUT']
+            response = requests.get(url, headers=all_headers, timeout=timeout_cfg)
             error = None
         except requests.exceptions.RequestException as e:
             #if you get here, result obj is not set. Thus, make it empy Response
