@@ -147,12 +147,10 @@ class POverview extends React.Component{
     render() {
         var panelClass = "col-md-2";
 
-        // var nodeInfoHeight  = this.state.nodeInfoHeight;
-
         var dscBtnBox = 100;
         var nodeInfoHeight = (window.innerHeight - dscBtnBox - 453 - 8 - 51) + "px";
 
-        var heightRatio = 0.5;
+        var heightRatio = 0.2;
         if(window.innerHeight < 1000)
             heightRatio = 0.05;
 

@@ -88,7 +88,7 @@ class SystemLoadStats extends React.Component{
         return(
             <HashRouter>
                 <div>
-                    <Redirect from="/" to="/mm" />
+                    <Redirect from="/" to="/overview" />
                     <Route path="/overview" component={POverview} />
                     <Route path="/mm" component={PMemoryManagement} />
                 </div>

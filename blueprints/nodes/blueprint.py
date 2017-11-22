@@ -43,8 +43,8 @@ class JNodes(Journal):
         """ Refer to the base class (../bp_base.py) for documentation."""
         self.is_spoofed = True
         result = self.json_model
-        result['topology'] = [10, 10]
-        result['size'] = 20
+        result['topology'] = [10, 10, 10, 10]
+        result['size'] = sum(result['topology'])
         result['data_flow'] = self.spoof_flow_matrix(result['size'])
         result['is_spoofed'] = True
         return result
@@ -182,12 +182,15 @@ def build_topology():
             node_full_name = node['coordinate'] + '/SocBoard/1/Soc/1'
             node_dict[node_full_name] = node['node_id']
 
-    # num_nodes is used to return a NxN matrix with the connection data
-    # It is zero based matrix meaning node N is indexed with N-1.
-    result['size'] = max(node_dict.values())
-    result['nodes'] = node_dict
-    result['lza'] = build_lza_data(node_dict)
-    result['enc'] = _build_enc_topology(node_dict)
+    try: #FIXME: this is a lazy solution to a bloody thing.
+        # num_nodes is used to return a NxN matrix with the connection data
+        # It is zero based matrix meaning node N is indexed with N-1.
+        result['size'] = max(node_dict.values())
+        result['nodes'] = node_dict
+        result['lza'] = build_lza_data(node_dict)
+        result['enc'] = _build_enc_topology(node_dict)
+    except Exception as err:
+        print('Bloody murder! Your error: %s' % err)
 
     # save result into Journal.topology, so that it can be accessed on the next
     # calls without making API request.

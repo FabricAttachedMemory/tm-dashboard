@@ -117,7 +117,7 @@ def main(args=None):
     if not args.get('dont_run', False):
         mainapp.app.run(host=mainapp.config['HOST'],
                         port=mainapp.config['PORT'],
-                debug=True)
+                debug=mainapp.config['DEBUG'])
     return mainapp
 
 
