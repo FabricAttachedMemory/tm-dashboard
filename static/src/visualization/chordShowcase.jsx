@@ -28,8 +28,26 @@ class ChordShowcase extends React.Component{
         this.setRefreshRate = this.setRefreshRate.bind(this);
         this.showcaseNodes = this.showcaseNodes.bind(this);
         this.toggleShowcase = this.toggleShowcase.bind(this);
+
+        this.onKeyUp = this.onKeyUp.bind(this);
+        this.onKeyDown = this.onKeyDown.bind(this);
         this.state.timeoutId = [];
     }//ctor
+
+
+    onKeyDown(event){
+        if(event.key == "p"){
+            this.setState( { isPlayPressed : true } );
+        }
+    }//onKeyDown
+
+
+    onKeyUp(event){
+        if(event.key == "p"){
+            this.setState( { isPlayPressed : false } );
+            this.toggleShowcase();
+        }
+    }//onKeyUp
 
 
     //When a Play button is pressed or different refresh rate selection is
@@ -61,6 +79,8 @@ class ChordShowcase extends React.Component{
     //switching between tabs. On the very first load of the page - showcasing
     //is stopped.
     componentDidMount(){
+        document.addEventListener('keydown', this.onKeyDown);
+        document.addEventListener('keyup', this.onKeyUp);
         this.state.activeNode = ACTIVE_NODE;
         this.state.isPlaying = IS_PLAYING;
     }//componentDidMount
