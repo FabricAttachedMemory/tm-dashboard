@@ -3,7 +3,6 @@ import React        from 'react';
 import {render}     from 'react-dom';
 import PropTypes    from 'prop-types';
 import * as d3      from 'd3';
-import * as d3_shadow from 'd3';
 
 import * as RackOverview from './rackOverviewBox';
 import * as NodeStats    from '../components/nodeStats';
@@ -443,15 +442,7 @@ export function ShowNodeActivity(node, state){
     var fillColor = state ? "#2AD2C9" : "none";
     var strokeColor = state ? d3.rgb("#2AD2C9").darker() : "none";
     SetRibbonColor(ribbonGroup, fillColor, strokeColor);
-        /*
-        .transition()
-            .style("opacity", function(d) {
-                    return (state ? 1 : 0.1); })
-            .style("fill", function(d) {
-                    return state ? "#2AD2C9" : "none"; })
-            .style("stroke", function(d) {
-                    return state ? d3.rgb("#2AD2C9").darker() : "none"; });
-*/
+
     var filter_func = (d) => {
         return connections.includes(node+"->"+d.index);
     } //same as writing function(d) {}
