@@ -2,7 +2,7 @@
 import React        from 'react';
 import {render}     from 'react-dom';
 import PropTypes    from 'prop-types';
-import * as d3      from 'd3'
+import * as d3      from 'd3';
 
 import * as RackOverview from './rackOverviewBox';
 import * as NodeStats    from '../components/nodeStats';
@@ -74,7 +74,6 @@ class Chords extends ApiRequester{
             console.warn("SVG component is undefined while trying to buildChordsDiagram!");
             return;
         }//if not svg
-
 
         var radius = this.state.radius;
         //To make rectangle circle look less bulky, reduse radius by 30%
@@ -373,7 +372,7 @@ class Chords extends ApiRequester{
         wRatio -= sizeDiff * 0.00011666;
 
         var w = window.innerWidth * wRatio;
-        var h = window.innerHeight * 0.7; //0.7 means "fill 70% of the container".
+        var h = window.innerHeight * 0.72; //0.7 means "fill 70% of the container".
 
         return(
             <div className="row">
@@ -432,19 +431,17 @@ export function ShowNodeActivity(node, state){
     if(connections.length < 1)
         return;
 
-    pathObj.filter((d) =>{
+    var ribbonGroup = pathObj.filter((d) =>{
         var pathIndex = d.source.index + "->" + d.source.subindex;
         //Don't render selflooping arc
         var itself = d.source.index === node && d.source.subindex == node;
         return connections.includes(pathIndex) && !itself;
-        })
-        .transition()
+        }).transition()
             .style("opacity", function(d) {
-                    return (state ? 1 : 0.1); })
-            .style("fill", function(d) {
-                    return state ? "#2AD2C9" : "none"; })
-            .style("stroke", function(d) {
-                    return state ? d3.rgb("#2AD2C9").darker() : "none"; });
+                    return (state ? 1 : 1); });;
+    var fillColor = state ? "#2AD2C9" : "none";
+    var strokeColor = state ? d3.rgb("#2AD2C9").darker() : "none";
+    SetRibbonColor(ribbonGroup, fillColor, strokeColor);
 
     var filter_func = (d) => {
         return connections.includes(node+"->"+d.index);
@@ -466,6 +463,16 @@ export function ShowNodeActivity(node, state){
     else
         NodeStats.SetFields(-1, enc); //remove all stats values on hoverout event
 }//ShowNodeActivity
+
+
+export function SetRibbonColor(ribbonGroup, fillColor, strokeColor){
+    ribbonGroup.transition()
+            .style("fill", function(d) {
+                    return fillColor; })
+            .style("stroke", function(d) {
+                    return strokeColor; });
+}//SetRibbonColor
+
 
 
 /**
