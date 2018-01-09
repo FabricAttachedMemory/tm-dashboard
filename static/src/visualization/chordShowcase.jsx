@@ -8,7 +8,7 @@ import * as DataSharing  from '../components/dataSharing';
 
 var ACTIVE_NODE=-1;
 var REFRESH_RATE=2000;
-var IS_PLAYING=true;
+var STATE_BETWEEN_TABS=true;
 
 
 //This component allows users to start\stop arcs looping demo, which will hightlight
@@ -67,11 +67,10 @@ class ChordShowcase extends React.Component{
         document.addEventListener('keydown', this.onKeyDown);
         document.addEventListener('keyup', this.onKeyUp);
         this.state.activeNode = ACTIVE_NODE;
-        console.log("State after tab switch: " + IS_PLAYING);
-        //Always start showcase on loaded page, since you gonna Start it in 99%
-        //of the time anyways.
-        if(IS_PLAYING){
-            // this.setState({ isPlaying : true });
+        //State of the show case is carrief between tabs. Therefore - if it is in
+        //Play state - need to trigger a showcase when component is mounted.
+        if(STATE_BETWEEN_TABS){
+            this.setState({ isPlaying : true });
             this.showcaseNodes();
         }
     }//componentDidMount
@@ -154,6 +153,8 @@ class ChordShowcase extends React.Component{
     }//getShowcaseState
 
 
+    //Set showcase toggle button's glyphicon icon to Play if state is False and
+    //to Pause if state is True.
     setShowcaseState(state){
         var showcaseBtn = document.getElementById("showcaseBtn");
         if(showcaseBtn == null)
@@ -180,10 +181,10 @@ class ChordShowcase extends React.Component{
     //Called by Play\Stop <button> onCick event
     toggleShowcase(){
         this.clearTimeout();
-        IS_PLAYING = !this.getShowcaseState();
-        this.setState({ isPlaying : IS_PLAYING });
-        this.setShowcaseState(IS_PLAYING);
-        if(IS_PLAYING)
+        STATE_BETWEEN_TABS = !this.getShowcaseState();
+        this.setState({ isPlaying : STATE_BETWEEN_TABS });
+        this.setShowcaseState(STATE_BETWEEN_TABS);
+        if(STATE_BETWEEN_TABS)
             this.showcaseNodes();
     }//toggleShowcase
 
@@ -193,7 +194,7 @@ class ChordShowcase extends React.Component{
         this.clearTimeout();
         this.setShowcaseState(false);
         this.showcaseNodes(false);
-        IS_PLAYING = false;
+        STATE_BETWEEN_TABS = false;
         this.setState({ isPlaying : false, activeNode : -1 });
     }//stopShowcase
 
@@ -219,7 +220,6 @@ class ChordShowcase extends React.Component{
         var rate = REFRESH_RATE;
         if(rate == "")
             rate = this.state.refreshRate;
-        // var toggleText = IS_PLAYING ? "" : "Start";
 
         return(
         <div id="ChordShowcase" style={{display: "hide"}}>
