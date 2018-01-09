@@ -8,7 +8,7 @@ import * as DataSharing  from '../components/dataSharing';
 
 var ACTIVE_NODE=-1;
 var REFRESH_RATE=2000;
-var IS_PLAYING=false;
+var IS_PLAYING=true;
 
 
 //This component allows users to start\stop arcs looping demo, which will hightlight
@@ -23,31 +23,15 @@ class ChordShowcase extends React.Component{
             //this triggers re-render when different refresh rate is selected.
             refreshRate : props.refreshRate,
             activeNode : -1,
-            isPlaying : false,
+            isPlaying : true,
         };
         this.setRefreshRate = this.setRefreshRate.bind(this);
         this.showcaseNodes = this.showcaseNodes.bind(this);
         this.toggleShowcase = this.toggleShowcase.bind(this);
+        this.stopShowcase = this.stopShowcase.bind(this);
 
-        this.onKeyUp = this.onKeyUp.bind(this);
-        this.onKeyDown = this.onKeyDown.bind(this);
         this.state.timeoutId = [];
     }//ctor
-
-
-    onKeyDown(event){
-        if(event.key == "p"){
-            this.setState( { isPlayPressed : true } );
-        }
-    }//onKeyDown
-
-
-    onKeyUp(event){
-        if(event.key == "p"){
-            this.setState( { isPlayPressed : false } );
-            this.toggleShowcase();
-        }
-    }//onKeyUp
 
 
     //When a Play button is pressed or different refresh rate selection is
@@ -58,7 +42,8 @@ class ChordShowcase extends React.Component{
     shouldComponentUpdate(nextProps, nextState){
         var isShouldPlay = nextState.isPlaying != this.state.isPlaying;
         var isNewRefreshRate = nextState.refreshRate != this.state.refreshRate;
-        return isShouldPlay || isNewRefreshRate;
+        var letsUpdate = isShouldPlay || isNewRefreshRate;
+        return letsUpdate;
     }//shouldComponentUpdate
 
 
@@ -82,7 +67,13 @@ class ChordShowcase extends React.Component{
         document.addEventListener('keydown', this.onKeyDown);
         document.addEventListener('keyup', this.onKeyUp);
         this.state.activeNode = ACTIVE_NODE;
-        this.state.isPlaying = IS_PLAYING;
+        console.log("State after tab switch: " + IS_PLAYING);
+        //Always start showcase on loaded page, since you gonna Start it in 99%
+        //of the time anyways.
+        if(IS_PLAYING){
+            // this.setState({ isPlaying : true });
+            this.showcaseNodes();
+        }
     }//componentDidMount
 
 
@@ -122,6 +113,9 @@ class ChordShowcase extends React.Component{
         if(prevNode != -1)
             ChordWheel.ShowNodeActivity(prevNode, false);
 
+        //Set button's text to "Stop" or "Start
+        this.setShowcaseState(isPlay);
+
         if(!isPlay){
             ChordWheel.ShowNodeActivity(prevNode, false);
             this.clearTimeout();
@@ -148,21 +142,60 @@ class ChordShowcase extends React.Component{
     }//showcaseNodes
 
 
+    //Checks if button text is Stop or Start.
+    //if Stop -> return True (meaning loop is playing).
+    //If text is Start -> return False (meaning loop is not playing)
+    getShowcaseState(){
+        var showcaseBtn = document.getElementById("showcaseBtn");
+        if(showcaseBtn != null){
+            return showcaseBtn.classList.contains("glyphicon-pause");
+        }
+        return true; //Force "Play" state if button not found.
+    }//getShowcaseState
+
+
+    setShowcaseState(state){
+        var showcaseBtn = document.getElementById("showcaseBtn");
+        if(showcaseBtn == null)
+            return;
+        showcaseBtn.classList.remove("glyphicon-play");
+        showcaseBtn.classList.remove("glyphicon-pause");
+        if(state == true)
+            showcaseBtn.classList.add("glyphicon-pause");
+        else
+            showcaseBtn.classList.add("glyphicon-play");
+    }//setShowcaseState
+
+
     //Called by refresh rate dropdown <select> onChange event.
     setRefreshRate(event){
         this.clearTimeout();
         var rate = event.target.value;
         this.setState({refreshRate : rate});
         REFRESH_RATE = rate;
+        this.showcaseNodes(true);
     }//setRefreshRate
 
 
     //Called by Play\Stop <button> onCick event
     toggleShowcase(){
         this.clearTimeout();
-        IS_PLAYING = !IS_PLAYING;
-        this.setState({ isPlaying : IS_PLAYING});
+        IS_PLAYING = !this.getShowcaseState();
+        this.setState({ isPlaying : IS_PLAYING });
+        this.setShowcaseState(IS_PLAYING);
+        if(IS_PLAYING)
+            this.showcaseNodes();
     }//toggleShowcase
+
+
+    //Completely stop the showcase progress: reset states and node select index.
+    stopShowcase(){
+        this.clearTimeout();
+        this.setShowcaseState(false);
+        this.showcaseNodes(false);
+        IS_PLAYING = false;
+        this.setState({ isPlaying : false, activeNode : -1 });
+    }//stopShowcase
 
 
     //Create refresh rates dropdown list (<option>) of Refresh rates to be used.
@@ -186,22 +219,33 @@ class ChordShowcase extends React.Component{
         var rate = REFRESH_RATE;
         if(rate == "")
             rate = this.state.refreshRate;
-        var toggleText = IS_PLAYING ? "Stop" : "Start";
+        // var toggleText = IS_PLAYING ? "" : "Start";
 
-        this.showcaseNodes(IS_PLAYING);
         return(
         <div id="ChordShowcase" style={{display: "hide"}}>
             <div id="showcaseBtnSpacerTop" style={{marginTop: "2.2em"}}></div>
-            <button id="showcaseBtn" className="btn btn-hpe-default"
-                    onClick={this.toggleShowcase}>{toggleText}</button>
+            <button className="btn btn-hpe-default"
+                    onClick={this.toggleShowcase}>
+                <span id="showcaseBtn" className="glyphicon glyphicon-play"
+                        style={{"color" : "black"}}>
+                </span>
+            </button>
             <select id="shocaseRateSelect" className="btn btn-hpe-default"
                     value={rate} onChange={this.setRefreshRate}
-                    style={{borderLeft: "thin solid white"}}>
+                    style={{borderLeft: "thin solid white",
+                            borderRight: "thin solid white"
+                    }}>
                 {this.createRefreshRateOptions(
                     [500,1000,2000,3000,4000, 5000, 6000],
                     rate
                 )}
             </select>
+            <button className="btn btn-hpe-default"
+                    onClick={this.stopShowcase}>
+                <span id="showcaseBtnStop" className="glyphicon glyphicon-stop"
+                        style={{"color" : "black"}}>
+                </span>
+            </button>
         </div>
         );
     }//render
