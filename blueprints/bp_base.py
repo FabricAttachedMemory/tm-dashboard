@@ -53,7 +53,7 @@ class Journal():
         self.mainapp = mainapp
 
 
-    def make_request(self, url, custom_headers=None):
+    def make_request(self, url, custom_headers=None, timeout_cfg=None):
         ''' A simple wrapper around requests.get() function to help catch errors
         that are occuring during the request. It will use Headers defined in the
         server.cfg file by default, but can be modded by the caller.
@@ -74,7 +74,8 @@ class Journal():
 
         try:
             #API call to the URL
-            timeout_cfg = self.mainapp.config['TIMEOUT']
+            if timeout_cfg is None:
+                timeout_cfg = self.mainapp.config['TIMEOUT']
             response = requests.get(url, headers=all_headers, timeout=timeout_cfg)
             error = None
         except requests.exceptions.RequestException as e:

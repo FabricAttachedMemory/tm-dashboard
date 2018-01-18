@@ -57,7 +57,8 @@ def index_api():
     mainapp = Journal.mainapp
 
     http = HTTP_REQUESTS.get(mainapp.config['LMP_SERVER'] + 'metrics/',
-                                     headers=mainapp.config['HTTP_HEADERS'])
+                                     headers=mainapp.config['HTTP_HEADERS'],
+                                     timeout=mainapp.config['TIMEOUT'])
 
     if http.status_code == 404:
         return make_response(jsonify(Journal.spoofed), 206)
