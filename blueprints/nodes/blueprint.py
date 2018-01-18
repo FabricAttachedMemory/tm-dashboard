@@ -116,6 +116,7 @@ def nodes_api(node_num=-1):
     The arcs matrix is base 0. The rows represent the source node and the columns
     represent the nodes accessed for memory by the souce node.
     """
+    print("------------------")
     global Journal
     mainapp = Journal.mainapp
     response = None
@@ -153,6 +154,7 @@ def nodes_api(node_num=-1):
 
     Journal.json_model['data_flow'] = arcs
     Journal.json_model['topology'] = list(Journal.topology['enc'].values())
+    print(Journal.topology['enc'])
     return make_response(jsonify(Journal.json_model), 200)
 
 
@@ -179,6 +181,7 @@ def build_topology():
     nodes_list = resp_json['nodes']
     for node in nodes_list:
         for keys, values in node.items():
+            #IDK why we need SocBoard info here
             node_full_name = node['coordinate'] + '/SocBoard/1/Soc/1'
             node_dict[node_full_name] = node['node_id']
 
@@ -205,8 +208,19 @@ def _build_enc_topology(node_dict):
     and value at the poisition is number of nodes in that enclosure.
     '''
     nodes_in_enc = defaultdict(int)
-    for key, valu in node_dict.items():
-        enc = key.split('/EncNum/')[1].split('/Node/')[0]
+    for key, value in node_dict.items():
+        # Splitting /MachineVersion/1/DataCenter/FTC/Rack/sdl/Enclosure/U1/EncNum/1/Node/1
+        # into: ['/MachineVersion/1/DataCenter/FTC/Rack/sdl/Enclosure/U1/', '/1/Node/1']
+        # to extract Enclosure number, which is on the left side /Node/ part.
+        enc_split = key.split('/EncNum/')
+        if len(enc_split) < 2:
+            raise RuntimeError('Node Coordinate is missing EncNum! Source: %s' % (key))
+        else:
+            if 'Node' not in enc_split[1]:
+                raise RuntimeError('Node Coordinate is missing /Node/! Source: %s' % (key))
+            else:
+                enc = enc_split[1].split('/Node/')[0]
+
         node_num = key.split('/Node/')[1].split('/SocBoard/')[0]
         node_num = int(node_num)
         if node_num > nodes_in_enc[enc]:

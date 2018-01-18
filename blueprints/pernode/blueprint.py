@@ -106,7 +106,8 @@ class JPower(Journal):
         response = None
 
         url = self.mainapp.config['LMP_SERVER'] + 'nodes/'
-        response = requests.get(url, headers=self.mainapp.config['HTTP_HEADERS'])
+        response = requests.get(url, headers=self.mainapp.config['HTTP_HEADERS'],
+                                timeout=self.mainapp.config['TIMEOUT'])
         data=response.json()
         nodes_list = data['nodes']
         for node in nodes_list:
@@ -178,7 +179,8 @@ class JPower(Journal):
         try:
             header = self.mainapp.config['HTTP_HEADERS']
             url = self.nodeinfo[node-1]['mfwApiUri'] + '/MgmtService/SoC'
-            r = requests.get(url, headers=header, proxies=d_proxy)
+            r = requests.get(url, headers=header, proxies=d_proxy,
+                            timeout=self.mainapp.config['TIMEOUT'])
             if r.status_code != requests.codes.ok:
                 return 'N/A'
             data=r.json()
@@ -193,7 +195,8 @@ class JPower(Journal):
     def get_os_manifest(self, node):
         # Get the os manifest for the node from the manifesting service
         url = self.mainapp.config['MANIFESTING_SERVER'] + 'api/node/' + str(node)
-        r = requests.get(url, headers=self.mainapp.config['HTTP_HEADERS'])
+        r = requests.get(url, headers=self.mainapp.config['HTTP_HEADERS'],
+                        timeout=self.mainapp.config['TIMEOUT'])
         if r.status_code != requests.codes.ok:
             return "default"
         data=r.json()
@@ -207,7 +210,8 @@ class JPower(Journal):
         try:
             coord = self.nodeinfo[node-1]['active_coordinate']
             url = self.mainapp.config['LMP_SERVER'] + 'active' + coord
-            r = requests.get(url, headers=self.mainapp.config['HTTP_HEADERS'])
+            r = requests.get(url, headers=self.mainapp.config['HTTP_HEADERS'],
+                            timeout=self.mainapp.config['TIMEOUT'])
             if r.status_code != requests.codes.ok:
                 return [0, 0]
             data=r.json()
@@ -225,7 +229,8 @@ class JPower(Journal):
         try:
             coord = self.nodeinfo[node-1]['allocated_coordinate']
             url = self.mainapp.config['LMP_SERVER'] + 'allocated' + coord
-            r = requests.get(url, headers=self.mainapp.config['HTTP_HEADERS'])
+            r = requests.get(url, headers=self.mainapp.config['HTTP_HEADERS'],
+                            timeout=self.mainapp.config['TIMEOUT'])
             if r.status_code != requests.codes.ok:
                 return 0
             data=r.json()
@@ -356,7 +361,8 @@ def getNodeStats(node):
 
     # gather the nodes data from LMP for the remaining data
     url = Journal.mainapp.config['LMP_SERVER'] + 'nodes/'
-    response = requests.get(url, headers=Journal.mainapp.config['HTTP_HEADERS'])
+    response = requests.get(url, headers=Journal.mainapp.config['HTTP_HEADERS'],
+                            timeout=Journal.mainapp.config['TIMEOUT'])
     data=response.json()
     nodes_list = data['nodes']
     #Journal.nodes_list = nodes_list
