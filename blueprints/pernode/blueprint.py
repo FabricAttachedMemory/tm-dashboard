@@ -173,9 +173,9 @@ class JPower(Journal):
 
 
     def get_power_state(self, node):
-        # Get the powerstate of the node from the MFW service
+        # Get the 
         d_proxy = { "http" : None }
-
+        power = 'n/a'
         try:
             header = self.mainapp.config['HTTP_HEADERS']
             url = self.nodeinfo[node-1]['mfwApiUri'] + '/MgmtService/SoC'
@@ -185,9 +185,10 @@ class JPower(Journal):
                 return 'N/A'
             data=r.json()
             power = data['PowerState']
+        except requests.exceptions.Timeout or requests.exceptions.HTTPConnection:
+            print('Cant get power state of node "%s"' % node)
         except Exception as err: #FIXME
             print('Failed to get power state for node %s! [%s]' % (node, err))
-            power = 'n/a'
 
         return power
 
@@ -322,9 +323,10 @@ def pernode_api(nodestr=-1):
         nodeData = Journal.defaults
         try:
             nodeData = getNodeStats(node-1)
+        except requests.exceptions.ConnectionError:
+            print('Can not connect to Node "%s" to get stats!' % (node-1))
         except Exception as err:
             print('Failed to get node stats! [%s]' % err)
-            nodeData = Journal.defaults
 
         return make_response(jsonify(nodeData), 200)
     else:
