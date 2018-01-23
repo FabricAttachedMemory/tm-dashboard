@@ -49,6 +49,19 @@ class Flatgrids extends ApiRequester{
     }//constructor
 
 
+    spoofData(){
+        console.log("spoofing Memory Management");
+        var data = {
+            "active_books" : 8000,
+            "allocated" : 3000,
+            "offline" : 1600,
+            "notReady" : 400,
+            "available" : 3000
+        };
+        return data;
+    }
+
+
     /** Source: https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
      * Randomize array element order in-place.
      * Using Durstenfeld shuffle algorithm.
@@ -132,9 +145,12 @@ class Flatgrids extends ApiRequester{
 
     make_alloc_set(data_set){
         if(data_set === undefined)
-            return {};
+            data_set = this.spoofData();
+            //return {};
+        console.log(data_set.active_books);
         if(data_set.active_books === undefined) //data_set is not a valid data
             return {};
+
 
         var numOfBooks = data_set.active_books;
          if (numOfBooks > this.state.maxBooksToRender)
