@@ -32,6 +32,8 @@ class ApiRequester extends React.Component {
 
 
     spoofData(){
+        return "";
+
         if(this.state.spoofedData.length == 0)
             this.state.spoofedData = [0,1,2,3,4,5,6,7,8,9,15,32,44,48,50,66,73,81,97,100];
 
