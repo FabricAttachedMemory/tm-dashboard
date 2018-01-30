@@ -6,14 +6,15 @@ var path = require('path');
 var BUILD_DIR = path.resolve(__dirname, 'compiled/');
 var APP_DIR = path.resolve(__dirname, 'src/');
 
+    //modulesDirectories: ['node_modules', 'src'],
 var config = {
-  entry: [
-        APP_DIR + '/main.jsx',
-        'webpack-dev-server/client?http://0.0.0.0:80'
-    ],
+  entry: APP_DIR + '/main.jsx',
   resolve: {
-    modulesDirectories: ['node_modules', 'src'],
-    extensions: ['', '.js', '.jsx', '.json', '.scss', '.css', '.svg']
+    modules: [
+        'node_modules',
+        'src'
+    ],
+    extensions: ['.js', '.jsx', '.json', '.scss', '.css', '.svg']
   },
   output: {
     path: BUILD_DIR,
