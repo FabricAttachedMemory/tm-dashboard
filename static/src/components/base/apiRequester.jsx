@@ -11,16 +11,21 @@ class ApiRequester extends React.Component {
     //variables in Python: self.props={};
     constructor(props){
         super(props);
+        var resp_model = {
+                            "value" : -1,
+                            "status" : undefined,
+                            "url" : undefined
+                            }
         this.state = {
             displayData : "", //DEPR
             percent : -1,
             failedFetchCount : 0, //count how many times a failed request to api was made.
-            isSpoofed : false,
             forceRerender : false,
             fetched : undefined,
             index: 0,
             spoofedData : this.props.spoofedData,
             intervalId : -1,
+            model : resp_model,
         }
 
         this.spoofData              = this.spoofData.bind(this);
@@ -33,19 +38,6 @@ class ApiRequester extends React.Component {
 
     spoofData(){
         return "";
-
-        if(this.state.spoofedData.length == 0)
-            this.state.spoofedData = [0,1,2,3,4,5,6,7,8,9,15,32,44,48,50,66,73,81,97,100];
-
-        this.state.isSpoofed = true; //cant setState here. React in browser complains...
-        if (this.state.index > (this.state.spoofedData.length - 1)){
-            this.state.index = 0;
-        }else{
-            this.state.displayData = this.state.spoofedData[this.state.index];
-            //this.state.percent = this.state.spoofedData[this.state.index];
-            this.state.index = this.state.index + 1;
-        }
-        return this.state.displayData;
     }//spoofData
 
 
@@ -57,9 +49,6 @@ class ApiRequester extends React.Component {
     GetData() {
         var url= this.props.url; //just shorter to use during debugging
         if(!url){
-            if(!this.state.isSpoofed)
-                //console.log("Empty url string! Name: " + this.props.name);
-                this.state.failedFetchCount += 1;
             return;
         }
 
@@ -69,6 +58,7 @@ class ApiRequester extends React.Component {
                 "Accept" : "application/json; version=1.0",
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Origin" : "*",
+                "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept,"
             }
         }//fetchParam
 
@@ -87,7 +77,8 @@ class ApiRequester extends React.Component {
             this.setState({forceRender : true });
             return json;
         }).catch((error) => {
-           console.log("GetData() error fetching '" + this.props.url + "'! [" + error + "]");
+            console.log("GetData() error fetching '" + this.props.url + "'! [" + error + "]");
+            this.setState({ fetched : this.state.model });
         });
     }//GetData
 
@@ -97,15 +88,9 @@ class ApiRequester extends React.Component {
         this.GetData();
         this.state.intervalId = setInterval(() => {
             if (this.state.failedFetchCount >= this.props.spoofAfterFails){
-                //signal component to check for re-render
-                //this.setState({isSpoofed : true});
-                this.state.isSpoofed = true;
+                console.log("Failed fetch! Doing nothing?");
             }else{
-                if(!this.state.isSpoofed){
-                    this.GetData();
-                }
-                // this.state.forceRerender = true;
-                // this.setState({forceRender : true });
+                this.GetData();
             }
         }, this.props.refreshRate);
     }//componentWillMount
@@ -131,25 +116,20 @@ class ApiRequester extends React.Component {
         var isObject = nextState.fetched instanceof Object;
         var isReady = !isResponse && isObject;
 
-        if(this.state.isSpoofed == true){
-            this.state.isSpoofed = false;
-            return true;
-        }//if
-
         if(this.state.forceRerender == true){
             this.state.forceRerender = false;
             return true;
         }//if
 
         return isReady;
-    }
+    }//getUpdateState
+
 
     readFetchedValues(){
-        var result = { "value" : -1, "url" : undefined, "status" : undefined }
+        var result = this.state.model;
+        //{ "value" : -1, "url" : undefined, "status" : undefined }
 
         if(!this.state.fetched){
-            if(this.state.isSpoofed)
-                result = this.spoofData();
             return result;
         }
         if (this.state.fetched.value !== undefined){

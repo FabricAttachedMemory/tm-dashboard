@@ -147,7 +147,6 @@ class Flatgrids extends ApiRequester{
         if(data_set === undefined)
             data_set = this.spoofData();
             //return {};
-        console.log(data_set.active_books);
         if(data_set.active_books === undefined) //data_set is not a valid data
             return {};
 

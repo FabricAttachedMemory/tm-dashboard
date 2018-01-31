@@ -53,6 +53,9 @@ class ContentBox extends ApiRequester{
             value = this.state.value;
         }
 
+        if(value < 0)
+            value = "0";
+
         return (
             <StatsBox className={"statsboxContent " + className} id={this.props.id}
                             size={12} height={this.props.height}

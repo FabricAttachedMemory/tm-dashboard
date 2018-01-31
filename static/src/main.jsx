@@ -15,7 +15,6 @@ import Skeleton             from './skeleton'
 import POverview            from './overview'
 import PMemoryManagement    from './memoryManagement'
 
-import PercentCircle    from    './components/percentcircle';
 import Header           from    './components/header';
 import Middle           from    './components/middle';
 

@@ -63,8 +63,24 @@ class PercentCircle extends ApiRequester {
     }//formatBytes
 
 
+    pick_random_from_list(data_list){
+        var maxRange = data_list.length;
+        var index = Math.floor(Math.random() * maxRange)
+        return data_list[index]
+    }//pick_random_from_list
+
+
     render() {
         var fetchedJson = this.readFetchedValues();
+
+        //Try and Spoof percent circles with some data to be displayed while
+        // "idle" on github pages
+        if (fetchedJson["status"] === undefined){
+            if (this.props.spoofedData !== undefined){
+                fetchedJson["value"] = this.pick_random_from_list(this.props.spoofedData);
+            }//if
+        }//if
+
         var fetchedValue = parseFloat(fetchedJson["value"]).toFixed(2);
         var savedValue = DataSharing.Get(this.props.name + "_persist");
         //To keep circles showing its data between tab switch, values before
