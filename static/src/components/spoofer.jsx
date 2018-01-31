@@ -19,31 +19,41 @@ export function createRandomList(range, size){
 
 
 export function cpuData(){
-    return [2,9,6,10,17,25,26,24,24,23,33,30,30,32,26,23,15,10,5,5];
+    return [ 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 }
 
 export function famData(){
-    return [12,19,23,36,35,42,55,59,63,66,68,60,58,54,45,43,33,21,12,8];
+    return [ 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65];
 }
 
 export function fabData(){
-    return [5,8,18,23,38,36,32,39,43,49,51,49,44,42,36,31,28,19,14,4];
+    return [ 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43];
 }
 
 
 export function nodeStatsData(){
-    var data = {
-        power : "on",
-        dram :  [4.88, 4.84, 4.52, 5.3, 4.9, 4.72],
-        cpu :   [0.8, 0.8, 0.7, 1.2, 1.0, 0.7],
-        netIn : [3041.5, 3125.4, 3612.7, 3561.2, 3125.8],
-        netOut : [7329.5, 7329.9, 7597.1, 7672.6, 7498.2],
-        fabric : [0, 2, 2, 4, 5, 2, 7, 5, 2],
-        shelves : [1, 1, 2, 1, 3, 5, 3, 4, 2],
-        books :   [128, 128, 256, 256],
-        manifestName : "Lsgi_spoofed",
+    var result = [];
+    for(var i = 0; i < 40; i++){
+        var dram = Math.floor(Math.random() * (15 - 5) + 5);
+        var cpu = Math.floor(Math.random() * (20 - 10) + 10);
+        var fab = Math.floor(Math.random() * (30 - 20) + 20);
+        var shelves = Math.floor(Math.random() * (30 - 20) + 20);
+        var books = Math.floor(Math.random() * (1000 - 700) + 700);
+        var data = {
+            "Node" : i,
+            "Power State" : 'spoofed',
+            "DRAM Usage" : dram + "%",
+            "CPU Usage" : cpu + "%",
+            "Fabric Usage" : fab + "%",
+            "Network In" : 'n/a',
+            "Network Out" : 'n/a',
+            "No. of Shelves" : shelves,
+            "OS Manifest" : "none",
+            "No. Of Books" : books
+        };
+        result.push(data)
     }
-    return data;
+    return result;
 }//nodeStatsData
 
 
@@ -68,12 +78,6 @@ export function ChordMatrix(topology){
     matrix[1][3] = 0;
     matrix[4][1] = 0;
     matrix[5][9] = 0;
-    // matrix = [
-    //     [0, 1, 1, 0],
-    //     [1, 0, 1, 1],
-    //     [1, 1, 0, 1],
-    //     [0, 1, 0, 0],
-    // ]
     return matrix;
 }//ChordMatrix
 
@@ -81,8 +85,7 @@ export function ChordMatrix(topology){
 // Return Nodes topology, where each element in the array represents number of
 // nodes in that enclosure.
 export function SystemTopology(){
-    // return [2, 2];
-    return [10, 10, 10];
+    return [10, 10, 10, 10];
 }//SystemTopology
 
 
@@ -110,6 +113,7 @@ export function GridsData(numOfBooks){
     }
     return { dataSet : list, colorSet : newColors};
 }//GridsData
+
 
 
 //TODO: not used yet. finish spoofing flow.

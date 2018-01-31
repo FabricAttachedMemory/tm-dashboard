@@ -16,19 +16,7 @@ const STATS_FIELDS = [
                     ["OS Manifest",     ""],
                     ["No. of Books",    ""],
                   ];
-/*
-const STATS_FIELDS = [
-                    ["Power State",     "power"],
-                    ["DRAM Usage",      "dram"],
-                    ["CPU Usage",       "cpu"],
-                    ["Network In",      "netIn"],
-                    ["Fabric Usage",    "fabric"],
-                    ["Network Out",     "netOut"],
-                    ["No. of Shelves",  "shelves"],
-                    ["OS Manifest",     "manifestName"],
-                    ["No. of Books",    "books"],
-                  ];
-*/
+
 
 var NODES_DATA = [];
 //Predefine nodes stats with default(empty) values to be referenced and set
@@ -95,6 +83,16 @@ class NodeStats extends ApiRequester {
 
 
     render() {
+        if (this.state.fetched === undefined)
+            this.state.fetched = this.state.model;
+
+
+        if(this.state.fetched["state"] === undefined){
+            if (this.state.spoofedData !== undefined){
+                this.state.fetched["nodes"] = this.state.spoofedData;
+            }
+        }
+
         this.normalizeNodeStats(this.state.fetched);
 
         var boxes = [];

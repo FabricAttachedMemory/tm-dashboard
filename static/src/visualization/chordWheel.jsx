@@ -76,7 +76,8 @@ class Chords extends ApiRequester{
         }//if not svg
 
         var radius = this.state.radius;
-        //To make rectangle circle look less bulky, reduse radius by 30%
+        //To make rectangle circle look less bulky in smaller window, reduse
+        //radius by 30%
         if(window.innerWidth < 1500)
             radius = this.state.radius * 0.7;
 
@@ -197,6 +198,9 @@ class Chords extends ApiRequester{
 
         if(window.innerWidth < 1600)
             radiusRatio = 0.35;
+
+        if(window.innerHeight < 1000)
+            radiusRatio = 0.39;
 
         //circle's overall radius
         var outerRadius = Math.min(
@@ -369,7 +373,8 @@ class Chords extends ApiRequester{
         //I found much wRatio changes per pixel to be properly alligned in the middle
         //of the scren. That is how: 0.00011666 value was found.
         var sizeDiff = 2560 - window.innerWidth;
-        wRatio -= sizeDiff * 0.00011666;
+        //wRatio -= sizeDiff * 0.00011666;
+        wRatio -= sizeDiff * 0.00007;
 
         var w = window.innerWidth * wRatio;
         var h = window.innerHeight * 0.72; //0.7 means "fill 70% of the container".
