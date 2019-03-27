@@ -75,11 +75,11 @@ class PercentCircle extends ApiRequester {
 
         //Try and Spoof percent circles with some data to be displayed while
         // "idle" on github pages
-        if (fetchedJson["status"] === undefined){
-            if (this.props.spoofedData !== undefined){
-                fetchedJson["value"] = this.pick_random_from_list(this.props.spoofedData);
-            }//if
-        }//if
+        // if (fetchedJson["status"] === undefined){
+        //     if (this.props.spoofedData !== undefined){
+        //         fetchedJson["value"] = this.pick_random_from_list(this.props.spoofedData);
+        //     }//if
+        // }//if
 
         var fetchedValue = parseFloat(fetchedJson["value"]).toFixed(2);
         var savedValue = DataSharing.Get(this.props.name + "_persist");
@@ -123,6 +123,8 @@ class PercentCircle extends ApiRequester {
             valueText = converted[0];
             metricsSymbol = converted[1];
         }//if auto metrics
+
+        console.log(this.props.name + ' -> ' + fetchedJson["value"]);
 
         return (
         <StatsBox size={12} height={this.props.height}

@@ -173,7 +173,7 @@ class JPower(Journal):
 
 
     def get_power_state(self, node):
-        # Get the 
+        # Get the
         d_proxy = { "http" : None }
         power = 'n/a'
         try:
@@ -326,7 +326,7 @@ def pernode_api(nodestr=-1):
         except requests.exceptions.ConnectionError:
             print('Can not connect to Node "%s" to get stats!' % (node-1))
         except Exception as err:
-            print('Failed to get node stats! [%s]' % err)
+            print('Failed to get node stats!' % err)
 
         return make_response(jsonify(nodeData), 200)
     else:
@@ -338,6 +338,7 @@ def pernode_api(nodestr=-1):
                 result.append(copy.deepcopy(nodeData))
             except Exception as err:
                 print('Failed to get node stats! [%s]' % err)
+                print(result)
         return make_response(jsonify( { 'nodes' : result }), 200)
 
 

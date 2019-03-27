@@ -74,6 +74,7 @@ class ApiRequester extends React.Component {
             this.setState({
                 fetched : json
             });
+            console.log(json);
             this.setState({forceRender : true });
             return json;
         }).catch((error) => {
