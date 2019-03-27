@@ -162,9 +162,9 @@ def nodes_api(node_num=-1):
         enc = Journal.topology['enc'].values()
     except Exception:
         print(' ---- !!!WARNING!!! No "enc" key in LMP_SERVER/shelf/ -> "lza" response! ---')
-        enct = []
+        enc = []
 
-    Journal.json_model['topology'] = list(enct)
+    Journal.json_model['topology'] = list(enc)
 
     print(Journal.topology['enc'])
     return make_response(jsonify(Journal.json_model), 200)
