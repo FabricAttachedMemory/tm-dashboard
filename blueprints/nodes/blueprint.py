@@ -136,7 +136,12 @@ def nodes_api(node_num=-1):
     response = Journal.make_request(url)
 
     data = response.json()
-    shelf_list = data['entries']
+    try:
+        shelf_list = data['entries']
+    except KeyError:
+        print(' ---- !!!WARNING!!! No "entries" key in LMP_SERVER/shelf/ response! ---')
+        shelf_list = []
+
     for shelf in shelf_list:
         # for each shelf, determine if it is active and what books it uses
         shelf_req_url = url + shelf['name']
@@ -153,7 +158,14 @@ def nodes_api(node_num=-1):
                     arcs[int(source_node)][int(uses_memory_from_node)] = 1
 
     Journal.json_model['data_flow'] = arcs
-    Journal.json_model['topology'] = list(Journal.topology['enc'].values())
+    try:
+        enc = Journal.topology['enc'].values()
+    except Exception:
+        print(' ---- !!!WARNING!!! No "enc" key in LMP_SERVER/shelf/ -> "lza" response! ---')
+        enct = []
+
+    Journal.json_model['topology'] = list(enct)
+
     print(Journal.topology['enc'])
     return make_response(jsonify(Journal.json_model), 200)
 
@@ -178,7 +190,12 @@ def build_topology():
     else:
         result['spoofed'] = False
 
-    nodes_list = resp_json['nodes']
+    try:
+        nodes_list = resp_json['nodes']
+    except KeyError:
+        print(' ---- !!!WARNING!!! No "nodes" key in LMP_SERVER/nodes/ response! ---')
+        nodes_list = []
+
     for node in nodes_list:
         for keys, values in node.items():
             #IDK why we need SocBoard info here
