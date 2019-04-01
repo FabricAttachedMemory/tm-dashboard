@@ -171,6 +171,9 @@ class Journal():
         if not self.requestor_wants_json(headers):  # Ignore versioning for HTML
             return None
 
+        # FIXME: ------ WARNING ------- DONT WANT TO CHECK VERSION IN THE BODY NOMORE
+        return None
+
         hdr_accept = headers.get('Accept', '')
         version = re.search('version=(.+?)', hdr_accept)
 

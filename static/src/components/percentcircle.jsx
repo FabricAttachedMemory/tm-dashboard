@@ -1,6 +1,5 @@
 'use strict';
 import React    from 'react';
-import {render} from 'react-dom';
 
 import StatsBox     from './wrappers/statsBox';
 import BoxHeader    from './infoBoxHeader';
@@ -123,8 +122,6 @@ class PercentCircle extends ApiRequester {
             valueText = converted[0];
             metricsSymbol = converted[1];
         }//if auto metrics
-
-        console.log(this.props.name + ' -> ' + fetchedJson["value"]);
 
         return (
         <StatsBox size={12} height={this.props.height}

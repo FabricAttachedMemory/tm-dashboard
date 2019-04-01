@@ -493,7 +493,7 @@ export function SetRibbonColor(ribbonGroup, fillColor, strokeColor){
 function findArcsFromMatrix(node){
     var list = [];
     if(node >= MATRIX.length || node < 0){
-        console.warn("Cant show arcs for node [" + node + "]! Out of range");
+        // console.warn("Cant show arcs for node [" + node + "]! Out of range");
         return list;
     }
 
