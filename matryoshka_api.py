@@ -71,7 +71,7 @@ class MainApp:
                 imported_bp.Journal.register(self)
 
                 self.app.register_blueprint(imported_bp.Journal.BP)
-                print('Regestring bluerpint "%s"...' % imported_bp.Journal.name)
+                print('Registering blueprint "%s"...' % imported_bp.Journal.name)
         except Exception as err:
             raise RuntimeError('Something went wrong while importing blueprints...:\n[ %s ]' % err)
 
