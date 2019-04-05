@@ -68,14 +68,12 @@ Journal = JNodes(__file__)
 
 @Journal.BP.before_request
 def validate_request(*args, **kwargs):
-    global Journal
     return Journal.validate_request(request)
 
 
 @Journal.BP.route('/api/topology', methods=['GET'])
 @Journal.BP.route('/api/topology/<arg>', methods=['GET'])
 def get_machine_topology(arg=None):
-    global Journal
     response = None
 
     if arg == 'help':
@@ -117,7 +115,6 @@ def nodes_api(node_num=-1):
     represent the nodes accessed for memory by the souce node.
     """
     print("------------------")
-    global Journal
     mainapp = Journal.mainapp
     response = None
 
@@ -138,6 +135,9 @@ def nodes_api(node_num=-1):
     data = response.json()
     try:
         shelf_list = data['entries']
+        # In 2017 we added subdirectories to LFS and introduced 3 new
+        # "permanent" entries: ".", "lost+found", and "garbage" with ids
+        # 1, 2, and 3.  They always have zero books so leave them alone.
     except KeyError:
         print(' ---- !!!WARNING!!! No "entries" key in LMP_SERVER/shelf/ response! ---')
         shelf_list = []
@@ -148,8 +148,8 @@ def nodes_api(node_num=-1):
         shelf_resp = Journal.make_request(shelf_req_url)
         shelf_data = shelf_resp.json()
 
-        # If it is active then add to the arc matrix
-        if len(shelf_data['active']) > 0:
+        # If it is active then add to the arc matrix.
+        if len(shelf_data['active']) > 0:       # FIXME: superfluous test?
             for book in shelf_data['books']:
                 #book_lza = Journal.topology['lza'][book]
                 uses_memory_from_node = Journal.topology['lza'][book] - 1
@@ -160,8 +160,11 @@ def nodes_api(node_num=-1):
     Journal.json_model['data_flow'] = arcs
     try:
         enc = Journal.topology['enc'].values()
-    except Exception:
-        print(' ---- !!!WARNING!!! No "enc" key in LMP_SERVER/shelf/ -> "lza" response! ---')
+    except KeyError as err:
+        print(' ---- !!!WARNING!!! No "enc" key in LMP /shelf/ -> "lza" response! ---')
+        enc = []
+    except AttributeError as err:
+        print(' ---- !!!WARNING!!! No "values" attr in LMP /shelf/ -> "lza" response! ---')
         enc = []
 
     Journal.json_model['topology'] = list(enc)
@@ -171,12 +174,10 @@ def nodes_api(node_num=-1):
 
 
 def build_topology():
-    global Journal
     mainapp = Journal.mainapp
     response = None
     # nodes_list has {coordinate, node_id} for converting coordinate path
     # from the active shelf data to the node number.
-    node_dict = {}
     result = Journal.topology #json data to be returned
 
     url = mainapp.config['LMP_SERVER'] + 'nodes/'
@@ -184,7 +185,7 @@ def build_topology():
 
     resp_json = response.json()
     result.update(resp_json)
-    if Journal.is_spoofed is True:
+    if Journal.is_spoofed:
         result['spoofed'] = True
         return result
     else:
@@ -196,19 +197,19 @@ def build_topology():
         print(' ---- !!!WARNING!!! No "nodes" key in LMP_SERVER/nodes/ response! ---')
         nodes_list = []
 
+    node_dict = {}
     for node in nodes_list:
-        for keys, values in node.items():
-            #IDK why we need SocBoard info here
-            node_full_name = node['coordinate'] + '/SocBoard/1/Soc/1'
-            node_dict[node_full_name] = node['node_id']
+        # IDK why we need SocBoard info here FIXME me either
+        node_full_name = node['coordinate'] + '/SocBoard/1/Soc/1'
+        node_dict[node_full_name] = node['node_id']
 
     try: #FIXME: this is a lazy solution to a bloody thing.
         # num_nodes is used to return a NxN matrix with the connection data
         # It is zero based matrix meaning node N is indexed with N-1.
-        result['size'] = max(node_dict.values())
+        result['size'] = max(node_dict.values())    # Could be a sparse list
         result['nodes'] = node_dict
         result['lza'] = build_lza_data(node_dict)
-        result['enc'] = _build_enc_topology(node_dict)
+        result['enc'] = _build_enc_topology(nodes_list)
     except Exception as err:
         print('Bloody murder! Your error: %s' % err)
 
@@ -219,29 +220,24 @@ def build_topology():
     return Journal.topology
 
 
-def _build_enc_topology(node_dict):
+def _build_enc_topology(nodes_list):
     ''' Will be called by build_topology() function to build a list of nodes
-    count per enclouser, where position in the array is an enclosure number/name,
-    and value at the poisition is number of nodes in that enclosure.
+        count per enclosure, where position in the array is an enclosure
+        number/name, and value at the position is number of nodes in that
+        enclosure.
     '''
+    # Originally written to be dependent on full coordinate string like
+    # /MachineVersion/1/DataCenter/FTC/Rack/sdl/Enclosure/U1/EncNum/1/Node/1
+    # but in 2019 this is not the case for SDflex, and may not have been
+    # the case for some time; only the "relative" coordinate is received.
+    # The divergence no longer matters, and extra core data has been added
+    # to the response.
     nodes_in_enc = defaultdict(int)
-    for key, value in node_dict.items():
-        # Splitting /MachineVersion/1/DataCenter/FTC/Rack/sdl/Enclosure/U1/EncNum/1/Node/1
-        # into: ['/MachineVersion/1/DataCenter/FTC/Rack/sdl/Enclosure/U1/', '/1/Node/1']
-        # to extract Enclosure number, which is on the left side /Node/ part.
-        enc_split = key.split('/EncNum/')
-        if len(enc_split) < 2:
-            raise RuntimeError('Node Coordinate is missing EncNum! Source: %s' % (key))
-        else:
-            if 'Node' not in enc_split[1]:
-                raise RuntimeError('Node Coordinate is missing /Node/! Source: %s' % (key))
-            else:
-                enc = enc_split[1].split('/Node/')[0]
-
-        node_num = key.split('/Node/')[1].split('/SocBoard/')[0]
-        node_num = int(node_num)
-        if node_num > nodes_in_enc[enc]:
-            nodes_in_enc[enc] = node_num
+    for node in nodes_list:
+        node_num = node['node_num']
+        enc_num = node['enc_num']
+        if node_num > nodes_in_enc[enc_num]:
+            nodes_in_enc[enc_num] = node_num
     return nodes_in_enc
 
 
@@ -250,19 +246,18 @@ def build_lza_data(node_dict):
     the LZAs of an active shelf with the nodes that contribute the LZAs of the
     active shelf.
     '''
-    global Journal
     mainapp = Journal.mainapp
     url = mainapp.config['LMP_SERVER'] + 'books/'
     book_dict = {}
-    for node_id in node_dict.values():
+    for node_id in node_dict.values():      # can range from 1-40
         # ASSUMPTION: interleave group number is node number-1
         interleave_url = url + str(node_id - 1)
         interleave_resp = Journal.make_request(interleave_url)
+        assert interleave_resp.status_code == 200, 'Bad response to books/IG'
         data=interleave_resp.json()
 
         books_list = data['books']
         for book in books_list:
-            for keys, values in book.items():
-                lza = book['lza']
-                book_dict[lza] = node_id
+            lza = book['lza']
+            book_dict[lza] = node_id
     return book_dict

@@ -117,7 +117,7 @@ class JPower(Journal):
         # num_nodes is used to size/index into the nodeinfo array of dicts
         self.num_nodes = len(nodes_list)
 
-        # Initialize nodeifo list of dictionaries for each node's global data:
+        # Initialize nodeinfo list of dictionaries for each node's global data:
         #    { active_coordinate: used with LMP to get books and shelves
         #      allocated_coordinate: removes /SocBoard/SoC for FAM usage
         #      nmp_url: used to get the PowerState from MFW on the node MP
@@ -132,7 +132,7 @@ class JPower(Journal):
             soc = node_item['soc']
             coord = soc['coordinate']
             self.nodeinfo[node]['active_coordinate'] = coord
-            self.nodeinfo[node]['allocated_coordinate'] = coord[:-16]
+            self.nodeinfo[node]['allocated_coordinate'] = coord.split('/')[-1]
 
         # Use data from /etc/tmconfig to get hostname and mfwApiUri
         self.nodeinfo = utils.hostnameFromTmconfig('/etc/tmconfig', self.nodeinfo)
@@ -236,7 +236,7 @@ class JPower(Journal):
         # Calculate the fabric usage from the LMP allocated data
         try:
             coord = self.nodeinfo[node-1]['allocated_coordinate']
-            url = self.mainapp.config['LMP_SERVER'] + 'allocated' + coord
+            url = self.mainapp.config['LMP_SERVER'] + 'allocated/' + coord
             r = requests.get(url, headers=self.mainapp.config['HTTP_HEADERS'],
                             timeout=self.mainapp.config['TIMEOUT'])
             if r.status_code != requests.codes.ok:
