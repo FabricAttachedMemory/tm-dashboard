@@ -117,7 +117,7 @@ class JPower(Journal):
         # num_nodes is used to size/index into the nodeinfo array of dicts
         self.num_nodes = len(nodes_list)
 
-        # Initialize nodeifo list of dictionaries for each node's global data:
+        # Initialize nodeinfo list of dictionaries for each node's global data:
         #    { active_coordinate: used with LMP to get books and shelves
         #      allocated_coordinate: removes /SocBoard/SoC for FAM usage
         #      nmp_url: used to get the PowerState from MFW on the node MP
@@ -132,7 +132,7 @@ class JPower(Journal):
             soc = node_item['soc']
             coord = soc['coordinate']
             self.nodeinfo[node]['active_coordinate'] = coord
-            self.nodeinfo[node]['allocated_coordinate'] = coord[:-16]
+            self.nodeinfo[node]['allocated_coordinate'] = coord.split('/')[-1]
 
         # Use data from /etc/tmconfig to get hostname and mfwApiUri
         self.nodeinfo = utils.hostnameFromTmconfig('/etc/tmconfig', self.nodeinfo)
@@ -173,20 +173,23 @@ class JPower(Journal):
 
 
     def get_power_state(self, node):
-        # Get the 
+        # Get the
         d_proxy = { "http" : None }
-        power = 'n/a'
+        power = 'N/A'
         try:
             header = self.mainapp.config['HTTP_HEADERS']
-            url = self.nodeinfo[node-1]['mfwApiUri'] + '/MgmtService/SoC'
+            url = self.nodeinfo[node-1]['mfwApiUri']
+            if url is None:
+                return power
+            url += '/MgmtService/SoC'
             r = requests.get(url, headers=header, proxies=d_proxy,
                             timeout=self.mainapp.config['TIMEOUT'])
             if r.status_code != requests.codes.ok:
-                return 'N/A'
+                return power
             data=r.json()
             power = data['PowerState']
-        except requests.exceptions.Timeout or requests.exceptions.HTTPConnection:
-            print('Cant get power state of node "%s"' % node)
+        except (requests.exceptions.Timeout, requests.exceptions.HTTPError) as err:
+            print('MP Redfish for node "%s" failed or timed out (%s)' % (node, url))
         except Exception as err: #FIXME
             print('Failed to get power state for node %s! [%s]' % (node, err))
 
@@ -195,9 +198,16 @@ class JPower(Journal):
 
     def get_os_manifest(self, node):
         # Get the os manifest for the node from the manifesting service
-        url = self.mainapp.config['MANIFESTING_SERVER'] + 'api/node/' + str(node)
-        r = requests.get(url, headers=self.mainapp.config['HTTP_HEADERS'],
-                        timeout=self.mainapp.config['TIMEOUT'])
+        url = self.mainapp.config['MANIFESTING_SERVER']
+        if url is None:
+            return 'N/A'
+        url += 'api/node/' + str(node)
+        try:
+            r = requests.get(url, headers=self.mainapp.config['HTTP_HEADERS'],
+                             timeout=self.mainapp.config['TIMEOUT'])
+        except Exception as err:
+            print('Cannot get manifest from %s: %s' % (url, str(err)))
+            return 'N/A'
         if r.status_code != requests.codes.ok:
             return "default"
         data=r.json()
@@ -207,21 +217,18 @@ class JPower(Journal):
 
     def get_books_and_shelves(self, node):
         # Get the active books and shelves from LMP active data
-        active = { 'shelves' : 'n/a', 'books' : 'n/a' }
+        active = { 'shelves' : -1, 'books' : -1 }
         try:
             coord = self.nodeinfo[node-1]['active_coordinate']
-            url = self.mainapp.config['LMP_SERVER'] + 'active' + coord
+            url = self.mainapp.config['LMP_SERVER'] + 'active/' + coord
             r = requests.get(url, headers=self.mainapp.config['HTTP_HEADERS'],
                             timeout=self.mainapp.config['TIMEOUT'])
             if r.status_code != requests.codes.ok:
-                return [0, 0]
+                return active
             data=r.json()
             active = data['active']
         except Exception as err:
             print('Failed to get books and shelves for node %s! [%s]' % (node, err))
-            active['shelves'] = 'n/a'
-            active['books'] = 'n/a'
-
         return active
 
 
@@ -229,7 +236,7 @@ class JPower(Journal):
         # Calculate the fabric usage from the LMP allocated data
         try:
             coord = self.nodeinfo[node-1]['allocated_coordinate']
-            url = self.mainapp.config['LMP_SERVER'] + 'allocated' + coord
+            url = self.mainapp.config['LMP_SERVER'] + 'allocated/' + coord
             r = requests.get(url, headers=self.mainapp.config['HTTP_HEADERS'],
                             timeout=self.mainapp.config['TIMEOUT'])
             if r.status_code != requests.codes.ok:
@@ -300,7 +307,7 @@ def pernode_api(nodestr=-1):
     try:
         Journal.doThings()
     except Exception as err:
-        print('Things went wrong in "nodes" bp! [%s]' % err)
+        print('Things went wrong in "%s" bp! [%s]' % (Journal.BP.name, err))
         Journal.defaults['Node'] = node
         if nodeindex != -1:
             return make_response(jsonify(Journal.spoofStats(node)), 302)
@@ -326,7 +333,7 @@ def pernode_api(nodestr=-1):
         except requests.exceptions.ConnectionError:
             print('Can not connect to Node "%s" to get stats!' % (node-1))
         except Exception as err:
-            print('Failed to get node stats! [%s]' % err)
+            print('Failed to get node stats(A)! [%s]' % err)
 
         return make_response(jsonify(nodeData), 200)
     else:
@@ -337,13 +344,13 @@ def pernode_api(nodestr=-1):
                 nodeData['Node'] = node_index
                 result.append(copy.deepcopy(nodeData))
             except Exception as err:
-                print('Failed to get node stats! [%s]' % err)
+                print('Failed to get node stats(B)! [%s]' % err)
+                print(result)
         return make_response(jsonify( { 'nodes' : result }), 200)
 
 
 
 def getNodeStats(node):
-    global Journal
     nodedata = Journal.defaults
     nodedata['Node'] = node
     nodedata['Power State'] = Journal.get_power_state(node)

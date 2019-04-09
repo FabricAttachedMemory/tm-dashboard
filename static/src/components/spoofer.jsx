@@ -19,15 +19,18 @@ export function createRandomList(range, size){
 
 
 export function cpuData(){
-    return [ 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+    return [-1]
+    // return [ 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 }
 
 export function famData(){
-    return [ 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65];
+    return [-1]
+    // return [ 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65];
 }
 
 export function fabData(){
-    return [ 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43];
+    return [-1]
+    // return [ 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43];
 }
 
 

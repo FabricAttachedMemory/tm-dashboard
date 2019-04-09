@@ -1,6 +1,5 @@
 'use strict';
 import React     from 'react';
-import {render}  from 'react-dom';
 import PropTypes from 'prop-types';
 
 
@@ -63,11 +62,6 @@ class ApiRequester extends React.Component {
         }//fetchParam
 
         return fetch (url, fetchParam).then((data) => {
-            /*
-            this.setState({
-                fetched : data
-            });
-            */
             this.state.fetched = data;
             return data.json();
         }).then((json) => {

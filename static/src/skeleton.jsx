@@ -9,8 +9,8 @@ import PercentCircle    from    './components/percentcircle';
 import Flatgrids        from    './visualization/grids'
 import Chords           from    './visualization/chordWheel';
 import Middle           from    './components/middle';
-import POverview         from    './overview';
 import * as DataSpoofer from    './components/spoofer';
+import * as REST from './constants/endpoints';
 
 
 class Skeleton extends React.Component{
@@ -107,9 +107,9 @@ class Skeleton extends React.Component{
         var tabContentToRender = "";
         if(openedTab == "overview"){
             tabContentToRender =  <Chords name="ChordWheel"
-                                            url="http://localhost:9099/api/nodes"/>;
+                                            url={REST.ENDPOINT_NODES}/>;
         }else if(openedTab == "mm"){
-            tabContentToRender = <Flatgrids url="http://localhost:9099/api/memory"
+            tabContentToRender = <Flatgrids url={REST.ENDPOINT_MEMORY}
                                             name="Flatgrids"
                                             spoofedData={DataSpoofer.GridsData()}/>;
         }
@@ -130,17 +130,17 @@ class Skeleton extends React.Component{
                                 minWidth : this.state.panelMinWidth}}>
                     <PercentCircle name="CPU"
                                     height={panelHeight}
-                                    url={"http://localhost:9099/api/metrics/cpu"}
+                                    url={REST.ENDPOINT_CPU}
                                     marginBottom={this.state.boxMargin}
                                     spoofedData={DataSpoofer.cpuData()}/>
                     <PercentCircle name="Fabric Attached Memory"
                                     height={panelHeight}
-                                    url={"http://localhost:9099/api/metrics/fam"}
+                                    url={REST.ENDPOINT_FAM}
                                     marginBottom={this.state.boxMargin}
                                     spoofedData={DataSpoofer.famData()}/>
                     <PercentCircle name="Fabric"
                                     height={panelHeight}
-                                    url={"http://localhost:9099/api/metrics/fabric"}
+                                    url={REST.ENDPOINT_FABRIC}
                                     marginBottom={"0px"}
                                     spoofedData={DataSpoofer.fabData()}/>
                 </div>

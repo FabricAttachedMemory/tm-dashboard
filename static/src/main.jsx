@@ -102,7 +102,8 @@ class SystemLoadStats extends React.Component{
         var isChrome = !!window.chrome && !!window.chrome.webstore;
         return (
             <div>
-                { isChrome == true || this.state.isAllowBrowser ? this.renderPages() : this.renderNoBrowserSupport() }
+                {/* { isChrome == true || this.state.isAllowBrowser ? this.renderPages() : this.renderNoBrowserSupport() } */}
+                { this.renderPages() }
             </div>
         );
 

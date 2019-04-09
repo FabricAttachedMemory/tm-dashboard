@@ -1,6 +1,5 @@
 'use strict';
 import React    from 'react';
-import {render} from 'react-dom';
 
 import StatsBox     from './wrappers/statsBox';
 import BoxHeader    from './infoBoxHeader';
@@ -75,11 +74,11 @@ class PercentCircle extends ApiRequester {
 
         //Try and Spoof percent circles with some data to be displayed while
         // "idle" on github pages
-        if (fetchedJson["status"] === undefined){
-            if (this.props.spoofedData !== undefined){
-                fetchedJson["value"] = this.pick_random_from_list(this.props.spoofedData);
-            }//if
-        }//if
+        // if (fetchedJson["status"] === undefined){
+        //     if (this.props.spoofedData !== undefined){
+        //         fetchedJson["value"] = this.pick_random_from_list(this.props.spoofedData);
+        //     }//if
+        // }//if
 
         var fetchedValue = parseFloat(fetchedJson["value"]).toFixed(2);
         var savedValue = DataSharing.Get(this.props.name + "_persist");

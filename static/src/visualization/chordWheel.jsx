@@ -45,6 +45,8 @@ class Chords extends ApiRequester{
      * @param {2d array} matrix "real" data with the nodes activity data.
      */
     constructRenderMatrix(matrix){
+        if (matrix === undefined)
+            return []
         var length = matrix.length;
         var renderMatrix = [];
 
@@ -491,7 +493,7 @@ export function SetRibbonColor(ribbonGroup, fillColor, strokeColor){
 function findArcsFromMatrix(node){
     var list = [];
     if(node >= MATRIX.length || node < 0){
-        console.warn("Cant show arcs for node [" + node + "]! Out of range");
+        // console.warn("Cant show arcs for node [" + node + "]! Out of range");
         return list;
     }
 

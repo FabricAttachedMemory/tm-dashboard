@@ -59,6 +59,16 @@ def index_api():
     return make_response(jsonify({'routes' : sorted(all_routes)}), 200)
 
 
+@Journal.BP.route('/api/title', methods=['GET'])
+def get_title():
+    """ Return TITLE property of the CONFIG fiel. """
+    mainapp = Journal.mainapp
+    config = mainapp.config
+    title = config.get('TITLE', 'Executive Dashbaord')
+    return make_response(jsonify({'title' : title}))
+
+
+
 @Journal.BP.route('/api/toggle_spoof', methods=['GET'])
 def toggle_spoof():
     mainapp = Journal.mainapp
